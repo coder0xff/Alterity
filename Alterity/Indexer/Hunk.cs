@@ -17,6 +17,7 @@ namespace Alterity.Indexing
         public int UpperBound { get { return upperBound; } }
         public int Length { get { return upperBound - lowerBound + 1; } }
         public bool IsEmpty { get { return Length == 0; } }
+        public bool Contains(int value) { return lowerBound <= value && upperBound >= value; }
         public override bool Equals(object obj)
         {
             if (obj is Hunk)
