@@ -48,9 +48,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Diff.cs" />
-    <Compile Include="HunkSet.cs" />
-    <Compile Include="Indexer\MatchedHunk.cs" />
-    <Compile Include="Indexer\Hunk.cs" />
+    <Compile Include="IndicatorFunction.cs" />
+    <Compile Include="Indexer\MatchedRanged.cs" />
+    <Compile Include="Indexer\Range.cs" />
     <Compile Include="Indexer\StringIndexer.cs" />
     <Compile Include="Grapheme.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

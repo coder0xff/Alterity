@@ -75,8 +75,8 @@ namespace AlterityTest
             string matchString = "This annoying sound is for testing of the useless emergency broadcast system. This test is primarily just to annoy you.";
             int startingIndex = 0; // TODO: Initialize to an appropriate value
             int minimumLength = 1; // TODO: Initialize to an appropriate value
-            MatchedHunk expected = new MatchedHunk(new Hunk[] { new Hunk(0, 4), new Hunk(50, 54) }, new Hunk(0, 4));
-            MatchedHunk actual;
+            MatchedRange expected = new MatchedRange(new Range[] { new Range(0, 4), new Range(50, 54) }, new Range(0, 4));
+            MatchedRange actual;
             actual = target.BestMatchSearch(matchString, startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
@@ -93,8 +93,8 @@ namespace AlterityTest
             string matchString = "This annoying sound is for testing of the useless emergency broadcast system. This test is primarily just to annoy you.";
             int startingIndex = 5; // TODO: Initialize to an appropriate value
             int minimumLength = 1; // TODO: Initialize to an appropriate value
-            MatchedHunk expected = new MatchedHunk(new Hunk[] { new Hunk(8, 8), new Hunk(35, 35), new Hunk(38, 38), new Hunk(63, 63) }, new Hunk(5, 5));
-            MatchedHunk actual;
+            MatchedRange expected = new MatchedRange(new Range[] { new Range(8, 8), new Range(35, 35), new Range(38, 38), new Range(63, 63) }, new Range(5, 5));
+            MatchedRange actual;
             actual = target.BestMatchSearch(matchString, startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
@@ -111,8 +111,8 @@ namespace AlterityTest
             string matchString = "This annoying sound is for testing of the useless emergency broadcast system. This test is primarily just to annoy you.";
             int startingIndex = 5; // TODO: Initialize to an appropriate value
             int minimumLength = 3; // TODO: Initialize to an appropriate value
-            MatchedHunk expected = new MatchedHunk(new Hunk[] { }, new Hunk(5, 5));
-            MatchedHunk actual;
+            MatchedRange expected = new MatchedRange(new Range[] { }, new Range(5, 5));
+            MatchedRange actual;
             actual = target.BestMatchSearch(matchString, startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
@@ -129,8 +129,8 @@ namespace AlterityTest
             string matchString = "This annoying sound is for testing of the useless emergency broadcast system. This test is primarily just to annoy you. test. ";
             int startingIndex = 120; // TODO: Initialize to an appropriate value
             int minimumLength = 3; // TODO: Initialize to an appropriate value
-            MatchedHunk expected = new MatchedHunk(new Hunk[] { new Hunk(65, 69) }, new Hunk(120, 124));
-            MatchedHunk actual;
+            MatchedRange expected = new MatchedRange(new Range[] { new Range(65, 69) }, new Range(120, 124));
+            MatchedRange actual;
             actual = target.BestMatchSearch(matchString, startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
@@ -147,8 +147,8 @@ namespace AlterityTest
             string matchString = "This annoying sound is for testing of the useless emergency broadcast system. This test is primarily just to annoy you. test.";
             int startingIndex = 120; // TODO: Initialize to an appropriate value
             int minimumLength = 3; // TODO: Initialize to an appropriate value
-            MatchedHunk expected = new MatchedHunk(new Hunk[] { new Hunk(65, 69) }, new Hunk(120, 124));
-            MatchedHunk actual;
+            MatchedRange expected = new MatchedRange(new Range[] { new Range(65, 69) }, new Range(120, 124));
+            MatchedRange actual;
             actual = target.BestMatchSearch(matchString, startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
@@ -165,8 +165,8 @@ namespace AlterityTest
             string matchString = "This annoying sound is for testing of the useless emergency broadcast system. This test is primarily just to annoy you. Some other text.";
             int startingIndex = 120; // TODO: Initialize to an appropriate value
             int minimumLength = 3; // TODO: Initialize to an appropriate value
-            MatchedHunk expected = new MatchedHunk(new Hunk[] { new Hunk(71, 75) }, new Hunk(120, 124));
-            MatchedHunk actual;
+            MatchedRange expected = new MatchedRange(new Range[] { new Range(71, 75) }, new Range(120, 124));
+            MatchedRange actual;
             actual = target.BestMatchSearch(matchString, startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }

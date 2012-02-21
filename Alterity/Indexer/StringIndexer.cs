@@ -117,25 +117,25 @@ namespace Alterity.Indexing
             return currentNode.GetDocumentPositions();
         }
 
-        private MatchedHunk CreateHunkFromResults(GraphemeNode terminalNode, int startingIndex, int terminalIndex, int minimumLength)
+        private MatchedRange CreateHunkFromResults(GraphemeNode terminalNode, int startingIndex, int terminalIndex, int minimumLength)
         {
-            Hunk matchStringHunk = new Hunk(startingIndex, terminalIndex);
+            Range matchStringHunk = new Range(startingIndex, terminalIndex);
             int hunkLength = terminalIndex - startingIndex + 1;
             if (hunkLength < minimumLength)
             {
-                return new MatchedHunk(new Hunk[0], matchStringHunk);
+                return new MatchedRange(new Range[0], matchStringHunk);
             }
             else
             {
-                Hunk[] matches = new Hunk[terminalNode.documentPositions.Count];
+                Range[] matches = new Range[terminalNode.documentPositions.Count];
                 int index = 0;
                 foreach (int terminalNodeUpperBound in terminalNode.documentPositions)
                 {
                     int hunkLowerBound = terminalNodeUpperBound - terminalNode.nodeDepth;
                     int hunkUpperBound = hunkLowerBound + hunkLength - 1;
-                    matches[index++] = new Hunk(hunkLowerBound, hunkUpperBound);
+                    matches[index++] = new Range(hunkLowerBound, hunkUpperBound);
                 }
-                return new MatchedHunk(matches, matchStringHunk);
+                return new MatchedRange(matches, matchStringHunk);
             }
         }
 
@@ -144,7 +144,7 @@ namespace Alterity.Indexing
         /// with the first compared grapheme in matchString at startingIndex. If the length of the matching
         /// graphemes is less than minimumLength, then a MatchedHunk with no left hunks is returned
         /// </summary>
-        private MatchedHunk BestMatchSearch(String matchString, int startingIndex, int minimumLength)
+        private MatchedRange BestMatchSearch(String matchString, int startingIndex, int minimumLength)
         {
             Grapheme[] searchGraphemes = matchString.ToGraphemeArray();
             int searchGraphemeCount = searchGraphemes.Length;

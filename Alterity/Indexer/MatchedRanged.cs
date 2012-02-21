@@ -5,22 +5,22 @@ using System.Text;
 
 namespace Alterity.Indexing
 {
-    public struct MatchedHunk
+    public struct MatchedRange
     {
-        private Hunk[] left;
-        private Hunk right;
-        public MatchedHunk(Hunk[] left, Hunk right)
+        private Range[] left;
+        private Range right;
+        public MatchedRange(Range[] left, Range right)
         {
             this.left = left;
             this.right = right;
         }
-        public Hunk[] Left { get { return left; } }
-        public Hunk Right { get { return right; } }
+        public Range[] Left { get { return left; } }
+        public Range Right { get { return right; } }
         public override bool Equals(object obj)
         {
-            if (obj is MatchedHunk)
+            if (obj is MatchedRange)
             {
-                MatchedHunk convertedObj = (MatchedHunk)obj;
+                MatchedRange convertedObj = (MatchedRange)obj;
                 return right == convertedObj.right && Enumerable.SequenceEqual(left, convertedObj.left);
             }
             else
@@ -42,11 +42,11 @@ namespace Alterity.Indexing
         {
             return left.Length.ToString() + " matched locations.";
         }
-        public static bool operator ==(MatchedHunk left, MatchedHunk right)
+        public static bool operator ==(MatchedRange left, MatchedRange right)
         {
             return left.Equals(right);
         }
-        public static bool operator !=(MatchedHunk left, MatchedHunk right)
+        public static bool operator !=(MatchedRange left, MatchedRange right)
         {
             return !(left == right);
         }

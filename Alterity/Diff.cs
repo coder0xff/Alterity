@@ -8,11 +8,11 @@ namespace Alterity
 {
     public class Diff
     {
-        LinkedList<MatchedHunk> ComputeRelations(String left, String right, int minimumHunkLength)
+        LinkedList<MatchedRange> ComputeRelations(String left, String right, int minimumHunkLength)
         {
-            LinkedList<MatchedHunk> results = new LinkedList<MatchedHunk>();
+            LinkedList<MatchedRange> results = new LinkedList<MatchedRange>();
             StringIndexer indexer = new StringIndexer(left);
-
+            throw new NotImplementedException();
         }
     }
 }

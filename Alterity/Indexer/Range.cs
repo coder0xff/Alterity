@@ -5,10 +5,10 @@ using System.Text;
 
 namespace Alterity.Indexing
 {
-    public struct Hunk
+    public struct Range
     {
         private int lowerBound, upperBound;
-        public Hunk(int lowerBound, int upperBound)
+        public Range(int lowerBound, int upperBound)
         {
             this.lowerBound = lowerBound;
             this.upperBound = upperBound;
@@ -20,9 +20,9 @@ namespace Alterity.Indexing
         public bool Contains(int value) { return lowerBound <= value && upperBound >= value; }
         public override bool Equals(object obj)
         {
-            if (obj is Hunk)
+            if (obj is Range)
             {
-                Hunk convertedObj = (Hunk)obj;
+                Range convertedObj = (Range)obj;
                 return this.lowerBound == convertedObj.lowerBound && this.upperBound == convertedObj.upperBound;
             }
             else
@@ -38,11 +38,11 @@ namespace Alterity.Indexing
         {
             return lowerBound.ToString() + " - " + upperBound.ToString();
         }
-        public static bool operator ==(Hunk left, Hunk right)
+        public static bool operator ==(Range left, Range right)
         {
             return left.Equals(right);
         }
-        public static bool operator !=(Hunk left, Hunk right)
+        public static bool operator !=(Range left, Range right)
         {
             return !(left == right);
         }
