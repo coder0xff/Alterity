@@ -11,13 +11,15 @@ using System.Linq;
 
 namespace System.Collections.Generic
 {
+    public enum RBTreeColor
+    {
+        Black,
+        Red
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     public class RBTree<T> : ISet<T>
     {
-        public enum Color
-        {
-            Black,
-            Red
-        }
 
         /// <summary>
         /// the number of nodes contained in the tree
@@ -30,7 +32,7 @@ namespace System.Collections.Generic
         /// <summary>
         /// SentinelNode is convenient way of indicating a leaf node.
         /// </summary>
-        public static readonly Node SentinelNode = new Node(Color.Black);
+        private static readonly Node SentinelNode = new Node(RBTreeColor.Black);
         private IComparer<T> _comparer;
         /// <summary>
         /// the node that was last found; used to optimize searches
@@ -153,19 +155,19 @@ namespace System.Collections.Generic
             Node y;
 
             // maintain red-black tree properties after adding x
-            while (x != root && x.Parent.Color == Color.Red)
+            while (x != root && x.Parent.Color == RBTreeColor.Red)
             {
                 // Parent node is .Colored red; 
                 if (x.Parent == x.Parent.Parent.Left)	// determine traversal path			
                 {										// is it on the Left or Right subtree?
                     y = x.Parent.Parent.Right;			// get uncle
-                    if (y != null && y.Color == Color.Red)
+                    if (y != null && y.Color == RBTreeColor.Red)
                     {	// uncle is red; change x's Parent and uncle to black
-                        x.Parent.Color = Color.Black;
-                        y.Color = Color.Black;
+                        x.Parent.Color = RBTreeColor.Black;
+                        y.Color = RBTreeColor.Black;
                         // grandparent must be red. Why? Every red node that is not 
                         // a leaf has only black children 
-                        x.Parent.Parent.Color = Color.Red;
+                        x.Parent.Parent.Color = RBTreeColor.Red;
                         x = x.Parent.Parent;	// continue loop with grandparent
                     }
                     else
@@ -178,8 +180,8 @@ namespace System.Collections.Generic
                             RotateLeft(x);
                         }
                         // no, x is less than Parent
-                        x.Parent.Color = Color.Black;	// make Parent black
-                        x.Parent.Parent.Color = Color.Red;		// make grandparent black
+                        x.Parent.Color = RBTreeColor.Black;	// make Parent black
+                        x.Parent.Parent.Color = RBTreeColor.Red;		// make grandparent black
                         RotateRight(x.Parent.Parent);					// rotate right
                     }
                 }
@@ -187,11 +189,11 @@ namespace System.Collections.Generic
                 {	// x's Parent is on the Right subtree
                     // this code is the same as above with "Left" and "Right" swapped
                     y = x.Parent.Parent.Left;
-                    if (y != null && y.Color == Color.Red)
+                    if (y != null && y.Color == RBTreeColor.Red)
                     {
-                        x.Parent.Color = Color.Black;
-                        y.Color = Color.Black;
-                        x.Parent.Parent.Color = Color.Red;
+                        x.Parent.Color = RBTreeColor.Black;
+                        y.Color = RBTreeColor.Black;
+                        x.Parent.Parent.Color = RBTreeColor.Red;
                         x = x.Parent.Parent;
                     }
                     else
@@ -201,13 +203,13 @@ namespace System.Collections.Generic
                             x = x.Parent;
                             RotateRight(x);
                         }
-                        x.Parent.Color = Color.Black;
-                        x.Parent.Parent.Color = Color.Red;
+                        x.Parent.Color = RBTreeColor.Black;
+                        x.Parent.Parent.Color = RBTreeColor.Red;
                         RotateLeft(x.Parent.Parent);
                     }
                 }
             }
-            root.Color = Color.Black;		// rbTree should always be black
+            root.Color = RBTreeColor.Black;		// rbTree should always be black
         }
 
         bool TryAdd(T item)
@@ -274,6 +276,7 @@ namespace System.Collections.Generic
 
         public void AddRange(IEnumerable<T> items)
         {
+            if (items == null) throw new ArgumentNullException("items");
             foreach (T item in items)
                 Add(item);
         }
@@ -316,36 +319,36 @@ namespace System.Collections.Generic
 
             Node y;
 
-            while (x != root && x.Color == Color.Black)
+            while (x != root && x.Color == RBTreeColor.Black)
             {
                 if (x == x.Parent.Left)			// determine sub tree from parent
                 {
                     y = x.Parent.Right;			// y is x's sibling 
-                    if (y.Color == Color.Red)
+                    if (y.Color == RBTreeColor.Red)
                     {	// x is black, y is red - make both black and rotate
-                        y.Color = Color.Black;
-                        x.Parent.Color = Color.Red;
+                        y.Color = RBTreeColor.Black;
+                        x.Parent.Color = RBTreeColor.Red;
                         RotateLeft(x.Parent);
                         y = x.Parent.Right;
                     }
-                    if (y.Left.Color == Color.Black &&
-                        y.Right.Color == Color.Black)
+                    if (y.Left.Color == RBTreeColor.Black &&
+                        y.Right.Color == RBTreeColor.Black)
                     {	// children are both black
-                        y.Color = Color.Red;		// change parent to red
+                        y.Color = RBTreeColor.Red;		// change parent to red
                         x = x.Parent;					// move up the tree
                     }
                     else
                     {
-                        if (y.Right.Color == Color.Black)
+                        if (y.Right.Color == RBTreeColor.Black)
                         {
-                            y.Left.Color = Color.Black;
-                            y.Color = Color.Red;
+                            y.Left.Color = RBTreeColor.Black;
+                            y.Color = RBTreeColor.Red;
                             RotateRight(y);
                             y = x.Parent.Right;
                         }
                         y.Color = x.Parent.Color;
-                        x.Parent.Color = Color.Black;
-                        y.Right.Color = Color.Black;
+                        x.Parent.Color = RBTreeColor.Black;
+                        y.Right.Color = RBTreeColor.Black;
                         RotateLeft(x.Parent);
                         x = root;
                     }
@@ -353,37 +356,37 @@ namespace System.Collections.Generic
                 else
                 {	// right subtree - same as code above with right and left swapped
                     y = x.Parent.Left;
-                    if (y.Color == Color.Red)
+                    if (y.Color == RBTreeColor.Red)
                     {
-                        y.Color = Color.Black;
-                        x.Parent.Color = Color.Red;
+                        y.Color = RBTreeColor.Black;
+                        x.Parent.Color = RBTreeColor.Red;
                         RotateRight(x.Parent);
                         y = x.Parent.Left;
                     }
-                    if (y.Right.Color == Color.Black &&
-                        y.Left.Color == Color.Black)
+                    if (y.Right.Color == RBTreeColor.Black &&
+                        y.Left.Color == RBTreeColor.Black)
                     {
-                        y.Color = Color.Red;
+                        y.Color = RBTreeColor.Red;
                         x = x.Parent;
                     }
                     else
                     {
-                        if (y.Left.Color == Color.Black)
+                        if (y.Left.Color == RBTreeColor.Black)
                         {
-                            y.Right.Color = Color.Black;
-                            y.Color = Color.Red;
+                            y.Right.Color = RBTreeColor.Black;
+                            y.Color = RBTreeColor.Red;
                             RotateLeft(y);
                             y = x.Parent.Left;
                         }
                         y.Color = x.Parent.Color;
-                        x.Parent.Color = Color.Black;
-                        y.Left.Color = Color.Black;
+                        x.Parent.Color = RBTreeColor.Black;
+                        y.Left.Color = RBTreeColor.Black;
                         RotateRight(x.Parent);
                         x = root;
                     }
                 }
             }
-            x.Color = Color.Black;
+            x.Color = RBTreeColor.Black;
         }
 
         ///<summary>
@@ -481,7 +484,7 @@ namespace System.Collections.Generic
                 z.Value = y.Value;
             }
 
-            if (y.Color == Color.Black)
+            if (y.Color == RBTreeColor.Black)
                 RestoreAfterDelete(x);
 
             lastNodeFound = SentinelNode;
@@ -533,12 +536,14 @@ namespace System.Collections.Generic
 
         public void ExceptWith(IEnumerable<T> other)
         {
+            if (other == null) throw new ArgumentNullException("other");
             foreach (T item in other)
                 Remove(item);
         }
 
         public void IntersectWith(IEnumerable<T> other)
         {
+            if (other == null) throw new ArgumentNullException("other");
             SortedSet<T> tempSet = new SortedSet<T>(other);
             foreach (T itemToRemove in this.Where(item => !tempSet.Contains(item)))
             {
@@ -548,32 +553,38 @@ namespace System.Collections.Generic
 
         public bool IsProperSubsetOf(IEnumerable<T> other)
         {
+            if (other == null) throw new ArgumentNullException("other");
             return this.IsSubsetOf(other) && other.Count() < this.Count;
         }
 
         public bool IsProperSupersetOf(IEnumerable<T> other)
         {
+            if (other == null) throw new ArgumentNullException("other");
             return this.IsSupersetOf(other) && other.Count() > this.Count;
         }
 
         public bool IsSubsetOf(IEnumerable<T> other)
         {
+            if (other == null) throw new ArgumentNullException("other");
             SortedSet<T> tempSet = new SortedSet<T>(other);
             return this.All(item => tempSet.Contains(item));
         }
 
         public bool IsSupersetOf(IEnumerable<T> other)
         {
+            if (other == null) throw new ArgumentNullException("other");
             return other.All(item => this.Contains(item));
         }
 
         public bool Overlaps(IEnumerable<T> other)
         {
+            if (other == null) throw new ArgumentNullException("other");
             return other.Any(item => this.Contains(item));
         }
 
         public bool SetEquals(IEnumerable<T> other)
         {
+            if (other == null) throw new ArgumentNullException("other");
             IEnumerator<T> thisIterator = this.GetEnumerator(), thatIterator = other.GetEnumerator();
             bool hasElement;
             while ((hasElement = thisIterator.MoveNext()) == thatIterator.MoveNext())
@@ -592,6 +603,7 @@ namespace System.Collections.Generic
 
         public void SymmetricExceptWith(IEnumerable<T> other)
         {
+            if (other == null) throw new ArgumentNullException("other");
             foreach (T item in other)
             {
                 if (Contains(item))
@@ -603,10 +615,11 @@ namespace System.Collections.Generic
 
         public void UnionWith(IEnumerable<T> other)
         {
+            if (other == null) throw new ArgumentNullException("other");
             foreach (T item in other)
                 TryAdd(item);
         }
-        public Node NextNode(Node currentNode)
+        internal static Node NextNode(Node currentNode)
         {
             //1. if node has right child, move to right child, go to step 5
             //2. if current node has no parent, return null
@@ -632,7 +645,7 @@ namespace System.Collections.Generic
             return currentNode.Parent; // step 4
         }
 
-        public Node PreviousNode(Node currentNode)
+        internal static Node PreviousNode(Node currentNode)
         {
             if (currentNode.Left != SentinelNode) // step 1
             {
@@ -652,7 +665,7 @@ namespace System.Collections.Generic
             return currentNode.Parent; // step 4
         }
 
-        public Node GetLessThanOrEqual(T item)
+        internal Node GetLessThanOrEqual(T item)
         {
             if (item == null) throw new ArgumentNullException("item");
 
@@ -682,7 +695,7 @@ namespace System.Collections.Generic
             return greatestLess;
         }
 
-        public Node GetGreaterThanOrEqual(T item)
+        internal Node GetGreaterThanOrEqual(T item)
         {
             if (item == null) throw new ArgumentNullException("item");
 
@@ -712,7 +725,7 @@ namespace System.Collections.Generic
             return leastGreater;
         }
 
-        public class Node
+        internal class Node
         {
             /// <summary>
             /// The item
@@ -721,7 +734,7 @@ namespace System.Collections.Generic
             /// <summary>
             /// color - used to balance the tree
             /// </summary>
-            public Color Color { get; internal set; }
+            public RBTreeColor Color { get; internal set; }
             /// <summary>
             /// left node 
             /// </summary>
@@ -737,10 +750,10 @@ namespace System.Collections.Generic
 
             internal Node()
             {
-                Color = Color.Red;
+                Color = RBTreeColor.Red;
             }
 
-            internal Node(Color color)
+            internal Node(RBTreeColor color)
             {
                 Color = color;
             }

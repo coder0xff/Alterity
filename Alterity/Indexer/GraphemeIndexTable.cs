@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Globalization;
 
-namespace Alterity.Indexing
+namespace Alterity
 {
     //assigns a unique sequential index to each distinct grapheme in a text
     public class GraphemeIndexTable
@@ -19,20 +19,21 @@ namespace Alterity.Indexing
             int indexCounter = 1;
             foreach (Grapheme grapheme in text.ToGraphemeArray().Distinct())
             {
-                if (grapheme.IsMultiCharacter)
+                if (grapheme.IsMulticharacter)
                     multiCharacterIndices[grapheme] = indexCounter++;
                 else
                     indices[Convert.ToInt16(grapheme[0])] = indexCounter++;
             }
             count = indexCounter;
         }
-        
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1043:UseIntegralOrStringArgumentForIndexers")]
         public int this[Grapheme grapheme]
         {
             get
             {
                 if ((Object)grapheme == null) return 0;
-                if (grapheme.IsMultiCharacter)
+                if (grapheme.IsMulticharacter)
                     return multiCharacterIndices[grapheme];
                 else
                     return indices[Convert.ToInt16(grapheme[0])];

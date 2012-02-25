@@ -13,8 +13,8 @@ namespace Alterity
 
         public Grapheme(String textElement)
         {
-            if (textElement == null) throw new ArgumentNullException();
-            if (new System.Globalization.StringInfo(textElement).LengthInTextElements != 1) throw new ArgumentOutOfRangeException("The string does not contain exactly one grapheme");
+            if (textElement == null) throw new ArgumentNullException("textElement");
+            if (new System.Globalization.StringInfo(textElement).LengthInTextElements != 1) throw new ArgumentOutOfRangeException("textElement", "The string does not contain exactly one grapheme");
             data = textElement.ToCharArray();
         }
 
@@ -46,11 +46,25 @@ namespace Alterity
             return data.Length - other.data.Length;
         }
 
+        public static bool operator <(Grapheme left, Grapheme right)
+        {
+            if (left == null)
+                return right != null;
+            return left.CompareTo(right) < 0;
+        }
+
+        public static bool operator >(Grapheme left, Grapheme right)
+        {
+            if (left == null) return false;
+            return left.CompareTo(right) > 0;
+        }
+
         public override bool Equals(object obj)
         {
-            if (obj is Grapheme)
+            Grapheme cast = obj as Grapheme;
+            if ((Object)cast != null)
             {
-                return Equals((Grapheme)obj);
+                return Equals(cast);
             }
             return false;
         }
@@ -73,6 +87,8 @@ namespace Alterity
 
         public static bool operator ==(Grapheme left, Grapheme right)
         {
+            if ((Object)left == null)
+                return (Object)right == null;
             return left.Equals(right);
         }
 
@@ -86,15 +102,15 @@ namespace Alterity
             get { return data[index]; }
         }
 
-        public bool IsMultiCharacter { get { return data.Length > 1; } }
+        public bool IsMulticharacter { get { return data.Length > 1; } }
     }
 
     public static class GraphemeExtensionMethods
     {
-        public static Grapheme[] ToGraphemeArray(this String str)
+        public static Grapheme[] ToGraphemeArray(this String source)
         {
             List<Grapheme> tempList = new List<Grapheme>();
-            System.Globalization.TextElementEnumerator textElementEnumerator = System.Globalization.StringInfo.GetTextElementEnumerator(str);
+            System.Globalization.TextElementEnumerator textElementEnumerator = System.Globalization.StringInfo.GetTextElementEnumerator(source);
             while (textElementEnumerator.MoveNext())
                 tempList.Add(new Grapheme(textElementEnumerator.GetTextElement()));
             return tempList.ToArray();

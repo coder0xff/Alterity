@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Alterity.Indexing
+namespace Alterity
 {
     public struct Range
     {
@@ -35,6 +35,7 @@ namespace Alterity.Indexing
         {
             return (527 + lowerBound) * 31 + upperBound;
         }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.Int32.ToString")]
         public override string ToString()
         {
             return lowerBound.ToString() + " - " + upperBound.ToString();

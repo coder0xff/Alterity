@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Alterity.Indexing
+namespace Alterity
 {
     //preprocesses a string so that it can be searched in constant time (linear time related to length of search string)
     internal class StringIndexer
@@ -117,7 +117,7 @@ namespace Alterity.Indexing
             return currentNode.GetDocumentPositions();
         }
 
-        private MatchedRange CreateHunkFromResults(GraphemeNode terminalNode, int startingIndex, int terminalIndex, int minimumLength)
+        static private MatchedRange CreateHunkFromResults(GraphemeNode terminalNode, int startingIndex, int terminalIndex, int minimumLength)
         {
             Range matchStringHunk = new Range(startingIndex, terminalIndex);
             int hunkLength = terminalIndex - startingIndex + 1;

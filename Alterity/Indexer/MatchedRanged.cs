@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Alterity.Indexing
+namespace Alterity
 {
     public struct MatchedRange
     {
@@ -14,7 +14,7 @@ namespace Alterity.Indexing
             this.left = left;
             this.right = right;
         }
-        public Range[] Left { get { return left; } }
+        public IEnumerable<Range> Left { get { return left; } }
         public Range Right { get { return right; } }
         public override bool Equals(object obj)
         {
@@ -38,6 +38,7 @@ namespace Alterity.Indexing
             }
             return result;
         }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.Int32.ToString")]
         public override string ToString()
         {
             return left.Length.ToString() + " matched locations.";

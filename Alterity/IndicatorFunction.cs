@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Alterity.Indexing;
 
 namespace Alterity
 {
@@ -39,7 +38,7 @@ namespace Alterity
                 hunk = new Range(Math.Min(tryMergeNode.Value.LowerBound, hunk.LowerBound),
                     Math.Max(tryMergeNode.Value.UpperBound, hunk.UpperBound));
                 RBTree<Range>.Node toDelete = tryMergeNode;
-                tryMergeNode = hunks.NextNode(tryMergeNode);
+                tryMergeNode = RBTree<Range>.NextNode(tryMergeNode);
                 hunks.Remove(toDelete.Value);
             }
             hunks.Add(hunk);
