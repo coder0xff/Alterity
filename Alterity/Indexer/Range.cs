@@ -10,6 +10,7 @@ namespace Alterity.Indexing
         private int lowerBound, upperBound;
         public Range(int lowerBound, int upperBound)
         {
+            System.Diagnostics.Debug.Assert(upperBound >= lowerBound, "upperRange must not be less than lowerRange");
             this.lowerBound = lowerBound;
             this.upperBound = upperBound;
         }

@@ -72,13 +72,47 @@ namespace AlterityTest
         public void AnyTrueTest()
         {
             IndicatorFunction target = new IndicatorFunction(); // TODO: Initialize to an appropriate value
-
-            Range hunk = new Range(); // TODO: Initialize to an appropriate value
+            target.Add(new Range(5, 10));
+            Range hunk = new Range(0, 4); // TODO: Initialize to an appropriate value
             bool expected = false; // TODO: Initialize to an appropriate value
             bool actual;
             actual = target.AnyTrue(hunk);
             Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("Verify the correctness of this test method.");
+        }
+
+        /// <summary>
+        ///A test for AnyTrue
+        ///</summary>
+        [TestMethod()]
+        public void AnyTrueTest1()
+        {
+            IndicatorFunction target = new IndicatorFunction(); // TODO: Initialize to an appropriate value
+            target.Add(new Range(5, 10));
+            Range hunk = new Range(0, 5); // TODO: Initialize to an appropriate value
+            bool expected = true; // TODO: Initialize to an appropriate value
+            bool actual;
+            actual = target.AnyTrue(hunk);
+            Assert.AreEqual(expected, actual);
+        }
+
+        /// <summary>
+        ///A test for AnyTrue
+        ///</summary>
+        [TestMethod()]
+        public void AnyTrueTest2()
+        {
+            IndicatorFunction target = new IndicatorFunction(); // TODO: Initialize to an appropriate value
+            target.Add(new Range(5, 10));
+            target.Add(new Range(0, 3));
+            target.Add(new Range(4, 5));
+            target.Add(new Range(12, 15));
+            target.Add(new Range(15, 20));
+            target.Add(new Range(11, 11));
+            Range hunk = new Range(4, 5); // TODO: Initialize to an appropriate value
+            bool expected = true; // TODO: Initialize to an appropriate value
+            bool actual;
+            actual = target.AnyTrue(hunk);
+            Assert.AreEqual(expected, actual);
         }
     }
 }
