@@ -1,11 +1,11 @@
-﻿using Alterity.Indexing;
+﻿using Alterity;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
 namespace AlterityTest
 {
-
-
+    
+    
     /// <summary>
     ///This is a test class for StringIndexerTest and is intended
     ///to contain all StringIndexerTest Unit Tests
@@ -63,6 +63,7 @@ namespace AlterityTest
         //
         #endregion
 
+
         /// <summary>
         ///A test for BestMatchSearch
         ///</summary>
@@ -77,7 +78,7 @@ namespace AlterityTest
             int minimumLength = 1; // TODO: Initialize to an appropriate value
             MatchedRange expected = new MatchedRange(new Range[] { new Range(0, 4), new Range(50, 54) }, new Range(0, 4));
             MatchedRange actual;
-            actual = target.BestMatchSearch(matchString, startingIndex, minimumLength);
+            actual = target.BestMatchSearch(matchString.ToGraphemeArray(), startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
 
@@ -95,7 +96,7 @@ namespace AlterityTest
             int minimumLength = 1; // TODO: Initialize to an appropriate value
             MatchedRange expected = new MatchedRange(new Range[] { new Range(8, 8), new Range(35, 35), new Range(38, 38), new Range(63, 63) }, new Range(5, 5));
             MatchedRange actual;
-            actual = target.BestMatchSearch(matchString, startingIndex, minimumLength);
+            actual = target.BestMatchSearch(matchString.ToGraphemeArray(), startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
 
@@ -113,7 +114,7 @@ namespace AlterityTest
             int minimumLength = 3; // TODO: Initialize to an appropriate value
             MatchedRange expected = new MatchedRange(new Range[] { }, new Range(5, 5));
             MatchedRange actual;
-            actual = target.BestMatchSearch(matchString, startingIndex, minimumLength);
+            actual = target.BestMatchSearch(matchString.ToGraphemeArray(), startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
 
@@ -131,7 +132,7 @@ namespace AlterityTest
             int minimumLength = 3; // TODO: Initialize to an appropriate value
             MatchedRange expected = new MatchedRange(new Range[] { new Range(65, 69) }, new Range(120, 124));
             MatchedRange actual;
-            actual = target.BestMatchSearch(matchString, startingIndex, minimumLength);
+            actual = target.BestMatchSearch(matchString.ToGraphemeArray(), startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
 
@@ -149,7 +150,7 @@ namespace AlterityTest
             int minimumLength = 3; // TODO: Initialize to an appropriate value
             MatchedRange expected = new MatchedRange(new Range[] { new Range(65, 69) }, new Range(120, 124));
             MatchedRange actual;
-            actual = target.BestMatchSearch(matchString, startingIndex, minimumLength);
+            actual = target.BestMatchSearch(matchString.ToGraphemeArray(), startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
 
@@ -167,7 +168,7 @@ namespace AlterityTest
             int minimumLength = 3; // TODO: Initialize to an appropriate value
             MatchedRange expected = new MatchedRange(new Range[] { new Range(71, 75) }, new Range(120, 124));
             MatchedRange actual;
-            actual = target.BestMatchSearch(matchString, startingIndex, minimumLength);
+            actual = target.BestMatchSearch(matchString.ToGraphemeArray(), startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
     }

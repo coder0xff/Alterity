@@ -27,7 +27,12 @@ namespace Alterity
             }
             public GraphemeNode this[Grapheme nextGrapheme]
             {
-                get { return children[indexTable[nextGrapheme]]; }
+                get
+                {
+                    int graphemeIndex = indexTable[nextGrapheme];
+                    if (graphemeIndex == -1) return null;
+                    return children[graphemeIndex];
+                }
             }
             public GraphemeNode AddOrRetrieveChildGrapheme(Grapheme nextGrapheme)
             {
@@ -123,7 +128,7 @@ namespace Alterity
             int hunkLength = terminalIndex - startingIndex + 1;
             if (hunkLength < minimumLength)
             {
-                return new MatchedRange(new Range[0], matchStringHunk);
+                return null;
             }
             else
             {
@@ -144,9 +149,8 @@ namespace Alterity
         /// with the first compared grapheme in matchString at startingIndex. If the length of the matching
         /// graphemes is less than minimumLength, then a MatchedHunk with no left hunks is returned
         /// </summary>
-        private MatchedRange BestMatchSearch(String matchString, int startingIndex, int minimumLength)
+        internal MatchedRange BestMatchSearch(Grapheme[] searchGraphemes, int startingIndex, int minimumLength)
         {
-            Grapheme[] searchGraphemes = matchString.ToGraphemeArray();
             int searchGraphemeCount = searchGraphemes.Length;
             GraphemeNode currentNode = root;
             int index;
@@ -157,6 +161,12 @@ namespace Alterity
                 {
                     if (currentNode.documentPositions.Count != 1) //the search terminates because the next grapheme in searchGraphemes results in a string with no matches
                     {
+                        if (index == startingIndex)
+                        {
+                            startingIndex++;
+                            currentNode = root;
+                            continue;
+                        }
                         return CreateHunkFromResults(currentNode, startingIndex, index - 1, minimumLength);
                     }
                     else //we have found a node with a unique position, so we don't terminate the search yet. Now, we go to grapheme-by-grapheme comparison

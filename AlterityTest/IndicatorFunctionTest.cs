@@ -1,7 +1,6 @@
 ﻿using Alterity;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using Alterity.Indexing;
 
 namespace AlterityTest
 {

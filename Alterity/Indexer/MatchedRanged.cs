@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Alterity
 {
-    public struct MatchedRange
+    public class MatchedRange
     {
         private Range[] left;
         private Range right;
@@ -18,9 +18,9 @@ namespace Alterity
         public Range Right { get { return right; } }
         public override bool Equals(object obj)
         {
-            if (obj is MatchedRange)
+            MatchedRange convertedObj = obj as MatchedRange;
+            if ((Object)convertedObj != null)
             {
-                MatchedRange convertedObj = (MatchedRange)obj;
                 return right == convertedObj.right && Enumerable.SequenceEqual(left, convertedObj.left);
             }
             else
@@ -45,6 +45,7 @@ namespace Alterity
         }
         public static bool operator ==(MatchedRange left, MatchedRange right)
         {
+            if ((Object)left == null) return (Object)right == null;
             return left.Equals(right);
         }
         public static bool operator !=(MatchedRange left, MatchedRange right)
