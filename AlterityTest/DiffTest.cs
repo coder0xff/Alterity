@@ -76,9 +76,9 @@ namespace AlterityTest
             string left = string.Empty; // TODO: Initialize to an appropriate value
             string right = string.Empty; // TODO: Initialize to an appropriate value
             int minimumHunkLength = 15; // TODO: Initialize to an appropriate value
-            List<MatchedRange> expected = new List<MatchedRange>(); // TODO: Initialize to an appropriate value
-            List<MatchedRange> actual;
-            actual = Diff_Accessor.ComputeRelations(left, right, minimumHunkLength);
+            List<RightRelationCandidateSet> expected = new List<RightRelationCandidateSet>(); // TODO: Initialize to an appropriate value
+            List<RightRelationCandidateSet> actual;
+            actual = Diff_Accessor.ComputeCandidateRelations(left, right, minimumHunkLength);
             Assert.IsTrue(expected.SequenceEqual(actual));
         }
 
@@ -92,12 +92,12 @@ namespace AlterityTest
             string left = "Joseph threw the big red ball to Sally."; // TODO: Initialize to an appropriate value
             string right = "Joseph threw something to Sally. It was a big red ball."; // TODO: Initialize to an appropriate value
             int minimumHunkLength = 3; // TODO: Initialize to an appropriate value
-            List<MatchedRange> expected = new List<MatchedRange>(); // TODO: Initialize to an appropriate value
-            expected.Add(new MatchedRange(new Range[] { new Range(0, 12) }, new Range(0, 12)));
-            expected.Add(new MatchedRange(new Range[] { new Range(29, 38) }, new Range(22, 31)));
-            expected.Add(new MatchedRange(new Range[] { new Range(16, 28) }, new Range(41, 53)));
-            List<MatchedRange> actual;
-            actual = Diff_Accessor.ComputeRelations(left, right, minimumHunkLength);
+            List<RightRelationCandidateSet> expected = new List<RightRelationCandidateSet>(); // TODO: Initialize to an appropriate value
+            expected.Add(new RightRelationCandidateSet(new Range[] { new Range(0, 12) }, new Range(0, 12)));
+            expected.Add(new RightRelationCandidateSet(new Range[] { new Range(29, 38) }, new Range(22, 31)));
+            expected.Add(new RightRelationCandidateSet(new Range[] { new Range(16, 28) }, new Range(41, 53)));
+            List<RightRelationCandidateSet> actual;
+            actual = Diff_Accessor.ComputeCandidateRelations(left, right, minimumHunkLength);
             Assert.IsTrue(expected.SequenceEqual(actual));
         }
     }

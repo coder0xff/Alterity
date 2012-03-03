@@ -12,12 +12,12 @@ namespace Alterity
         private int[] indices;
         private Dictionary<Grapheme, int> multiCharacterIndices = new Dictionary<Grapheme,int>();
         private int count;
-        public GraphemeIndexTable(String text)
+        public GraphemeIndexTable(Grapheme[] graphemes)
         {
             indices = new int[65536];
             for (int init = 0; init < 65536; init++) indices[init] = -1;
             int indexCounter = 1;
-            foreach (Grapheme grapheme in text.ToGraphemeArray().Distinct())
+            foreach (Grapheme grapheme in graphemes.Distinct())
             {
                 if (grapheme.IsMulticharacter)
                     multiCharacterIndices[grapheme] = indexCounter++;

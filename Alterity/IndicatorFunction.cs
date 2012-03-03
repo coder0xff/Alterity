@@ -21,39 +21,55 @@ namespace Alterity
             }
         }
 
-        private RBTree<Range> hunks;
+        private RBTree<Range> trueRanges;
+
+        public IEnumerable<Range> TrueRanges { get { return trueRanges; } }
 
         public IndicatorFunction()
         {
-            hunks = new RBTree<Range>(new PositionComparer());
+            trueRanges = new RBTree<Range>(new PositionComparer());
         }
 
-        public void Add(Range hunk)
+        public void Add(Range trueRange)
         {
-            RBTree<Range>.Node tryMergeNode = hunks.GetLessThanOrEqual(hunk);
-            if (tryMergeNode == null) tryMergeNode = hunks.GetGreaterThanOrEqual(hunk);
+            RBTree<Range>.Node tryMergeNode = trueRanges.GetLessThanOrEqual(trueRange);
+            if (tryMergeNode == null) tryMergeNode = trueRanges.GetGreaterThanOrEqual(trueRange);
             while (tryMergeNode != null)
             {
-                if (tryMergeNode.Value.LowerBound > hunk.UpperBound + 1) break;
-                hunk = new Range(Math.Min(tryMergeNode.Value.LowerBound, hunk.LowerBound),
-                    Math.Max(tryMergeNode.Value.UpperBound, hunk.UpperBound));
+                if (tryMergeNode.Value.LowerBound > trueRange.UpperBound + 1) break;
+                trueRange = new Range(Math.Min(tryMergeNode.Value.LowerBound, trueRange.LowerBound),
+                    Math.Max(tryMergeNode.Value.UpperBound, trueRange.UpperBound));
                 RBTree<Range>.Node toDelete = tryMergeNode;
                 tryMergeNode = RBTree<Range>.NextNode(tryMergeNode);
-                hunks.Remove(toDelete.Value);
+                trueRanges.Remove(toDelete.Value);
             }
-            hunks.Add(hunk);
+            trueRanges.Add(trueRange);
         }
 
-        public bool AnyTrue(Range hunk)
+        public bool AnyTrue(Range testRange)
         {
-            RBTree<Range>.Node testNode = hunks.GetLessThanOrEqual(hunk);
-            if (testNode == null) testNode = hunks.GetGreaterThanOrEqual(hunk);
+            RBTree<Range>.Node testNode = trueRanges.GetLessThanOrEqual(testRange);
+            if (testNode == null) testNode = trueRanges.GetGreaterThanOrEqual(testRange);
             while (testNode != null)
             {
-                if (testNode.Value.LowerBound > hunk.UpperBound) return false;
-                if (testNode.Value.UpperBound >= hunk.LowerBound && testNode.Value.LowerBound <= hunk.UpperBound) return true;
+                if (testNode.Value.LowerBound > testRange.UpperBound) return false;
+                if (testNode.Value.UpperBound >= testRange.LowerBound && testNode.Value.LowerBound <= testRange.UpperBound) return true;
             }
             return false;
+        }
+
+        public IndicatorFunction Inverse(Range universe)
+        {
+            IndicatorFunction result = new IndicatorFunction();
+            if (universe.LowerBound > trueRanges.First().LowerBound || universe.UpperBound < trueRanges.Last().UpperBound) throw new ArgumentOutOfRangeException("universe", "The universe does not contain the domain of the indicator function.");
+            int currentLowerBound = universe.LowerBound;
+            foreach (Range range in trueRanges)
+            {
+                if (currentLowerBound >= range.LowerBound) continue;
+                result.Add(new Range(currentLowerBound, range.LowerBound - 1));
+                currentLowerBound = range.UpperBound + 1;
+            }
+            return result;
         }
     }
 }

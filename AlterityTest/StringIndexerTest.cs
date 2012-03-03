@@ -76,8 +76,8 @@ namespace AlterityTest
             string matchString = "This annoying sound is for testing of the useless emergency broadcast system. This test is primarily just to annoy you.";
             int startingIndex = 0; // TODO: Initialize to an appropriate value
             int minimumLength = 1; // TODO: Initialize to an appropriate value
-            MatchedRange expected = new MatchedRange(new Range[] { new Range(0, 4), new Range(50, 54) }, new Range(0, 4));
-            MatchedRange actual;
+            RightRelationCandidateSet expected = new RightRelationCandidateSet(new Range[] { new Range(0, 4), new Range(50, 54) }, new Range(0, 4));
+            RightRelationCandidateSet actual;
             actual = target.BestMatchSearch(matchString.ToGraphemeArray(), startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
@@ -94,8 +94,8 @@ namespace AlterityTest
             string matchString = "This annoying sound is for testing of the useless emergency broadcast system. This test is primarily just to annoy you.";
             int startingIndex = 5; // TODO: Initialize to an appropriate value
             int minimumLength = 1; // TODO: Initialize to an appropriate value
-            MatchedRange expected = new MatchedRange(new Range[] { new Range(8, 8), new Range(35, 35), new Range(38, 38), new Range(63, 63) }, new Range(5, 5));
-            MatchedRange actual;
+            RightRelationCandidateSet expected = new RightRelationCandidateSet(new Range[] { new Range(8, 8), new Range(35, 35), new Range(38, 38), new Range(63, 63) }, new Range(5, 5));
+            RightRelationCandidateSet actual;
             actual = target.BestMatchSearch(matchString.ToGraphemeArray(), startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
@@ -112,8 +112,8 @@ namespace AlterityTest
             string matchString = "This annoying sound is for testing of the useless emergency broadcast system. This test is primarily just to annoy you.";
             int startingIndex = 5; // TODO: Initialize to an appropriate value
             int minimumLength = 3; // TODO: Initialize to an appropriate value
-            MatchedRange expected = new MatchedRange(new Range[] { }, new Range(5, 5));
-            MatchedRange actual;
+            RightRelationCandidateSet expected = new RightRelationCandidateSet(new Range[] { }, new Range(5, 5));
+            RightRelationCandidateSet actual;
             actual = target.BestMatchSearch(matchString.ToGraphemeArray(), startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
@@ -130,8 +130,8 @@ namespace AlterityTest
             string matchString = "This annoying sound is for testing of the useless emergency broadcast system. This test is primarily just to annoy you. test. ";
             int startingIndex = 120; // TODO: Initialize to an appropriate value
             int minimumLength = 3; // TODO: Initialize to an appropriate value
-            MatchedRange expected = new MatchedRange(new Range[] { new Range(65, 69) }, new Range(120, 124));
-            MatchedRange actual;
+            RightRelationCandidateSet expected = new RightRelationCandidateSet(new Range[] { new Range(65, 69) }, new Range(120, 124));
+            RightRelationCandidateSet actual;
             actual = target.BestMatchSearch(matchString.ToGraphemeArray(), startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
@@ -148,8 +148,8 @@ namespace AlterityTest
             string matchString = "This annoying sound is for testing of the useless emergency broadcast system. This test is primarily just to annoy you. test.";
             int startingIndex = 120; // TODO: Initialize to an appropriate value
             int minimumLength = 3; // TODO: Initialize to an appropriate value
-            MatchedRange expected = new MatchedRange(new Range[] { new Range(65, 69) }, new Range(120, 124));
-            MatchedRange actual;
+            RightRelationCandidateSet expected = new RightRelationCandidateSet(new Range[] { new Range(65, 69) }, new Range(120, 124));
+            RightRelationCandidateSet actual;
             actual = target.BestMatchSearch(matchString.ToGraphemeArray(), startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }
@@ -166,8 +166,8 @@ namespace AlterityTest
             string matchString = "This annoying sound is for testing of the useless emergency broadcast system. This test is primarily just to annoy you. Some other text.";
             int startingIndex = 120; // TODO: Initialize to an appropriate value
             int minimumLength = 3; // TODO: Initialize to an appropriate value
-            MatchedRange expected = new MatchedRange(new Range[] { new Range(71, 75) }, new Range(120, 124));
-            MatchedRange actual;
+            RightRelationCandidateSet expected = new RightRelationCandidateSet(new Range[] { new Range(71, 75) }, new Range(120, 124));
+            RightRelationCandidateSet actual;
             actual = target.BestMatchSearch(matchString.ToGraphemeArray(), startingIndex, minimumLength);
             Assert.AreEqual(expected, actual);
         }

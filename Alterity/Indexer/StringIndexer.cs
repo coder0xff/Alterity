@@ -54,11 +54,11 @@ namespace Alterity
 
         private GraphemeNode root;
 
-        public StringIndexer(String text)
+        public StringIndexer(Grapheme[] graphemes)
         {
-            indexTable = new GraphemeIndexTable(text);
+            this.graphemes = graphemes;
+            indexTable = new GraphemeIndexTable(graphemes);
             root = new GraphemeNode(indexTable, -1);
-            graphemes = text.ToGraphemeArray();
             LinkedList<GraphemeNode> nodesToBeCheckedForGrowth = new LinkedList<GraphemeNode>();
             for (int index = 0; index < graphemes.Length; index++)
             {
@@ -122,7 +122,7 @@ namespace Alterity
             return currentNode.GetDocumentPositions();
         }
 
-        static private MatchedRange CreateHunkFromResults(GraphemeNode terminalNode, int startingIndex, int terminalIndex, int minimumLength)
+        static private RightRelationCandidateSet CreateHunkFromResults(GraphemeNode terminalNode, int startingIndex, int terminalIndex, int minimumLength)
         {
             Range matchStringHunk = new Range(startingIndex, terminalIndex);
             int hunkLength = terminalIndex - startingIndex + 1;
@@ -140,7 +140,7 @@ namespace Alterity
                     int hunkUpperBound = hunkLowerBound + hunkLength - 1;
                     matches[index++] = new Range(hunkLowerBound, hunkUpperBound);
                 }
-                return new MatchedRange(matches, matchStringHunk);
+                return new RightRelationCandidateSet(matches, matchStringHunk);
             }
         }
 
@@ -149,7 +149,7 @@ namespace Alterity
         /// with the first compared grapheme in matchString at startingIndex. If the length of the matching
         /// graphemes is less than minimumLength, then a MatchedHunk with no left hunks is returned
         /// </summary>
-        internal MatchedRange BestMatchSearch(Grapheme[] searchGraphemes, int startingIndex, int minimumLength)
+        internal RightRelationCandidateSet BestMatchSearch(Grapheme[] searchGraphemes, int startingIndex, int minimumLength)
         {
             int searchGraphemeCount = searchGraphemes.Length;
             GraphemeNode currentNode = root;
