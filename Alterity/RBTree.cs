@@ -795,11 +795,11 @@ namespace System.Collections.Generic
                 // get top of stack but don't remove it as the next nodes in sequence
                 // may be pushed onto the top
                 // the stack will be popped after all the nodes have been returned
-                Node node = stack.Peek();	//next node in sequence
+                _currentNode = stack.Peek();	//next node in sequence
 
                 if (ascending)
                 {
-                    if (node.Right == RBTree<T>.SentinelNode)
+                    if (_currentNode.Right == RBTree<T>.SentinelNode)
                     {
                         // yes, top node is lowest node in subtree - pop node off stack 
                         Node tn = stack.Pop();
@@ -812,7 +812,7 @@ namespace System.Collections.Generic
                     {
                         // find the next items in the sequence
                         // traverse to left; find lowest and push onto stack
-                        Node tn = node.Right;
+                        Node tn = _currentNode.Right;
                         while (tn != RBTree<T>.SentinelNode)
                         {
                             stack.Push(tn);
@@ -822,7 +822,7 @@ namespace System.Collections.Generic
                 }
                 else            // descending, same comments as above apply
                 {
-                    if (node.Left == RBTree<T>.SentinelNode)
+                    if (_currentNode.Left == RBTree<T>.SentinelNode)
                     {
                         // walk the tree
                         Node tn = (Node)stack.Pop();
@@ -833,7 +833,7 @@ namespace System.Collections.Generic
                     {
                         // determine next node in sequence
                         // traverse to left subtree and find greatest node - push onto stack
-                        Node tn = node.Left;
+                        Node tn = _currentNode.Left;
                         while (tn != RBTree<T>.SentinelNode)
                         {
                             stack.Push(tn);

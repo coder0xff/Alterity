@@ -61,7 +61,9 @@ namespace Alterity
         public IndicatorFunction Inverse(Range universe)
         {
             IndicatorFunction result = new IndicatorFunction();
-            if (universe.LowerBound > trueRanges.First().LowerBound || universe.UpperBound < trueRanges.Last().UpperBound) throw new ArgumentOutOfRangeException("universe", "The universe does not contain the domain of the indicator function.");
+            Range first = trueRanges.First();
+            Range last = trueRanges.Last();
+            if (universe.LowerBound > first.LowerBound || universe.UpperBound < last.UpperBound) throw new ArgumentOutOfRangeException("universe", "The universe does not contain the domain of the indicator function.");
             int currentLowerBound = universe.LowerBound;
             foreach (Range range in trueRanges)
             {
@@ -69,6 +71,8 @@ namespace Alterity
                 result.Add(new Range(currentLowerBound, range.LowerBound - 1));
                 currentLowerBound = range.UpperBound + 1;
             }
+            if (currentLowerBound <= universe.UpperBound)
+                result.Add(new Range(currentLowerBound, universe.UpperBound));
             return result;
         }
     }

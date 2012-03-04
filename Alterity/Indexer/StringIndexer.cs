@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Alterity
 {
-    //preprocesses a string so that it can be searched in constant time (linear time related to length of search string)
+    //preprocess a string so that it can be searched in constant time (linear time related to length of search string)
     internal class StringIndexer
     {
         private GraphemeIndexTable indexTable;

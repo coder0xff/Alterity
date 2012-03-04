@@ -59,12 +59,13 @@ namespace Alterity
 
         static float FitnessFunction(Relation relation, IndicatorFunction usedLeftRanges)
         {
-            if (usedLeftRanges.AnyTrue(relation.Right)) return 0;
-            return relation.Length / System.Math.Abs(relation.Left.UpperBound - relation.Right.UpperBound + 1);
+            if (usedLeftRanges.AnyTrue(relation.Left)) return 0;
+            return relation.Length / (float)System.Math.Abs(relation.Left.UpperBound - relation.Right.UpperBound + 1);
         }
 
         public static void Compute(String left, String right, int minimumRelationLength, Diff result)
         {
+            if (minimumRelationLength < 1) throw new ArgumentOutOfRangeException("minimumRelationLength", "minimumRelationLength must be greater than zero.");
             Grapheme[] leftGraphemes = left.ToGraphemeArray();
             Grapheme[] rightGraphemes = right.ToGraphemeArray();
             List<Relation> relations = new List<Relation>();
