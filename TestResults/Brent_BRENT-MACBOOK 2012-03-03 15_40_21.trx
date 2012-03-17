@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<TestRun id="1e99da17-279e-4c39-9299-f7dc1b8c434b" name="Brent@BRENT-MACBOOK 2012-03-03 15:40:21" runUser="Brent-MacBook\Brent" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <TestSettings name="Local" id="ce75b14b-b77f-42a9-9820-d283249f2705">
+    <Description>These are default test settings for a local test run.</Description>
+    <Deployment userDeploymentRoot="C:\Users\Brent\Documents\Visual Studio 2010\Projects\Alterity\TestResults" useDefaultDeploymentRoot="false" runDeploymentRoot="Brent_BRENT-MACBOOK 2012-03-03 15_40_21">
+      <DeploymentItem filename="C:\Users\Brent\Documents\Visual Studio 2010\Projects\Alterity\Alterity\bin\Debug\Alterity.dll" />
+    </Deployment>
+    <Execution>
+      <TestTypeSpecific>
+        <UnitTestRunConfig testTypeId="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b">
+          <AssemblyResolution>
+            <TestDirectory useLoadContext="true" />
+          </AssemblyResolution>
+        </UnitTestRunConfig>
+        <WebTestRunConfiguration testTypeId="4e7599fa-5ecb-43e9-a887-cd63cf72d207">
+          <Browser name="Internet Explorer 7.0">
+            <Headers>
+              <Header name="User-Agent" value="Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)" />
+              <Header name="Accept" value="*/*" />
+              <Header name="Accept-Language" value="{{$IEAcceptLanguage}}" />
+              <Header name="Accept-Encoding" value="GZIP" />
+            </Headers>
+          </Browser>
+        </WebTestRunConfiguration>
+      </TestTypeSpecific>
+      <AgentRule name="LocalMachineDefaultRole">
+        <DataCollectors>
+          <DataCollector uri="datacollector://microsoft/CodeCoverage/1.0" assemblyQualifiedName="Microsoft.VisualStudio.TestTools.CodeCoverage.CoveragePlugIn, Microsoft.VisualStudio.QualityTools.Plugins.CodeCoverage, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" friendlyName="Code Coverage" enabled="false">
+            <Configuration>
+              <CodeCoverage xmlns="">
+                <Regular>
+                  <CodeCoverageItem binaryFile="C:\Users\Brent\Documents\Visual Studio 2010\Projects\Alterity\Alterity\bin\Debug\Alterity.dll" pdbFile="C:\Users\Brent\Documents\Visual Studio 2010\Projects\Alterity\Alterity\bin\Debug\Alterity.instr.pdb" instrumentInPlace="true" />
+                </Regular>
+              </CodeCoverage>
+            </Configuration>
+          </DataCollector>
+        </DataCollectors>
+      </AgentRule>
+    </Execution>
+  </TestSettings>
+  <Times creation="2012-03-03T15:40:21.0342000-08:00" queuing="2012-03-03T15:40:22.8408000-08:00" start="2012-03-03T15:40:23.0436000-08:00" finish="2012-03-03T15:40:50.1218000-08:00" />
+  <ResultSummary outcome="Error">
+    <Counters total="1" executed="1" error="0" failed="0" timeout="0" aborted="1" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" passed="0" completed="0" inProgress="0" pending="0" />
+    <RunInfos>
+      <RunInfo computerName="BRENT-MACBOOK" outcome="Error" timestamp="2012-03-03T15:40:50.1188000-08:00">
+        <Text>Test host process exited unexpectedly.</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+  <TestDefinitions>
+    <UnitTest name="DiffConstructorTest" storage="c:\users\brent\documents\visual studio 2010\projects\alterity\alteritytest\bin\debug\alteritytest.dll" id="5b20b579-dbab-cbef-7590-697ff1fdb93d">
+      <Execution id="b5580933-bd7a-402c-88c1-5899a138ed25" />
+      <TestMethod codeBase="C:/Users/Brent/Documents/Visual Studio 2010/Projects/Alterity/AlterityTest/bin/Debug/AlterityTest.DLL" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.Adapter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" className="AlterityTest.DiffTest, AlterityTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="DiffConstructorTest" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <TestEntries>
+    <TestEntry testId="5b20b579-dbab-cbef-7590-697ff1fdb93d" executionId="b5580933-bd7a-402c-88c1-5899a138ed25" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <Results>
+    <UnitTestResult executionId="b5580933-bd7a-402c-88c1-5899a138ed25" testId="5b20b579-dbab-cbef-7590-697ff1fdb93d" testName="DiffConstructorTest" computerName="BRENT-MACBOOK" duration="00:00:26.9334000" startTime="2012-03-03T15:40:23.1884000-08:00" endTime="2012-03-03T15:40:50.1218000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Aborted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b5580933-bd7a-402c-88c1-5899a138ed25">
+    </UnitTestResult>
+  </Results>
+</TestRun>

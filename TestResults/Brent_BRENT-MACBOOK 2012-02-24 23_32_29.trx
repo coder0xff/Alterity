@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<TestRun id="b3d02449-1809-4e54-a75e-244880672eca" name="Brent@BRENT-MACBOOK 2012-02-24 23:32:29" runUser="Brent-MacBook\Brent" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <TestSettings name="Local" id="ce75b14b-b77f-42a9-9820-d283249f2705">
+    <Description>These are default test settings for a local test run.</Description>
+    <Deployment runDeploymentRoot="Brent_BRENT-MACBOOK 2012-02-24 23_32_29">
+      <DeploymentItem filename="C:\Users\Brent\Documents\Visual Studio 2010\Projects\Alterity\Alterity\bin\Debug\Alterity.dll" />
+    </Deployment>
+    <Execution>
+      <TestTypeSpecific>
+        <UnitTestRunConfig testTypeId="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b">
+          <AssemblyResolution>
+            <TestDirectory useLoadContext="true" />
+          </AssemblyResolution>
+        </UnitTestRunConfig>
+        <WebTestRunConfiguration testTypeId="4e7599fa-5ecb-43e9-a887-cd63cf72d207">
+          <Browser name="Internet Explorer 7.0">
+            <Headers>
+              <Header name="User-Agent" value="Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)" />
+              <Header name="Accept" value="*/*" />
+              <Header name="Accept-Language" value="{{$IEAcceptLanguage}}" />
+              <Header name="Accept-Encoding" value="GZIP" />
+            </Headers>
+          </Browser>
+        </WebTestRunConfiguration>
+      </TestTypeSpecific>
+      <AgentRule name="LocalMachineDefaultRole">
+        <DataCollectors>
+          <DataCollector uri="datacollector://microsoft/CodeCoverage/1.0" assemblyQualifiedName="Microsoft.VisualStudio.TestTools.CodeCoverage.CoveragePlugIn, Microsoft.VisualStudio.QualityTools.Plugins.CodeCoverage, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" friendlyName="Code Coverage">
+            <Configuration>
+              <CodeCoverage xmlns="">
+                <Regular>
+                  <CodeCoverageItem binaryFile="C:\Users\Brent\Documents\Visual Studio 2010\Projects\Alterity\Alterity\bin\Debug\Alterity.dll" pdbFile="C:\Users\Brent\Documents\Visual Studio 2010\Projects\Alterity\Alterity\bin\Debug\Alterity.instr.pdb" instrumentInPlace="true" />
+                </Regular>
+              </CodeCoverage>
+            </Configuration>
+          </DataCollector>
+        </DataCollectors>
+      </AgentRule>
+    </Execution>
+  </TestSettings>
+  <Times creation="2012-02-24T23:32:29.5146000-08:00" queuing="2012-02-24T23:32:30.2634000-08:00" start="2012-02-24T23:32:30.3258000-08:00" finish="2012-02-24T23:32:33.4146000-08:00" />
+  <ResultSummary outcome="Completed">
+    <Counters total="9" executed="9" passed="9" error="0" failed="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <ResultFiles>
+      <ResultFile path="BRENT-MACBOOK\data.coverage" />
+    </ResultFiles>
+  </ResultSummary>
+  <TestDefinitions>
+    <UnitTest name="BestMatchSearchTest3" storage="c:\users\brent\documents\visual studio 2010\projects\alterity\alteritytest\bin\debug\alteritytest.dll" id="374b99ef-f35a-c8ab-280c-3986b8b4c00e">
+      <DeploymentItems>
+        <DeploymentItem filename="Alterity.dll" />
+      </DeploymentItems>
+      <Execution id="559ee692-fbdc-4baf-81b2-903cfd54b86d" />
+      <TestMethod codeBase="C:/Users/Brent/Documents/Visual Studio 2010/Projects/Alterity/AlterityTest/bin/Debug/AlterityTest.DLL" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.Adapter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" className="AlterityTest.StringIndexerTest, AlterityTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="BestMatchSearchTest3" />
+    </UnitTest>
+    <UnitTest name="AnyTrueTest2" storage="c:\users\brent\documents\visual studio 2010\projects\alterity\alteritytest\bin\debug\alteritytest.dll" id="02a5662a-686f-47d5-0d53-658e1aac77cb">
+      <Execution id="42bc1722-e583-4d85-9daf-fd954e2819ba" />
+      <TestMethod codeBase="C:/Users/Brent/Documents/Visual Studio 2010/Projects/Alterity/AlterityTest/bin/Debug/AlterityTest.DLL" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.Adapter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" className="AlterityTest.IndicatorFunctionTest, AlterityTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="AnyTrueTest2" />
+    </UnitTest>
+    <UnitTest name="BestMatchSearchTest5" storage="c:\users\brent\documents\visual studio 2010\projects\alterity\alteritytest\bin\debug\alteritytest.dll" id="94df0574-f117-57a9-b776-8fbab71d8bb9">
+      <DeploymentItems>
+        <DeploymentItem filename="Alterity.dll" />
+      </DeploymentItems>
+      <Execution id="b8f2424d-27c5-4ccd-bbfd-aaf71104294d" />
+      <TestMethod codeBase="C:/Users/Brent/Documents/Visual Studio 2010/Projects/Alterity/AlterityTest/bin/Debug/AlterityTest.DLL" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.Adapter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" className="AlterityTest.StringIndexerTest, AlterityTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="BestMatchSearchTest5" />
+    </UnitTest>
+    <UnitTest name="BestMatchSearchTest2" storage="c:\users\brent\documents\visual studio 2010\projects\alterity\alteritytest\bin\debug\alteritytest.dll" id="a859911a-ba68-1717-89db-059219200abe">
+      <DeploymentItems>
+        <DeploymentItem filename="Alterity.dll" />
+      </DeploymentItems>
+      <Execution id="9fb38d0e-80bf-4508-bae4-c34d8bd3593c" />
+      <TestMethod codeBase="C:/Users/Brent/Documents/Visual Studio 2010/Projects/Alterity/AlterityTest/bin/Debug/AlterityTest.DLL" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.Adapter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" className="AlterityTest.StringIndexerTest, AlterityTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="BestMatchSearchTest2" />
+    </UnitTest>
+    <UnitTest name="BestMatchSearchTest6" storage="c:\users\brent\documents\visual studio 2010\projects\alterity\alteritytest\bin\debug\alteritytest.dll" id="747dbc93-6c60-b18b-93df-29498506214f">
+      <DeploymentItems>
+        <DeploymentItem filename="Alterity.dll" />
+      </DeploymentItems>
+      <Execution id="a4892ea6-5912-411b-96ba-82c73acf9f5b" />
+      <TestMethod codeBase="C:/Users/Brent/Documents/Visual Studio 2010/Projects/Alterity/AlterityTest/bin/Debug/AlterityTest.DLL" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.Adapter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" className="AlterityTest.StringIndexerTest, AlterityTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="BestMatchSearchTest6" />
+    </UnitTest>
+    <UnitTest name="AnyTrueTest1" storage="c:\users\brent\documents\visual studio 2010\projects\alterity\alteritytest\bin\debug\alteritytest.dll" id="de235a2a-544b-2e21-278b-31dd0ccea692">
+      <Execution id="98a29ada-8b92-40b8-8d80-ced6a26a8186" />
+      <TestMethod codeBase="C:/Users/Brent/Documents/Visual Studio 2010/Projects/Alterity/AlterityTest/bin/Debug/AlterityTest.DLL" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.Adapter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" className="AlterityTest.IndicatorFunctionTest, AlterityTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="AnyTrueTest1" />
+    </UnitTest>
+    <UnitTest name="BestMatchSearchTest1" storage="c:\users\brent\documents\visual studio 2010\projects\alterity\alteritytest\bin\debug\alteritytest.dll" id="a8fefcbb-c984-adfa-5e38-72c16dffbc66">
+      <DeploymentItems>
+        <DeploymentItem filename="Alterity.dll" />
+      </DeploymentItems>
+      <Execution id="0f6412bc-a96c-4cb0-be63-23a01fd8ced1" />
+      <TestMethod codeBase="C:/Users/Brent/Documents/Visual Studio 2010/Projects/Alterity/AlterityTest/bin/Debug/AlterityTest.DLL" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.Adapter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" className="AlterityTest.StringIndexerTest, AlterityTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="BestMatchSearchTest1" />
+    </UnitTest>
+    <UnitTest name="BestMatchSearchTest4" storage="c:\users\brent\documents\visual studio 2010\projects\alterity\alteritytest\bin\debug\alteritytest.dll" id="49e25d9e-e484-2c5a-dacf-95d57a1503f3">
+      <DeploymentItems>
+        <DeploymentItem filename="Alterity.dll" />
+      </DeploymentItems>
+      <Execution id="42b6d3ff-da3c-4017-be23-61f00b5b81e5" />
+      <TestMethod codeBase="C:/Users/Brent/Documents/Visual Studio 2010/Projects/Alterity/AlterityTest/bin/Debug/AlterityTest.DLL" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.Adapter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" className="AlterityTest.StringIndexerTest, AlterityTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="BestMatchSearchTest4" />
+    </UnitTest>
+    <UnitTest name="AnyTrueTest" storage="c:\users\brent\documents\visual studio 2010\projects\alterity\alteritytest\bin\debug\alteritytest.dll" id="c15aa66a-ca76-a2e0-e492-c364c0cc0102">
+      <Execution id="41d7c1fa-a234-4d41-be67-b2fabc2b3709" />
+      <TestMethod codeBase="C:/Users/Brent/Documents/Visual Studio 2010/Projects/Alterity/AlterityTest/bin/Debug/AlterityTest.DLL" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.Adapter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" className="AlterityTest.IndicatorFunctionTest, AlterityTest, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" name="AnyTrueTest" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <TestEntries>
+    <TestEntry testId="02a5662a-686f-47d5-0d53-658e1aac77cb" executionId="42bc1722-e583-4d85-9daf-fd954e2819ba" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="374b99ef-f35a-c8ab-280c-3986b8b4c00e" executionId="559ee692-fbdc-4baf-81b2-903cfd54b86d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="49e25d9e-e484-2c5a-dacf-95d57a1503f3" executionId="42b6d3ff-da3c-4017-be23-61f00b5b81e5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="747dbc93-6c60-b18b-93df-29498506214f" executionId="a4892ea6-5912-411b-96ba-82c73acf9f5b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="94df0574-f117-57a9-b776-8fbab71d8bb9" executionId="b8f2424d-27c5-4ccd-bbfd-aaf71104294d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a859911a-ba68-1717-89db-059219200abe" executionId="9fb38d0e-80bf-4508-bae4-c34d8bd3593c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a8fefcbb-c984-adfa-5e38-72c16dffbc66" executionId="0f6412bc-a96c-4cb0-be63-23a01fd8ced1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c15aa66a-ca76-a2e0-e492-c364c0cc0102" executionId="41d7c1fa-a234-4d41-be67-b2fabc2b3709" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="de235a2a-544b-2e21-278b-31dd0ccea692" executionId="98a29ada-8b92-40b8-8d80-ced6a26a8186" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <Results>
+    <UnitTestResult executionId="42bc1722-e583-4d85-9daf-fd954e2819ba" testId="02a5662a-686f-47d5-0d53-658e1aac77cb" testName="AnyTrueTest2" computerName="BRENT-MACBOOK" duration="00:00:00.0771985" startTime="2012-02-24T23:32:31.2774000-08:00" endTime="2012-02-24T23:32:31.6206000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="42bc1722-e583-4d85-9daf-fd954e2819ba">
+    </UnitTestResult>
+    <UnitTestResult executionId="559ee692-fbdc-4baf-81b2-903cfd54b86d" testId="374b99ef-f35a-c8ab-280c-3986b8b4c00e" testName="BestMatchSearchTest3" computerName="BRENT-MACBOOK" duration="00:00:00.0305556" startTime="2012-02-24T23:32:31.6362000-08:00" endTime="2012-02-24T23:32:31.6674000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="559ee692-fbdc-4baf-81b2-903cfd54b86d">
+    </UnitTestResult>
+    <UnitTestResult executionId="42b6d3ff-da3c-4017-be23-61f00b5b81e5" testId="49e25d9e-e484-2c5a-dacf-95d57a1503f3" testName="BestMatchSearchTest4" computerName="BRENT-MACBOOK" duration="00:00:00.0037945" startTime="2012-02-24T23:32:31.6830000-08:00" endTime="2012-02-24T23:32:31.6986000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="42b6d3ff-da3c-4017-be23-61f00b5b81e5">
+    </UnitTestResult>
+    <UnitTestResult executionId="a4892ea6-5912-411b-96ba-82c73acf9f5b" testId="747dbc93-6c60-b18b-93df-29498506214f" testName="BestMatchSearchTest6" computerName="BRENT-MACBOOK" duration="00:00:00.0014880" startTime="2012-02-24T23:32:31.6986000-08:00" endTime="2012-02-24T23:32:31.7142000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a4892ea6-5912-411b-96ba-82c73acf9f5b">
+    </UnitTestResult>
+    <UnitTestResult executionId="b8f2424d-27c5-4ccd-bbfd-aaf71104294d" testId="94df0574-f117-57a9-b776-8fbab71d8bb9" testName="BestMatchSearchTest5" computerName="BRENT-MACBOOK" duration="00:00:00.0061418" startTime="2012-02-24T23:32:31.7142000-08:00" endTime="2012-02-24T23:32:31.7454000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b8f2424d-27c5-4ccd-bbfd-aaf71104294d">
+    </UnitTestResult>
+    <UnitTestResult executionId="9fb38d0e-80bf-4508-bae4-c34d8bd3593c" testId="a859911a-ba68-1717-89db-059219200abe" testName="BestMatchSearchTest2" computerName="BRENT-MACBOOK" duration="00:00:00.0130119" startTime="2012-02-24T23:32:31.7454000-08:00" endTime="2012-02-24T23:32:31.7766000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9fb38d0e-80bf-4508-bae4-c34d8bd3593c">
+    </UnitTestResult>
+    <UnitTestResult executionId="0f6412bc-a96c-4cb0-be63-23a01fd8ced1" testId="a8fefcbb-c984-adfa-5e38-72c16dffbc66" testName="BestMatchSearchTest1" computerName="BRENT-MACBOOK" duration="00:00:00.0120283" startTime="2012-02-24T23:32:31.7766000-08:00" endTime="2012-02-24T23:32:31.8078000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0f6412bc-a96c-4cb0-be63-23a01fd8ced1">
+    </UnitTestResult>
+    <UnitTestResult executionId="41d7c1fa-a234-4d41-be67-b2fabc2b3709" testId="c15aa66a-ca76-a2e0-e492-c364c0cc0102" testName="AnyTrueTest" computerName="BRENT-MACBOOK" duration="00:00:00.0129737" startTime="2012-02-24T23:32:31.8078000-08:00" endTime="2012-02-24T23:32:31.8390000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="41d7c1fa-a234-4d41-be67-b2fabc2b3709">
+    </UnitTestResult>
+    <UnitTestResult executionId="98a29ada-8b92-40b8-8d80-ced6a26a8186" testId="de235a2a-544b-2e21-278b-31dd0ccea692" testName="AnyTrueTest1" computerName="BRENT-MACBOOK" duration="00:00:00.0286493" startTime="2012-02-24T23:32:31.8390000-08:00" endTime="2012-02-24T23:32:31.9014000-08:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="98a29ada-8b92-40b8-8d80-ced6a26a8186">
+    </UnitTestResult>
+  </Results>
+</TestRun>
