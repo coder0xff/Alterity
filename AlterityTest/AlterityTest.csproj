@@ -67,9 +67,9 @@
     <Compile Include="StringIndexerTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Alterity\Alterity.csproj">
+    <ProjectReference Include="..\Alterity\AlterityDiff.csproj">
       <Project>{17ACA8F4-FFE0-4C21-B3AE-8D48BBCABD9C}</Project>
-      <Name>Alterity</Name>
+      <Name>AlterityDiff</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
