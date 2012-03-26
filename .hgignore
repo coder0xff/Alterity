@@ -1,0 +1,7 @@
+syntax: glob
+Alterity.Tests/bin
+Alterity.Tests/obj
+Alterity/bin
+Alterity/obj
+Diff/bin
+Diff/obj
