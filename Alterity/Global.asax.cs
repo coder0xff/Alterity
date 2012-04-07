@@ -4,6 +4,8 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using System.Data.Entity;
+using Alterity.Models;
 
 namespace Alterity
 {
@@ -34,6 +36,10 @@ namespace Alterity
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         protected void Application_Start()
         {
+#if DEVELOPMENT_ENVIRONMENT
+            Database.SetInitializer<EntityMappingContext>(new DatabaseInitializer());
+#endif
+
             AreaRegistration.RegisterAllAreas();
 
             RegisterGlobalFilters(GlobalFilters.Filters);
