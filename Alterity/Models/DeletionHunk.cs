@@ -5,7 +5,7 @@ using System.Web;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace Alterity
+namespace Alterity.Models
 {
     [Table("DeletionHunks")]
     public class DeletionHunk : Hunk
@@ -127,6 +127,7 @@ namespace Alterity
 
         public override void Apply(StringBuilder text)
         {
+            if (text == null) throw new ArgumentNullException("text");
             text.Remove(StartIndex, Length);
         }
     }

@@ -5,7 +5,7 @@ using System.Web;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace Alterity
+namespace Alterity.Models
 {
     [Table("InsertionHunks")]
     public class InsertionHunk : Hunk
@@ -97,6 +97,7 @@ namespace Alterity
 
         public override void Apply(StringBuilder text)
         {
+            if (text == null) throw new ArgumentNullException("text");
             text.Insert(StartIndex, Text);
         }
     }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Text;
 
-namespace Alterity
+namespace Alterity.Models
 {
     public abstract class Hunk
     {

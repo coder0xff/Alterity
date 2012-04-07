@@ -128,6 +128,7 @@ namespace Alterity.Models
 
         public override void Apply(StringBuilder text)
         {
+            if (text == null) throw new ArgumentNullException("text");
             //Do nothing
         }
     }
