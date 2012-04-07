@@ -7,6 +7,7 @@ namespace Alterity.Models
 {
     public class VoteEntry
     {
+        public int Id { get; set; }
         public UserAccount User { get; set; }
         public bool WasUpvote { get; set; }
     }

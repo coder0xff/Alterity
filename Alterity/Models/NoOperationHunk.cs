@@ -5,15 +5,19 @@ using System.Web;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace Alterity
+namespace Alterity.Models
 {
-    [Table("DeletionHunks")]
-    public class DeletionHunk : Hunk
+    /// <summary>
+    /// Used to store a selected range that was not modified (eg. for copy source)
+    /// This class is nearly identical to DeletionHunk
+    /// </summary>
+    [Table("NoOperationHunk")]
+    public class NoOperationHunk : Hunk
     {
         public int StartIndex { get; private set; }
         public int Length { get; private set; }
 
-        public DeletionHunk(int startIndex, int length)
+        public NoOperationHunk(int startIndex, int length)
         {
             StartIndex = startIndex;
             Length = length;
@@ -31,7 +35,7 @@ namespace Alterity
                 int newLength = Length - lengthReduction;
                 if (newLength > 0)
                 {
-                    return new Hunk[] { new DeletionHunk(StartIndex - leftShiftCount, newLength) };
+                    return new Hunk[] { new NoOperationHunk(StartIndex - leftShiftCount, newLength) };
                 }
                 else
                 {
@@ -45,12 +49,12 @@ namespace Alterity
                 {
                     if (asDeletion.StartIndex <= StartIndex)
                     {
-                        return new Hunk[] { new DeletionHunk(StartIndex + asDeletion.Length, Length) };
+                        return new Hunk[] { new NoOperationHunk(StartIndex + asDeletion.Length, Length) };
                     }
                     else if (asDeletion.StartIndex < StartIndex + Length)
                     {
-                        return new Hunk[] { new DeletionHunk(StartIndex, asDeletion.StartIndex - StartIndex - 1),
-                        new DeletionHunk(asDeletion.StartIndex + asDeletion.Length, StartIndex + Length + asDeletion.Length - 1)};
+                        return new Hunk[] { new NoOperationHunk(StartIndex, asDeletion.StartIndex - StartIndex - 1),
+                        new NoOperationHunk(asDeletion.StartIndex + asDeletion.Length, StartIndex + Length + asDeletion.Length - 1)};
                     }
                     else
                     {
@@ -61,19 +65,16 @@ namespace Alterity
                 {
                     if (hunk is NoOperationHunk)
                     {
-                        return new Hunk[] { new DeletionHunk(StartIndex, Length) };
+                        return new Hunk[] { new NoOperationHunk(StartIndex, Length) };
                     }
                     else
                     {
                         throw new ArgumentException("Unrecognized hunk type", "hunk");
                     }
                 }
-            }
+            }            
         }
 
-        // this method assumes that the hunk being redone was NOT part of the
-        // springboard state. If it were part of the spring board state, then
-        // the hunk stored in the database should just be retrieved
         public override Hunk[] RedoPrior(Hunk hunk)
         {
             if (hunk == null) throw new ArgumentNullException("hunk");
@@ -82,16 +83,16 @@ namespace Alterity
             {
                 if (asInsertion.StartIndex <= StartIndex)
                 {
-                    return new Hunk[] { new DeletionHunk(StartIndex + asInsertion.Length, Length) };
+                    return new Hunk[] { new NoOperationHunk(StartIndex + asInsertion.Length, Length) };
                 }
                 else if (asInsertion.StartIndex < StartIndex + Length)
                 {
-                    return new Hunk[] { new DeletionHunk(StartIndex, asInsertion.StartIndex - StartIndex - 1),
-                        new DeletionHunk(asInsertion.StartIndex + asInsertion.Length, StartIndex + Length + asInsertion.Length - 1)};
+                    return new Hunk[] { new NoOperationHunk(StartIndex, asInsertion.StartIndex - StartIndex - 1),
+                        new NoOperationHunk(asInsertion.StartIndex + asInsertion.Length, StartIndex + Length + asInsertion.Length - 1)};
                 }
                 else
                 {
-                    return new Hunk[] { new DeletionHunk(StartIndex, Length) };
+                    return new Hunk[] { new NoOperationHunk(StartIndex, Length) };
                 }
             }
             else
@@ -104,7 +105,7 @@ namespace Alterity
                     int newLength = Length - lengthReduction;
                     if (newLength > 0)
                     {
-                        return new Hunk[] { new DeletionHunk(StartIndex - leftShiftCount, newLength) };
+                        return new Hunk[] { new NoOperationHunk(StartIndex - leftShiftCount, newLength) };
                     }
                     else
                     {
@@ -115,7 +116,7 @@ namespace Alterity
                 {
                     if (hunk is NoOperationHunk)
                     {
-                        return new Hunk[] { new DeletionHunk(StartIndex, Length) };
+                        return new Hunk[] { new NoOperationHunk(StartIndex, Length) };
                     }
                     else
                     {
@@ -127,7 +128,7 @@ namespace Alterity
 
         public override void Apply(StringBuilder text)
         {
-            text.Remove(StartIndex, Length);
+            //Do nothing
         }
     }
 }

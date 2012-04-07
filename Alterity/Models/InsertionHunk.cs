@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace Alterity
 {
@@ -45,14 +46,58 @@ namespace Alterity
                 }
                 else
                 {
-                    throw new ArgumentException("Unrecognized hunk type", "hunk");
+                    if (hunk is NoOperationHunk)
+                    {
+                        return new Hunk[] { new InsertionHunk(StartIndex, Text) };
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Unrecognized hunk type", "hunk");
+                    }
                 }
             }
         }
 
         public override Hunk[] RedoPrior(Hunk hunk)
         {
-            throw new NotImplementedException();
+            if (hunk == null) throw new ArgumentNullException("hunk");
+            InsertionHunk asInsertion = hunk as InsertionHunk;
+            if (asInsertion != null)
+            {
+                if (asInsertion.StartIndex <= StartIndex)
+                {
+                    return new Hunk[] { new InsertionHunk(StartIndex + asInsertion.Length, Text) };
+                }
+                else
+                {
+                    return new Hunk[] { new InsertionHunk(StartIndex, Text) };
+                }
+            }
+            else
+            {
+                DeletionHunk asDeletion = hunk as DeletionHunk;
+                if (asDeletion != null)
+                {
+                    int leftShift = Math.Max(0, Math.Min(StartIndex - asDeletion.StartIndex, asDeletion.Length));
+                    return new Hunk[] { new InsertionHunk(StartIndex - leftShift, Text) };
+                }
+                else
+                {
+                    if (hunk is NoOperationHunk)
+                    {
+                        return new Hunk[] { new InsertionHunk(StartIndex, Text) };
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Unrecognized hunk type", "hunk");
+                    }
+                }
+            }
+        }
+
+        public override void Apply(StringBuilder text)
+        {
+            text.Insert(StartIndex, Text);
         }
     }
 }

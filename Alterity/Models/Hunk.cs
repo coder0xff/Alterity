@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Text;
 
 namespace Alterity
 {
@@ -10,5 +11,6 @@ namespace Alterity
         public int Id { get; set; }
         public abstract Hunk[] UndoPrior(Hunk hunk);
         public abstract Hunk[] RedoPrior(Hunk hunk);
+        public abstract void Apply(StringBuilder text);
     }
 }
