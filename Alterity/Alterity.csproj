@@ -34,6 +34,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework">
@@ -64,20 +65,28 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EditOperation.cs" />
-    <Compile Include="CopyOperation.cs" />
-    <Compile Include="DeleteOperation.cs" />
-    <Compile Include="DeletionHunk.cs" />
-    <Compile Include="Hunk.cs" />
+    <Compile Include="Models\ChangeSet.cs" />
+    <Compile Include="Models\ChangeSubset.cs" />
+    <Compile Include="Models\EditOperation.cs" />
+    <Compile Include="Models\CopyOperation.cs" />
+    <Compile Include="Models\DeleteOperation.cs" />
+    <Compile Include="Models\DeletionHunk.cs" />
+    <Compile Include="Models\EntityMappingContext.cs" />
+    <Compile Include="Models\Hunk.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="InsertionHunk.cs" />
-    <Compile Include="InsertOperation.cs" />
+    <Compile Include="Models\InsertionHunk.cs" />
+    <Compile Include="Models\InsertOperation.cs" />
     <Compile Include="Models\AccountModels.cs" />
-    <Compile Include="MoveOperation.cs" />
+    <Compile Include="Models\MoveOperation.cs" />
+    <Compile Include="Models\SpringboardState.cs" />
+    <Compile Include="Models\SpringboardStateEntry.cs" />
+    <Compile Include="Models\UserAccount.cs" />
+    <Compile Include="Models\VoteBox.cs" />
+    <Compile Include="Models\VoteEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -108,6 +117,7 @@
     <Content Include="Content\themes\base\jquery.ui.slider.css" />
     <Content Include="Content\themes\base\jquery.ui.tabs.css" />
     <Content Include="Content\themes\base\jquery.ui.theme.css" />
+    <CodeAnalysisDictionary Include="CustomDictionary.xml" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\jquery-1.5.1-vsdoc.js" />
     <Content Include="Scripts\jquery-1.5.1.js" />

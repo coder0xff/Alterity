@@ -5,13 +5,14 @@ using System.Web;
 
 namespace Alterity
 {
-    internal class DeleteOperation : EditOperation
+    public class DeleteOperation : EditOperation
     {
         public DeleteOperation() { }
 
-        public DeleteOperation(int startIndex, int length) :
-            base(new Hunk[] { new DeletionHunk(startIndex, length) })
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public DeleteOperation(int startIndex, int length)
         {
+            Hunks.Add(new DeletionHunk(startIndex, length));
         }
 
         internal override EditOperation UndoPrior(EditOperation hunk)

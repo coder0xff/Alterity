@@ -5,13 +5,14 @@ using System.Web;
 
 namespace Alterity
 {
-    internal class InsertOperation : EditOperation
+    public class InsertOperation : EditOperation
     {
         public InsertOperation() { }
 
-        public InsertOperation(int startIndex, string text) :
-            base(new Hunk[] { new InsertionHunk(startIndex, text) })
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public InsertOperation(int startIndex, string text)
         {
+            Hunks.Add(new InsertionHunk(startIndex, text));
         }
 
         internal override EditOperation UndoPrior(EditOperation hunk)

@@ -5,17 +5,14 @@ using System.Web;
 
 namespace Alterity
 {
-    internal abstract class EditOperation
+    public abstract class EditOperation
     {
-        public Hunk[] Hunks { get; private set; }
+        public int Id { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Hunk> Hunks { get; set; }
+
 
         protected EditOperation() {}
-
-        public EditOperation(Hunk[] hunks)
-        {
-            if (hunks == null) throw new ArgumentNullException("hunks");
-            Hunks = (Hunk[])hunks.Clone();
-        }
 
         private T UndoPrior<T>(Hunk hunk) where T : EditOperation, new()
         {
@@ -39,6 +36,7 @@ namespace Alterity
             return result;
         }
 
+        //The return value is an instance of the implementing class
         internal abstract EditOperation UndoPrior(EditOperation hunk);
     }
 }
