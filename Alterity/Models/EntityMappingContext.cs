@@ -17,5 +17,6 @@ namespace Alterity.Models
         public DbSet<ChangeSet> ChangeSets { get; set; }
         public DbSet<EditOperation> EditOperations { get; set; }
         public DbSet<Hunk> Hunks { get; set; }
+        public DbSet<Document> Documents { get; set; }
     }
 }

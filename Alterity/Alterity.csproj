@@ -37,7 +37,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>AlterityKey.pfx</AssemblyOriginatorKeyFile>
@@ -72,9 +72,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\UserAccountController.cs" />
+    <Compile Include="HunkComparer.cs" />
     <Compile Include="Models\ChangeSet.cs" />
     <Compile Include="Models\ChangeSubset.cs" />
     <Compile Include="Models\DatabaseInitializer.cs" />
+    <Compile Include="Models\Document.cs" />
     <Compile Include="Models\EditOperation.cs" />
     <Compile Include="Models\CopyOperation.cs" />
     <Compile Include="Models\DeleteOperation.cs" />
@@ -85,6 +87,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\IntegerInterval.cs" />
     <Compile Include="Models\InsertionHunk.cs" />
     <Compile Include="Models\InsertOperation.cs" />
     <Compile Include="Models\MoveOperation.cs" />

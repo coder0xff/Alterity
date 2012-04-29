@@ -131,5 +131,35 @@ namespace Alterity.Models
             if (text == null) throw new ArgumentNullException("text");
             //Do nothing
         }
+        public override bool Equals(object obj)
+        {
+            var other = obj as NoOperationHunk;
+            if (other == null) return false;
+            return other.Id == Id && other.Length == Length && other.StartIndex == StartIndex;
+        }
+
+        public class ValueComparer : IComparer<NoOperationHunk>
+        {
+            public int Compare(NoOperationHunk x, NoOperationHunk y)
+            {
+                if (x == y) return 0;
+                if (x == null) return -1;
+                if (y == null) return 1;
+                int lengthDifference;
+                if ((lengthDifference = x.Length - y.Length) != 0) return lengthDifference;
+                return x.StartIndex - y.StartIndex;
+            }
+        }
+
+        public class IdComparer : IComparer<NoOperationHunk>
+        {
+            public int Compare(NoOperationHunk x, NoOperationHunk y)
+            {
+                if (x == y) return 0;
+                if (x == null) return -1;
+                if (y == null) return 1;
+                return x.Id - y.Id;
+            }
+        }
     }
 }

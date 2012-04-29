@@ -10,6 +10,7 @@ namespace Alterity.Models
     [Table("DeletionHunks")]
     public class DeletionHunk : Hunk
     {
+
         public int StartIndex { get; private set; }
         public int Length { get; private set; }
 
@@ -100,7 +101,9 @@ namespace Alterity.Models
                 if (asDeletion != null)
                 {
                     int leftShiftCount = Math.Max(0, Math.Min(StartIndex - asDeletion.StartIndex, asDeletion.Length));
-                    int lengthReduction = Math.Max(0, Math.Min(Math.Min(StartIndex + Length - asDeletion.StartIndex, asDeletion.StartIndex + asDeletion.Length - StartIndex), Length));
+                    int commonRangeEnd = Math.Min(StartIndex + Length - 1, asDeletion.StartIndex + asDeletion.Length - 1);
+                    int commonRangeStart = Math.Max(StartIndex, asDeletion.StartIndex);
+                    int lengthReduction = Math.Max(0, commonRangeEnd - commonRangeStart + 1);
                     int newLength = Length - lengthReduction;
                     if (newLength > 0)
                     {
@@ -129,6 +132,37 @@ namespace Alterity.Models
         {
             if (text == null) throw new ArgumentNullException("text");
             text.Remove(StartIndex, Length);
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as DeletionHunk;
+            if (other == null) return false;
+            return other.Id == Id && other.Length == Length && other.StartIndex == StartIndex;
+        }
+
+        public class ValueComparer : IComparer<DeletionHunk>
+        {
+            public int Compare(DeletionHunk x, DeletionHunk y)
+            {
+                if (x == y) return 0;
+                if (x == null) return -1;
+                if (y == null) return 1;
+                int lengthDifference;
+                if ((lengthDifference = x.Length - y.Length) != 0) return lengthDifference;
+                return x.StartIndex - y.StartIndex;
+            }
+        }
+
+        public class IdComparer : IComparer<DeletionHunk>
+        {
+            public int Compare(DeletionHunk x, DeletionHunk y)
+            {
+                if (x == y) return 0;
+                if (x == null) return -1;
+                if (y == null) return 1;
+                return x.Id - y.Id;
+            }
         }
     }
 }

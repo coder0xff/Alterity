@@ -100,5 +100,37 @@ namespace Alterity.Models
             if (text == null) throw new ArgumentNullException("text");
             text.Insert(StartIndex, Text);
         }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as InsertionHunk;
+            if (other == null) return false;
+            return other.Id == Id && other.Text == Text && other.StartIndex == StartIndex;
+        }
+
+        public class ValueComparer : IComparer<InsertionHunk>
+        {
+            public int Compare(InsertionHunk x, InsertionHunk y)
+            {
+                if (x == y) return 0;
+                if (x == null) return -1;
+                if (y == null) return 1;
+                int startIndexDifference;
+                if ((startIndexDifference = x.StartIndex - y.StartIndex) != 0) return startIndexDifference;
+                return String.CompareOrdinal(x.Text, y.Text);
+            }
+        }
+
+        public class IdComparer : IComparer<DeletionHunk>
+        {
+            public int Compare(DeletionHunk x, DeletionHunk y)
+            {
+                if (x == y) return 0;
+                if (x == null) return -1;
+                if (y == null) return 1;
+                return x.Id - y.Id;
+            }
+        }
+
     }
 }
