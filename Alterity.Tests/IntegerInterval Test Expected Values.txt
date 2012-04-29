@@ -1,0 +1,91 @@
+#transformed hunk is always start:6 length:4
+#transforming hunk is based on table 2
+#first two numbers are the result of the transform
+#separate number with a tab
+#if the first two numbers are zero, the result is no hunks
+#second two numbers are an optional additional result
+#-1 indicates that an exception must be thrown
+#numbers after -1 are ignored and unneeded
+#there must be 13 entries in each group
+#transforms are grouped as such:
+#insert transform selection: deletion undo deletion, deletion redo insertion, deletion subjoin insertion
+#delete transform selection: deletion redo deletion, deletion subjoin deletion, deletion undo insertion
+#insert transform insertion: insertion undo deletion, insertion redo insertion
+#delete transform insertion: insertion redo deletion, insertion subjoin deletion, insertion undo insertion
+#insert transform insertion swapped precedence: insertion subjoin insertion
+
+#insert transform selection:
+10	4
+10	4
+10	4
+12	4
+14	4
+8	4
+10	4
+12	4
+6	1	9	3
+6	2	10	2
+6	2	12	2
+6	4
+6	4
+
+
+#delete transform selection:
+2	4
+2	4
+4	2
+0	0
+0	0
+6	2
+0	0
+0	0
+6	2
+6	2
+6	2
+6	4
+6	4
+
+#insert transform insertion:
+10	4
+10	4
+10	4
+12	4
+14	4
+8	4
+10	4
+12	4
+6	4
+6	4
+6	4
+6	4
+6	4
+
+#delete transform insertion:
+2	4
+2	4
+4	4
+4	4
+4	4
+6	4
+6	4
+6	4
+6	4
+6	4
+6	4
+6	4
+6	4
+
+#insert into insertion swapped precedence:
+10	4
+10	4
+10	4
+12	4
+14	4
+6	4
+6	4
+6	4
+6	4
+6	4
+6	4
+6	4
+6	4
