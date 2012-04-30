@@ -79,8 +79,12 @@ namespace Alterity.Models
         public static IHunkComparer IdComparer { get { return idComparer; } }
 
         public int Id { get; set; }
+        public abstract int StartIndex { get; protected set; }
+        public abstract int Length { get; protected set; }
+        public IntegerInterval ToInterval() { return new IntegerInterval(StartIndex, Length); }
         public abstract Hunk[] UndoPrior(Hunk hunk);
         public abstract Hunk[] RedoPrior(Hunk hunk);
+        public abstract Hunk[] SubjoinSubsequent(Hunk hunk);
         public abstract void Apply(StringBuilder text);
     }
 }

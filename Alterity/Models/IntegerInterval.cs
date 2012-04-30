@@ -69,7 +69,7 @@ namespace Alterity.Models
             return new IntegerInterval[] { new IntegerInterval(Position - leftShift, Length) };
         }
 
-        public IntegerInterval[] InsertIntoInsertionSwappedPrecedence(IntegerInterval asInsertion)
+        public IntegerInterval[] InsertTransformInsertionSwappedPrecedence(IntegerInterval asInsertion)
         {
             if (asInsertion.Position < Position)
             {

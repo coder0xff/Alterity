@@ -167,7 +167,7 @@ namespace Alterity.Tests
         public void InsertIntoInsertionSwappedPrecedenceTest()
         {
             int transformIndex = 4;
-            IntervalTransformMethod intervalTransformMethod = new IntervalTransformMethod(XInterval.InsertIntoInsertionSwappedPrecedence);
+            IntervalTransformMethod intervalTransformMethod = new IntervalTransformMethod(XInterval.InsertTransformInsertionSwappedPrecedence);
             RunIntegerIntervalTestSet(transformIndex, intervalTransformMethod);
         }
 

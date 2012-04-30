@@ -69,13 +69,7 @@ namespace Alterity.Tests
         /// <summary>
         ///A test for InsertionHunk Constructor
         ///</summary>
-
-
-
         [TestMethod()]
-
-
-
         public void InsertionHunkConstructorTest()
         {
             int startIndex = 0; // TODO: Initialize to an appropriate value
@@ -87,13 +81,7 @@ namespace Alterity.Tests
         /// <summary>
         ///A test for Apply
         ///</summary>
-
-
-
         [TestMethod()]
-
-
-
         public void ApplyTest()
         {
             int startIndex = 0; // TODO: Initialize to an appropriate value
@@ -107,13 +95,7 @@ namespace Alterity.Tests
         /// <summary>
         ///A test for RedoPrior
         ///</summary>
-
-
-
         [TestMethod()]
-
-
-
         public void RedoPriorTest()
         {
             int startIndex = 0; // TODO: Initialize to an appropriate value
@@ -130,13 +112,7 @@ namespace Alterity.Tests
         /// <summary>
         ///A test for UndoPrior
         ///</summary>
-
-
-
         [TestMethod()]
-
-
-
         public void UndoPriorTest()
         {
             int startIndex = 0; // TODO: Initialize to an appropriate value
@@ -153,14 +129,7 @@ namespace Alterity.Tests
         /// <summary>
         ///A test for Length
         ///</summary>
-
-
-
         [TestMethod()]
-
-
-
-
         public void LengthTest()
         {
             PrivateObject param0 = null; // TODO: Initialize to an appropriate value
@@ -176,14 +145,7 @@ namespace Alterity.Tests
         /// <summary>
         ///A test for StartIndex
         ///</summary>
-
-
-
         [TestMethod()]
-
-
-
-
         public void StartIndexTest()
         {
             PrivateObject param0 = null; // TODO: Initialize to an appropriate value
