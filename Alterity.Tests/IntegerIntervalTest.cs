@@ -18,9 +18,9 @@ namespace Alterity.Tests
         static IntegerInterval[] YIntervals = new IntegerInterval[] {
             new IntegerInterval(1, 4),
             new IntegerInterval(2, 4),
-            new IntegerInterval(1, 4),
-            new IntegerInterval(1, 6),
-            new IntegerInterval(1, 8),
+            new IntegerInterval(4, 4),
+            new IntegerInterval(4, 6),
+            new IntegerInterval(4, 8),
             new IntegerInterval(6, 2),
             new IntegerInterval(6, 4),
             new IntegerInterval(6, 6),
@@ -31,10 +31,12 @@ namespace Alterity.Tests
             new IntegerInterval(11, 4),
         };
 
-        struct IntegetIntervalResult { public IntegerInterval[] intervals; }
+        class IntegetIntervalResult { public IntegerInterval[] intervals; }
         static IntegetIntervalResult[,] expectedValues;
 
         private TestContext testContextInstance;
+
+        delegate IntegerInterval[] IntervalTransformMethod(IntegerInterval transformer);
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -74,6 +76,11 @@ namespace Alterity.Tests
                 {
                     int startIndex = System.Convert.ToInt32(numbers[numberIndex]);
                     int length = System.Convert.ToInt32(numbers[numberIndex + 1]);
+                    if (startIndex == 0 && length == 0)
+                    {
+                        integerIntervalResult.intervals = new IntegerInterval[0];
+                        break;
+                    }
                     integerIntervalResult.intervals[numberIndex / 2] = new IntegerInterval(startIndex, length);
                 }
                 transformRelationIndex++;
@@ -119,103 +126,71 @@ namespace Alterity.Tests
             Assert.AreEqual(length, target.Length);
         }
 
+        private static void RunIntegerIntervalTestSet(int transformIndex, IntervalTransformMethod intervalTransformMethod)
+        {
+            for (int relationIndex = 0; relationIndex < 13; relationIndex++)
+            {
+                IntegerInterval transformer = YIntervals[relationIndex];
+                IntegerInterval[] expected = expectedValues[transformIndex, relationIndex].intervals;
+                IntegerInterval[] actual = intervalTransformMethod(transformer);
+                CollectionAssert.AreEqual(expected, actual, "TransformIndex: " + transformIndex.ToString() + " RelationIndex: " + relationIndex.ToString());
+            }
+        }
+
         /// <summary>
         ///A test for DeleteTransformInsertion
         ///</summary>
         [TestMethod()]
         public void DeleteTransformInsertionTest()
         {
-            IntegerInterval target = new IntegerInterval(); // TODO: Initialize to an appropriate value
-            IntegerInterval asDeletion = new IntegerInterval(); // TODO: Initialize to an appropriate value
-            IntegerInterval[] expected = null; // TODO: Initialize to an appropriate value
-            IntegerInterval[] actual;
-            actual = target.DeleteTransformInsertion(asDeletion);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("Verify the correctness of this test method.");
+            int transformIndex = 3;
+            IntervalTransformMethod intervalTransformMethod = new IntervalTransformMethod(XInterval.DeleteTransformInsertion);
+            RunIntegerIntervalTestSet(transformIndex, intervalTransformMethod);
         }
+
 
         /// <summary>
         ///A test for DeleteTransformSelection
         ///</summary>
-        // TODO: Ensure that the UrlToTest attribute specifies a URL to an ASP.NET page (for example,
-        // http://.../Default.aspx). This is necessary for the unit test to be executed on the web server,
-        // whether you are testing a page, web service, or a WCF service.
         [TestMethod()]
-        [HostType("ASP.NET")]
-        [AspNetDevelopmentServerHost("C:\\Users\\Brent\\Documents\\Visual Studio 2010\\Projects\\Alterity\\Alterity", "/")]
-        [UrlToTest("http://localhost:16954/")]
         public void DeleteTransformSelectionTest()
         {
-            IntegerInterval target = new IntegerInterval(); // TODO: Initialize to an appropriate value
-            IntegerInterval asInsertion = new IntegerInterval(); // TODO: Initialize to an appropriate value
-            IntegerInterval[] expected = null; // TODO: Initialize to an appropriate value
-            IntegerInterval[] actual;
-            actual = target.DeleteTransformSelection(asInsertion);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("Verify the correctness of this test method.");
+            int transformIndex = 1;
+            IntervalTransformMethod intervalTransformMethod = new IntervalTransformMethod(XInterval.DeleteTransformSelection);
+            RunIntegerIntervalTestSet(transformIndex, intervalTransformMethod);
         }
 
         /// <summary>
         ///A test for InsertIntoInsertionSwappedPrecedence
         ///</summary>
-        // TODO: Ensure that the UrlToTest attribute specifies a URL to an ASP.NET page (for example,
-        // http://.../Default.aspx). This is necessary for the unit test to be executed on the web server,
-        // whether you are testing a page, web service, or a WCF service.
         [TestMethod()]
-        [HostType("ASP.NET")]
-        [AspNetDevelopmentServerHost("C:\\Users\\Brent\\Documents\\Visual Studio 2010\\Projects\\Alterity\\Alterity", "/")]
-        [UrlToTest("http://localhost:16954/")]
         public void InsertIntoInsertionSwappedPrecedenceTest()
         {
-            IntegerInterval target = new IntegerInterval(); // TODO: Initialize to an appropriate value
-            IntegerInterval asInsertion = new IntegerInterval(); // TODO: Initialize to an appropriate value
-            IntegerInterval[] expected = null; // TODO: Initialize to an appropriate value
-            IntegerInterval[] actual;
-            actual = target.InsertIntoInsertionSwappedPrecedence(asInsertion);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("Verify the correctness of this test method.");
+            int transformIndex = 4;
+            IntervalTransformMethod intervalTransformMethod = new IntervalTransformMethod(XInterval.InsertIntoInsertionSwappedPrecedence);
+            RunIntegerIntervalTestSet(transformIndex, intervalTransformMethod);
         }
 
         /// <summary>
         ///A test for InsertTransformInsertion
         ///</summary>
-        // TODO: Ensure that the UrlToTest attribute specifies a URL to an ASP.NET page (for example,
-        // http://.../Default.aspx). This is necessary for the unit test to be executed on the web server,
-        // whether you are testing a page, web service, or a WCF service.
         [TestMethod()]
-        [HostType("ASP.NET")]
-        [AspNetDevelopmentServerHost("C:\\Users\\Brent\\Documents\\Visual Studio 2010\\Projects\\Alterity\\Alterity", "/")]
-        [UrlToTest("http://localhost:16954/")]
         public void InsertTransformInsertionTest()
         {
-            IntegerInterval target = new IntegerInterval(); // TODO: Initialize to an appropriate value
-            IntegerInterval asInsertion = new IntegerInterval(); // TODO: Initialize to an appropriate value
-            IntegerInterval[] expected = null; // TODO: Initialize to an appropriate value
-            IntegerInterval[] actual;
-            actual = target.InsertTransformInsertion(asInsertion);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("Verify the correctness of this test method.");
+            int transformIndex = 2;
+            IntervalTransformMethod intervalTransformMethod = new IntervalTransformMethod(XInterval.InsertTransformInsertion);
+            RunIntegerIntervalTestSet(transformIndex, intervalTransformMethod);
         }
 
         /// <summary>
         ///A test for InsertTransformSelection
         ///</summary>
-        // TODO: Ensure that the UrlToTest attribute specifies a URL to an ASP.NET page (for example,
-        // http://.../Default.aspx). This is necessary for the unit test to be executed on the web server,
-        // whether you are testing a page, web service, or a WCF service.
         [TestMethod()]
-        [HostType("ASP.NET")]
-        [AspNetDevelopmentServerHost("C:\\Users\\Brent\\Documents\\Visual Studio 2010\\Projects\\Alterity\\Alterity", "/")]
-        [UrlToTest("http://localhost:16954/")]
         public void InsertTransformSelectionTest()
         {
-            IntegerInterval target = new IntegerInterval(); // TODO: Initialize to an appropriate value
-            IntegerInterval Tranformer = new IntegerInterval(); // TODO: Initialize to an appropriate value
-            IntegerInterval[] expected = null; // TODO: Initialize to an appropriate value
-            IntegerInterval[] actual;
-            actual = target.InsertTransformSelection(Tranformer);
-            Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("Verify the correctness of this test method.");
+            int transformIndex = 0;
+            IntervalTransformMethod intervalTransformMethod = new IntervalTransformMethod(XInterval.InsertTransformSelection);
+            RunIntegerIntervalTestSet(transformIndex, intervalTransformMethod);
         }
     }
 }

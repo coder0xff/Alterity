@@ -81,13 +81,13 @@ namespace Alterity.Tests
         /// <summary>
         ///A test for Apply
         ///</summary>
-        // TODO: Ensure that the UrlToTest attribute specifies a URL to an ASP.NET page (for example,
-        // http://.../Default.aspx). This is necessary for the unit test to be executed on the web server,
-        // whether you are testing a page, web service, or a WCF service.
+
+
+
         [TestMethod()]
-        [HostType("ASP.NET")]
-        [AspNetDevelopmentServerHost("C:\\Users\\Brent\\Documents\\Visual Studio 2010\\Projects\\Alterity\\Alterity", "/")]
-        [UrlToTest("http://localhost:16954/")]
+
+
+
         public void ApplyTest()
         {
             int startIndex = 0; // TODO: Initialize to an appropriate value
@@ -101,13 +101,13 @@ namespace Alterity.Tests
         /// <summary>
         ///A test for RedoPrior
         ///</summary>
-        // TODO: Ensure that the UrlToTest attribute specifies a URL to an ASP.NET page (for example,
-        // http://.../Default.aspx). This is necessary for the unit test to be executed on the web server,
-        // whether you are testing a page, web service, or a WCF service.
+
+
+
         [TestMethod()]
-        [HostType("ASP.NET")]
-        [AspNetDevelopmentServerHost("C:\\Users\\Brent\\Documents\\Visual Studio 2010\\Projects\\Alterity\\Alterity", "/")]
-        [UrlToTest("http://localhost:16954/")]
+
+
+
         public void RedoPriorTest()
         {
             int startIndex = 0; // TODO: Initialize to an appropriate value
@@ -124,13 +124,13 @@ namespace Alterity.Tests
         /// <summary>
         ///A test for UndoPrior
         ///</summary>
-        // TODO: Ensure that the UrlToTest attribute specifies a URL to an ASP.NET page (for example,
-        // http://.../Default.aspx). This is necessary for the unit test to be executed on the web server,
-        // whether you are testing a page, web service, or a WCF service.
+
+
+
         [TestMethod()]
-        [HostType("ASP.NET")]
-        [AspNetDevelopmentServerHost("C:\\Users\\Brent\\Documents\\Visual Studio 2010\\Projects\\Alterity\\Alterity", "/")]
-        [UrlToTest("http://localhost:16954/")]
+
+
+
         public void UndoPriorTest()
         {
             int startIndex = 0; // TODO: Initialize to an appropriate value

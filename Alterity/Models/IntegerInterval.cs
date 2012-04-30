@@ -24,8 +24,9 @@ namespace Alterity.Models
             }
             else if (Tranformer.Position < Position + Length)
             {
-                return new IntegerInterval[] { new IntegerInterval(Position, Tranformer.Position - Position - 1),
-                new IntegerInterval(Tranformer.Position + Tranformer.Length, Position + Length + Tranformer.Length - 1)};
+                //the insert is in the middle of the selection, so it'll split in two
+                return new IntegerInterval[] { new IntegerInterval(Position, Tranformer.Position - Position),
+                new IntegerInterval(Tranformer.Position + Tranformer.Length, Length - (Tranformer.Position - Position))};
             }
             else
             {
@@ -36,7 +37,9 @@ namespace Alterity.Models
         public IntegerInterval[] DeleteTransformSelection(IntegerInterval asInsertion)
         {
             int leftShiftCount = Math.Max(0, Math.Min(Position - asInsertion.Position, asInsertion.Length));
-            int lengthReduction = Math.Max(0, Math.Min(Math.Min(Position + Length - asInsertion.Position, asInsertion.Position + asInsertion.Length - Position), Length));
+            int upperBoundMin = Math.Min(Position + Length - 1, asInsertion.Position + asInsertion.Length - 1);
+            int lowerBoundMax = Math.Max(Position, asInsertion.Position);
+            int lengthReduction = (lowerBoundMax <= upperBoundMin) ? Math.Max(upperBoundMin - lowerBoundMax + 1, 0) : 0;
             int newLength = Length - lengthReduction;
             if (newLength > 0)
             {
