@@ -6,5 +6,5 @@ Alterity/obj
 Diff/bin
 Diff/obj
 *.user
-Alterity/App_Data/Alterity.sdf
 TestResults
+Alterity/App_Data
