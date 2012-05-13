@@ -19,5 +19,15 @@ namespace Alterity.Models
         {
             return UndoPrior<DeleteOperation>(hunk);
         }
+
+        internal override EditOperation RedoPrior(EditOperation hunk)
+        {
+            return RedoPrior<DeleteOperation>(hunk);
+        }
+
+        internal override EditOperation SubjoinSubsequent(EditOperation hunk)
+        {
+            return SubjoinSubsequent<DeleteOperation>(hunk);
+        }
     }
 }

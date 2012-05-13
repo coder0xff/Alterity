@@ -71,8 +71,9 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers\UserAccountController.cs" />
+    <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="HunkComparer.cs" />
+    <Compile Include="Models\AccountModel.cs" />
     <Compile Include="Models\ChangeSet.cs" />
     <Compile Include="Models\ChangeSubset.cs" />
     <Compile Include="Models\DatabaseInitializer.cs" />
@@ -92,9 +93,10 @@
     <Compile Include="Models\InsertOperation.cs" />
     <Compile Include="Models\MoveOperation.cs" />
     <Compile Include="Models\NoOperationHunk.cs" />
+    <Compile Include="Models\SessionData.cs" />
     <Compile Include="Models\SpringboardState.cs" />
     <Compile Include="Models\SpringboardStateEntry.cs" />
-    <Compile Include="Models\UserAccount.cs" />
+    <Compile Include="Models\UserData.cs" />
     <Compile Include="Models\VoteBox.cs" />
     <Compile Include="Models\VoteEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -181,21 +183,6 @@
       <Project>{17ACA8F4-FFE0-4C21-B3AE-8D48BBCABD9C}</Project>
       <Name>Diff</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\UserAccount\Index.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\UserAccount\Details.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\UserAccount\Create.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\UserAccount\Edit.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\UserAccount\Delete.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AlterityKey.pfx" />

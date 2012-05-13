@@ -1,4 +1,4 @@
-﻿@model Alterity.Models.UserAccount
+﻿@model Alterity.Models.UserData
 
 @{
     ViewBag.Title = "Delete";
@@ -8,16 +8,11 @@
 
 <h3>Are you sure you want to delete this?</h3>
 <fieldset>
-    <legend>UserAccount</legend>
+    <legend>UserData</legend>
 
-    <div class="display-label">Email</div>
+    <div class="display-label">EmailOrIPAddress</div>
     <div class="display-field">
-        @Html.DisplayFor(model => model.Email)
-    </div>
-
-    <div class="display-label">UserName</div>
-    <div class="display-field">
-        @Html.DisplayFor(model => model.UserName)
+        @Html.DisplayFor(model => model.EmailOrIPAddress)
     </div>
 </fieldset>
 @using (Html.BeginForm()) {

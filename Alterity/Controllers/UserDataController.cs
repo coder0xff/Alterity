@@ -9,29 +9,29 @@ using Alterity.Models;
 
 namespace Alterity.Controllers
 { 
-    public class UserAccountController : Controller
+    public class UserDataController : Controller
     {
         private EntityMappingContext db = new EntityMappingContext();
 
         //
-        // GET: /UserAccount/
+        // GET: /UserData/
 
         public ViewResult Index()
         {
-            return View(db.Users.ToList());
+            return View(db.UserData.ToList());
         }
 
         //
-        // GET: /UserAccount/Details/5
+        // GET: /UserData/Details/5
 
-        public ViewResult Details(int id)
+        public ViewResult Details(string id)
         {
-            UserAccount useraccount = db.Users.Find(id);
-            return View(useraccount);
+            UserData userdata = db.UserData.Find(id);
+            return View(userdata);
         }
 
         //
-        // GET: /UserAccount/Create
+        // GET: /UserData/Create
 
         public ActionResult Create()
         {
@@ -39,62 +39,62 @@ namespace Alterity.Controllers
         } 
 
         //
-        // POST: /UserAccount/Create
+        // POST: /UserData/Create
 
         [HttpPost]
-        public ActionResult Create(UserAccount userAccount)
+        public ActionResult Create(UserData userdata)
         {
             if (ModelState.IsValid)
             {
-                db.Users.Add(userAccount);
+                db.UserData.Add(userdata);
                 db.SaveChanges();
                 return RedirectToAction("Index");  
             }
 
-            return View(userAccount);
+            return View(userdata);
         }
         
         //
-        // GET: /UserAccount/Edit/5
+        // GET: /UserData/Edit/5
  
-        public ActionResult Edit(int id)
+        public ActionResult Edit(string id)
         {
-            UserAccount useraccount = db.Users.Find(id);
-            return View(useraccount);
+            UserData userdata = db.UserData.Find(id);
+            return View(userdata);
         }
 
         //
-        // POST: /UserAccount/Edit/5
+        // POST: /UserData/Edit/5
 
         [HttpPost]
-        public ActionResult Edit(UserAccount userAccount)
+        public ActionResult Edit(UserData userdata)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(userAccount).State = EntityState.Modified;
+                db.Entry(userdata).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            return View(userAccount);
+            return View(userdata);
         }
 
         //
-        // GET: /UserAccount/Delete/5
+        // GET: /UserData/Delete/5
  
-        public ActionResult Delete(int id)
+        public ActionResult Delete(string id)
         {
-            UserAccount useraccount = db.Users.Find(id);
-            return View(useraccount);
+            UserData userdata = db.UserData.Find(id);
+            return View(userdata);
         }
 
         //
-        // POST: /UserAccount/Delete/5
+        // POST: /UserData/Delete/5
 
         [HttpPost, ActionName("Delete")]
-        public ActionResult DeleteConfirmed(int id)
+        public ActionResult DeleteConfirmed(string id)
         {            
-            UserAccount useraccount = db.Users.Find(id);
-            db.Users.Remove(useraccount);
+            UserData userdata = db.UserData.Find(id);
+            db.UserData.Remove(userdata);
             db.SaveChanges();
             return RedirectToAction("Index");
         }

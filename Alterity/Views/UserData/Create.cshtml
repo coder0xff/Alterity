@@ -1,4 +1,4 @@
-﻿@model Alterity.Models.UserAccount
+﻿@model Alterity.Models.UserData
 
 @{
     ViewBag.Title = "Create";
@@ -12,22 +12,14 @@
 @using (Html.BeginForm()) {
     @Html.ValidationSummary(true)
     <fieldset>
-        <legend>UserAccount</legend>
+        <legend>UserData</legend>
 
         <div class="editor-label">
-            @Html.LabelFor(model => model.Email)
+            @Html.LabelFor(model => model.EmailOrIPAddress)
         </div>
         <div class="editor-field">
-            @Html.EditorFor(model => model.Email)
-            @Html.ValidationMessageFor(model => model.Email)
-        </div>
-
-        <div class="editor-label">
-            @Html.LabelFor(model => model.UserName)
-        </div>
-        <div class="editor-field">
-            @Html.EditorFor(model => model.UserName)
-            @Html.ValidationMessageFor(model => model.UserName)
+            @Html.EditorFor(model => model.EmailOrIPAddress)
+            @Html.ValidationMessageFor(model => model.EmailOrIPAddress)
         </div>
 
         <p>

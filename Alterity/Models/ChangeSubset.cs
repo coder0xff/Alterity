@@ -8,7 +8,9 @@ namespace Alterity.Models
     public class ChangeSubset
     {
         public int Id { get; set; }
-        public VoteBox Votes { get; set; }
-        public SpringboardState Springboard { get; set; }
+        public VoteBox VoteBox { get; set; }
+        public ChangeSet ChangeSet { get; set; }
+        public SpringboardState SpringboardState { get; set; }
+        public virtual ICollection<EditOperation> EditOperations { get; set; }
     }
 }

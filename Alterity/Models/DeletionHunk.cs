@@ -22,7 +22,15 @@ namespace Alterity.Models
 
         Hunk[] ApplyTransformationResults(IntegerInterval[] intervals)
         {
-            return intervals.Select(x => new DeletionHunk(x.Position, x.Length)).ToArray();
+            DeletionHunk[] results = intervals.Select(x => new DeletionHunk(x.Position, x.Length)).ToArray();
+            for (int transformeeIndex = 1; transformeeIndex < results.Length; transformeeIndex++)
+            {
+                for (int transformerIndex = 0; transformerIndex < transformeeIndex; transformerIndex++)
+                {
+                    results[transformeeIndex] = (DeletionHunk)results[transformeeIndex].RedoPrior(results[transformerIndex])[0];
+                }
+            }
+            return results;
         }
 
         public override Hunk[] UndoPrior(Hunk hunk)
