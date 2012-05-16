@@ -9,15 +9,11 @@ using Alterity.Models;
 
 namespace Alterity.Controllers
 { 
-    public class UserDataController : Controller
+    public class UserDataController : AlterityController
     {
-        private EntityMappingContext db = new EntityMappingContext();
-
-        //
-        // GET: /UserData/
-
         public ViewResult Index()
         {
+            Save();
             return View(db.UserData.ToList());
         }
 

@@ -18,7 +18,7 @@ namespace Alterity.Models
         public DbSet<EditOperation> EditOperations { get; set; }
         public DbSet<Hunk> Hunks { get; set; }
         public DbSet<Document> Documents { get; set; }
-        public DbSet<SessionData> SessionData { get; set; }
+        public DbSet<SessionData> SessionDatas { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

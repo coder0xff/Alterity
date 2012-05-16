@@ -78,10 +78,6 @@
       <Project>{AE86E8DF-824F-452B-BCF7-D8E04B8735FC}</Project>
       <Name>Alterity</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Diff\Diff.csproj">
-      <Project>{17ACA8F4-FFE0-4C21-B3AE-8D48BBCABD9C}</Project>
-      <Name>Diff</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Shadow Include="Test References\Alterity.accessor" />
