@@ -81,10 +81,19 @@ namespace Alterity.Models
         public int Id { get; set; }
         public abstract int StartIndex { get; protected set; }
         public abstract int Length { get; protected set; }
-        public IntegerInterval ToInterval() { return new IntegerInterval(StartIndex, Length); }
+        public IntegerInterval ToIntegerInterval() { return new IntegerInterval(StartIndex, Length); }
         public abstract Hunk[] UndoPrior(Hunk hunk);
         public abstract Hunk[] RedoPrior(Hunk hunk);
-        public abstract Hunk[] SubjoinSubsequent(Hunk hunk);
         public abstract void Apply(StringBuilder text);
+
+        /// <summary>
+        /// Combine this Hunk and another hunk together as best as possible. The returned value is what
+        /// the current object (this) becomes, which may be null (the hunk no longer has an effect),
+        /// the unchanged current object (this), or a new hunk of the same type. The parameter other
+        /// may also become null, remain the object passed in, or a new hunk of the same type.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public abstract Hunk MergeSubsequent(ref Hunk other);
     }
 }

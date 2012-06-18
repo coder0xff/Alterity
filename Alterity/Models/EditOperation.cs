@@ -2,27 +2,36 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.ComponentModel.DataAnnotations;
 
 namespace Alterity.Models
 {
     public abstract class EditOperation
     {
+        public enum ActivationState
+        {
+            Deactivated = 0,
+            Activated = 1
+        }
+
         public int Id { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Hunk> Hunks { get; set; }
         public VoteBox VoteBox { get; set; }
+        public int ChangeSubsetId { get; set; }
+        [ForeignKey("ChangeSubsetId")]
         public ChangeSubset ChangeSubset { get; set; }
         public ChangeSet ChangeSet { get { return ChangeSubset.ChangeSet; } }
         public Document Document { get { return ChangeSubset.ChangeSet.Document; } }
 
         protected EditOperation() {}
 
-        public bool GetVoteStatus()
+        public ActivationState GetVoteStatus()
         {
             ICollection<VoteEntry> allVotes = VoteBox.Inheret(VoteBox.Votes, ChangeSubset.VoteBox.Votes);
             allVotes = VoteBox.Inheret(allVotes, ChangeSet.VoteBox.Votes);
             float voteRatio = VoteBox.ComputeVoteRatio(allVotes);
-            return voteRatio >= Document.VoteRatioThreshold;
+            return voteRatio >= Document.VoteRatioThreshold ? ActivationState.Activated : ActivationState.Deactivated;
         }
 
         private T UndoPrior<T>(Hunk hunk) where T : EditOperation, new()

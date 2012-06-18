@@ -47,29 +47,70 @@ namespace Alterity.Models
             public bool IsRedo;
         }
 
-        static void ComputeStateDifferences(int operationId, IList<int> sortedSpringBoard, IList<int> sortedTargetState, IList<UndoRedoEntry> undosRedos)
+//         static void ComputeStateDifferences(int operationId, IList<int> sortedSpringBoard, IList<int> sortedTargetState, IList<UndoRedoEntry> undosRedos)
+//         {
+//             int i = 0, j = 0;
+//             while (i < sortedSpringBoard.Count && j < sortedTargetState.Count)
+//             {
+//                 if (sortedTargetState[j] >= operationId) break;
+//                 if (sortedSpringBoard[i] == sortedTargetState[j])
+//                 {
+//                     i++; j++;
+//                 }
+//                 else if (sortedSpringBoard[i] < sortedTargetState[j])
+//                 {
+//                     undosRedos.Add(new UndoRedoEntry(sortedSpringBoard[i++], false));
+//                 }
+//                 else
+//                 {
+//                     undosRedos.Add(new UndoRedoEntry(sortedTargetState[j++], true));
+//                 }
+//             }
+//             for ( ; i < sortedSpringBoard.Count; i++)
+//                 undosRedos.Add(new UndoRedoEntry(sortedSpringBoard[i++], false));
+//             for ( ; j < sortedTargetState.Count && sortedTargetState[j] < operationId; j++)
+//                 undosRedos.Add(new UndoRedoEntry(sortedTargetState[j++], true));
+//         }
+
+        static void ComputeStateDifferences(int operationId, IEnumerable<int> sortedSpringBoard, IEnumerable<int> sortedTargetState, IList<UndoRedoEntry> undosRedos)
         {
-            int i = 0, j = 0;
-            while (i < sortedSpringBoard.Count && j < sortedTargetState.Count)
+            IEnumerator<int> i = sortedSpringBoard.GetEnumerator(), j = sortedTargetState.GetEnumerator();
+            i.Reset(); j.Reset();
+            do
             {
-                if (sortedTargetState[j] >= operationId) break;
-                if (sortedSpringBoard[i] == sortedTargetState[j])
+                if (j.Current >= operationId) break;
+                if (i.Current == j.Current)
                 {
-                    i++; j++;
+                    if (!i.MoveNext() || !j.MoveNext()) break;
                 }
-                else if (sortedSpringBoard[i] < sortedTargetState[j])
+                else if (i.Current < j.Current)
                 {
-                    undosRedos.Add(new UndoRedoEntry(sortedSpringBoard[i++], false));
+                    undosRedos.Add(new UndoRedoEntry(i.Current, false));
+                    if (!i.MoveNext())
+                    {
+                        do 
+                        {
+                            if (j.Current < operationId)
+                                undosRedos.Add(new UndoRedoEntry(j.Current, true));
+                            else
+                                break;
+                        } while (j.MoveNext());
+                        break;
+                    }
                 }
                 else
                 {
-                    undosRedos.Add(new UndoRedoEntry(sortedTargetState[j++], true));
+                    undosRedos.Add(new UndoRedoEntry(j.Current, true));
+                    if (!j.MoveNext())
+                    {
+                        do 
+                        {
+                            undosRedos.Add(new UndoRedoEntry(i.Current, false));
+                        } while (i.MoveNext());
+                        break;
+                    }
                 }
-            }
-            for ( ; i < sortedSpringBoard.Count; i++)
-                undosRedos.Add(new UndoRedoEntry(sortedSpringBoard[i++], false));
-            for ( ; j < sortedTargetState.Count && sortedTargetState[j] < operationId; j++)
-                undosRedos.Add(new UndoRedoEntry(sortedTargetState[j++], true));
+            } while (true);
         }
 
         public static EditOperation TransformForTargetState(EditOperation transformee, List<int> sortedTargetState, Dictionary<int, EditOperation> transformedOperations, Dictionary<int, EditOperation> allOperations)
@@ -97,6 +138,31 @@ namespace Alterity.Models
             return result;
         }
 
+        public static EditOperation TransformForTargetState(EditOperation transformee, List<int> sortedTargetState, Dictionary<int, EditOperation> transformedOperations, ICollection<EditOperation> allOperations)
+        {
+            EditOperation result;
+            if (!transformedOperations.TryGetValue(transformee.Id, out result))
+            {
+                SpringboardState springBoardState = transformee.ChangeSubset.SpringboardState;
+                List<int> sortedSpringBoard = new List<int>(springBoardState.Entries.Select(x => x.EditOperationId));
+                sortedSpringBoard.Sort();
+                List<UndoRedoEntry> undosRedos = new List<UndoRedoEntry>();
+                ComputeStateDifferences(transformee.Id, sortedSpringBoard, sortedTargetState, undosRedos);
+                result = transformee;
+                foreach (UndoRedoEntry undoRedoEntry in undosRedos)
+                {
+                    int transformerId = undoRedoEntry.OperationId;
+                    EditOperation transformer = TransformForTargetState(allOperations.First(x => (x.Id == transformerId)), sortedTargetState, transformedOperations, allOperations);
+                    if (undoRedoEntry.IsRedo)
+                        result = result.RedoPrior(transformer);
+                    else
+                        result = result.UndoPrior(transformer);
+                }
+                transformedOperations[transformee.Id] = result;
+            }
+            return result;
+        }
+
         public static ICollection<EditOperation> ProcessState(ICollection<EditOperation> sortedOperations)
         {
             int reserveCount = sortedOperations.Count;
@@ -106,7 +172,7 @@ namespace Alterity.Models
             Dictionary<int, EditOperation> transformedOperations = new Dictionary<int, EditOperation>(reserveCount);
             foreach (EditOperation operation in sortedOperations)
             {
-                if (operation.GetVoteStatus())
+                if (operation.GetVoteStatus() == EditOperation.ActivationState.Activated)
                 {
                     operationsToProcess.Add(operation);
                     sortedTargetState.Add(operation.Id);

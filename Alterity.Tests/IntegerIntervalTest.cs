@@ -122,7 +122,7 @@ namespace Alterity.Tests
             int startIndex = 6; // TODO: Initialize to an appropriate value
             int length = 4; // TODO: Initialize to an appropriate value
             IntegerInterval target = new IntegerInterval(startIndex, length);
-            Assert.AreEqual(startIndex, target.Position);
+            Assert.AreEqual(startIndex, target.Left);
             Assert.AreEqual(length, target.Length);
         }
 
@@ -160,16 +160,16 @@ namespace Alterity.Tests
             RunIntegerIntervalTestSet(transformIndex, intervalTransformMethod);
         }
 
-        /// <summary>
-        ///A test for InsertIntoInsertionSwappedPrecedence
-        ///</summary>
-        [TestMethod()]
-        public void InsertIntoInsertionSwappedPrecedenceTest()
-        {
-            int transformIndex = 4;
-            IntervalTransformMethod intervalTransformMethod = new IntervalTransformMethod(XInterval.InsertTransformInsertionSwappedPrecedence);
-            RunIntegerIntervalTestSet(transformIndex, intervalTransformMethod);
-        }
+//         /// <summary>
+//         ///A test for InsertIntoInsertionSwappedPrecedence
+//         ///</summary>
+//         [TestMethod()]
+//         public void InsertIntoInsertionSwappedPrecedenceTest()
+//         {
+//             int transformIndex = 4;
+//             IntervalTransformMethod intervalTransformMethod = new IntervalTransformMethod(XInterval.InsertTransformInsertionSwappedPrecedence);
+//             RunIntegerIntervalTestSet(transformIndex, intervalTransformMethod);
+//         }
 
         /// <summary>
         ///A test for InsertTransformInsertion

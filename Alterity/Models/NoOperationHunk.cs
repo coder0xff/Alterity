@@ -25,7 +25,7 @@ namespace Alterity.Models
 
         Hunk[] ApplyTransformationResults(IntegerInterval[] intervals)
         {
-            return intervals.Select(x => new DeletionHunk(x.Position, x.Length)).ToArray();
+            return intervals.Select(x => new DeletionHunk(x.Left, x.Length)).ToArray();
         }
 
         public override Hunk[] UndoPrior(Hunk hunk)
@@ -33,11 +33,11 @@ namespace Alterity.Models
             if (hunk == null) throw new ArgumentNullException("hunk");
             if (hunk is InsertionHunk)
             {
-                return ApplyTransformationResults(ToInterval().DeleteTransformSelection(hunk.ToInterval()));
+                return ApplyTransformationResults(ToIntegerInterval().DeleteTransformSelection(hunk.ToIntegerInterval()));
             }
             else if (hunk is DeletionHunk)
             {
-                return ApplyTransformationResults(ToInterval().InsertTransformSelection(hunk.ToInterval()));
+                return ApplyTransformationResults(ToIntegerInterval().InsertTransformSelection(hunk.ToIntegerInterval()));
             }
             else if (hunk is NoOperationHunk)
             {
@@ -57,32 +57,11 @@ namespace Alterity.Models
             if (hunk == null) throw new ArgumentNullException("hunk");
             if (hunk is InsertionHunk)
             {
-                return ApplyTransformationResults(ToInterval().InsertTransformSelection(hunk.ToInterval()));
+                return ApplyTransformationResults(ToIntegerInterval().InsertTransformSelection(hunk.ToIntegerInterval()));
             }
             else if (hunk is DeletionHunk)
             {
-                return ApplyTransformationResults(ToInterval().DeleteTransformSelection(hunk.ToInterval()));
-            }
-            else if (hunk is NoOperationHunk)
-            {
-                throw new InvalidOperationException("NoOperationHunks should not be redone, undone, or subjoined.");
-            }
-            else
-            {
-                throw new ArgumentException("Unrecognized hunk type", "hunk");
-            }
-        }
-
-        public override Hunk[] SubjoinSubsequent(Hunk hunk)
-        {
-            if (hunk == null) throw new ArgumentNullException("hunk");
-            if (hunk is InsertionHunk)
-            {
-                return ApplyTransformationResults(ToInterval().InsertTransformSelection(hunk.ToInterval()));
-            }
-            else if (hunk is DeletionHunk)
-            {
-                return ApplyTransformationResults(ToInterval().DeleteTransformSelection(hunk.ToInterval()));
+                return ApplyTransformationResults(ToIntegerInterval().DeleteTransformSelection(hunk.ToIntegerInterval()));
             }
             else if (hunk is NoOperationHunk)
             {
@@ -138,6 +117,11 @@ namespace Alterity.Models
                 if (y == null) return 1;
                 return x.Id - y.Id;
             }
+        }
+
+        public override Hunk MergeSubsequent(ref Hunk other)
+        {
+            return this;
         }
     }
 }

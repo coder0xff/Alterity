@@ -7,26 +7,31 @@ namespace Alterity.Models
 {
     public struct IntegerInterval
     {
-
-        public int Position, Length;
-
-        public IntegerInterval(int startIndex, int length)
+        public int Left { get; set; }
+        public int Length { get; set; }
+        public int Right
         {
-            Position = startIndex;
+            get { return Left + Length - 1; }
+            set { Length = value - Left + 1; }
+        }
+
+        public IntegerInterval(int left, int length)
+        {
+            Left = left;
             Length = length;
         }
         
         public IntegerInterval[] InsertTransformSelection(IntegerInterval Tranformer)
         {
-            if (Tranformer.Position <= Position)
+            if (Tranformer.Left <= Left)
             {
-                return new IntegerInterval[] { new IntegerInterval(Position + Tranformer.Length, Length) };
+                return new IntegerInterval[] { new IntegerInterval(Left + Tranformer.Length, Length) };
             }
-            else if (Tranformer.Position < Position + Length)
+            else if (Tranformer.Left < Left + Length)
             {
                 //the insert is in the middle of the selection, so it'll split in two
-                return new IntegerInterval[] { new IntegerInterval(Position, Tranformer.Position - Position),
-                new IntegerInterval(Tranformer.Position + Tranformer.Length, Length - (Tranformer.Position - Position))};
+                return new IntegerInterval[] { new IntegerInterval(Left, Tranformer.Left - Left),
+                new IntegerInterval(Tranformer.Left + Tranformer.Length, Length - (Tranformer.Left - Left))};
             }
             else
             {
@@ -36,14 +41,14 @@ namespace Alterity.Models
 
         public IntegerInterval[] DeleteTransformSelection(IntegerInterval asInsertion)
         {
-            int leftShiftCount = Math.Max(0, Math.Min(Position - asInsertion.Position, asInsertion.Length));
-            int upperBoundMin = Math.Min(Position + Length - 1, asInsertion.Position + asInsertion.Length - 1);
-            int lowerBoundMax = Math.Max(Position, asInsertion.Position);
+            int leftShiftCount = Math.Max(0, Math.Min(Left - asInsertion.Left, asInsertion.Length));
+            int upperBoundMin = Math.Min(Left + Length - 1, asInsertion.Left + asInsertion.Length - 1);
+            int lowerBoundMax = Math.Max(Left, asInsertion.Left);
             int lengthReduction = (lowerBoundMax <= upperBoundMin) ? Math.Max(upperBoundMin - lowerBoundMax + 1, 0) : 0;
             int newLength = Length - lengthReduction;
             if (newLength > 0)
             {
-                return new IntegerInterval[] { new IntegerInterval(Position - leftShiftCount, newLength) };
+                return new IntegerInterval[] { new IntegerInterval(Left - leftShiftCount, newLength) };
             }
             else
             {
@@ -53,9 +58,9 @@ namespace Alterity.Models
 
         public IntegerInterval[] InsertTransformInsertion(IntegerInterval asInsertion)
         {
-            if (asInsertion.Position <= Position)
+            if (asInsertion.Left <= Left)
             {
-                return new IntegerInterval[] { new IntegerInterval(Position + asInsertion.Length, Length) };
+                return new IntegerInterval[] { new IntegerInterval(Left + asInsertion.Length, Length) };
             }
             else
             {
@@ -65,20 +70,84 @@ namespace Alterity.Models
 
         public IntegerInterval[] DeleteTransformInsertion(IntegerInterval asDeletion)
         {
-            int leftShift = Math.Max(0, Math.Min(Position - asDeletion.Position, asDeletion.Length));
-            return new IntegerInterval[] { new IntegerInterval(Position - leftShift, Length) };
+            int leftShift = Math.Max(0, Math.Min(Left - asDeletion.Left, asDeletion.Length));
+            return new IntegerInterval[] { new IntegerInterval(Left - leftShift, Length) };
         }
 
         public IntegerInterval[] InsertTransformInsertionSwappedPrecedence(IntegerInterval asInsertion)
         {
-            if (asInsertion.Position < Position)
+            if (asInsertion.Left < Left)
             {
-                return new IntegerInterval[] { new IntegerInterval(Position + asInsertion.Length, Length) };
+                return new IntegerInterval[] { new IntegerInterval(Left + asInsertion.Length, Length) };
             }
             else
             {
                 return new IntegerInterval[] { this };
             }
+        }
+        public IntegerInterval Intersection(IntegerInterval other)
+        {
+            IntegerInterval result;
+            if (other.Right >= Left && other.Left <= Right)
+            {
+                result.Left = Math.Max(other.Left, Left);
+                result.Length = Math.Min(other.Right, Right) - result.Left + 1;
+            }
+            else
+            {
+                result.Left = 0;
+                result.Length = 0;
+            }
+            return result;
+        }
+        public IntegerInterval Union(IntegerInterval other)
+        {
+            IntegerInterval result;
+            if (other.Right >= Left && other.Left <= Right)
+            {
+                result.Left = Math.Min(other.Left, Left);
+                result.Length = Math.Max(other.Right, Right) - result.Left + 1;
+            }
+            else
+            {
+                result.Left = 0;
+                result.Length = 0;
+            }
+            return result;
+        }
+        public IntegerInterval[] Subtract(IntegerInterval other)
+        {
+            if (other.Right >= Left && other.Left <= Right)
+            {
+                int leftResultLength = Math.Max(other.Left - Left, 0);
+                int rightResultLength = Math.Max(Right - other.Right, 0);
+                if (leftResultLength + rightResultLength < this.Length)
+                {
+                    if (leftResultLength > 0)
+                    {
+                        if (rightResultLength > 0)
+                        {
+                            return new IntegerInterval[] { new IntegerInterval(Left, leftResultLength), new IntegerInterval(Right - rightResultLength + 1, rightResultLength) };
+                        }
+                        else
+                        {
+                            return new IntegerInterval[] { new IntegerInterval(Left, leftResultLength) };
+                        }
+                    }
+                    else
+                    {
+                        if (rightResultLength > 0)
+                        {
+                            return new IntegerInterval[] { new IntegerInterval(Right - rightResultLength + 1, rightResultLength) };
+                        }
+                        else
+                        {
+                            return new IntegerInterval[] { };
+                        }
+                    }
+                }
+            }
+            return new IntegerInterval[] { this };
         }
     }
 }

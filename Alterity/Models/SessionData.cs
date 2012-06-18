@@ -100,4 +100,5 @@ namespace Alterity.Models
             return data;
         }
     }
+}
 

@@ -23,7 +23,7 @@ namespace Alterity.Models
 
         Hunk[] ApplyTransformationResults(IntegerInterval[] intervals)
         {
-            return new Hunk[] { new InsertionHunk(intervals[0].Position, Text) };
+            return new Hunk[] { new InsertionHunk(intervals[0].Left, Text) };
         }
 
         public override Hunk[] UndoPrior(Hunk hunk)
@@ -31,11 +31,11 @@ namespace Alterity.Models
             if (hunk == null) throw new ArgumentNullException("hunk");
             if (hunk is InsertionHunk)
             {
-                return ApplyTransformationResults(ToInterval().DeleteTransformInsertion(hunk.ToInterval()));
+                return ApplyTransformationResults(ToIntegerInterval().DeleteTransformInsertion(hunk.ToIntegerInterval()));
             }
             else if (hunk is DeletionHunk)
             {
-                return ApplyTransformationResults(ToInterval().InsertTransformInsertion(hunk.ToInterval()));
+                return ApplyTransformationResults(ToIntegerInterval().InsertTransformInsertion(hunk.ToIntegerInterval()));
             }
             else if (hunk is NoOperationHunk)
             {
@@ -52,32 +52,11 @@ namespace Alterity.Models
             if (hunk == null) throw new ArgumentNullException("hunk");
             if (hunk is InsertionHunk)
             {
-                return ApplyTransformationResults(ToInterval().InsertTransformInsertion(hunk.ToInterval()));
+                return ApplyTransformationResults(ToIntegerInterval().InsertTransformInsertion(hunk.ToIntegerInterval()));
             }
             else if (hunk is DeletionHunk)
             {
-                return ApplyTransformationResults(ToInterval().DeleteTransformInsertion(hunk.ToInterval()));
-            }
-            else if (hunk is NoOperationHunk)
-            {
-                throw new InvalidOperationException("NoOperationHunks should not be redone, undone, or subjoined.");
-            }
-            else
-            {
-                throw new ArgumentException("Unrecognized hunk type", "hunk");
-            }
-        }
-
-        public override Hunk[] SubjoinSubsequent(Hunk hunk)
-        {
-            if (hunk == null) throw new ArgumentNullException("hunk");
-            if (hunk is InsertionHunk)
-            {
-                return ApplyTransformationResults(ToInterval().InsertTransformInsertionSwappedPrecedence(hunk.ToInterval()));
-            }
-            else if (hunk is DeletionHunk)
-            {
-                return ApplyTransformationResults(ToInterval().DeleteTransformInsertion(hunk.ToInterval()));
+                return ApplyTransformationResults(ToIntegerInterval().DeleteTransformInsertion(hunk.ToIntegerInterval()));
             }
             else if (hunk is NoOperationHunk)
             {
@@ -139,5 +118,49 @@ namespace Alterity.Models
             }
         }
 
+        public override Hunk MergeSubsequent(ref Hunk other)
+        {
+            if (other == null) throw new ArgumentNullException("other");
+            if (other.StartIndex + Length >= StartIndex - 1 && other.StartIndex <= StartIndex + Length + 1)
+            {
+                InsertionHunk otherAsInsertion = other as InsertionHunk;
+                if (otherAsInsertion != null)
+                {
+                    other = null;
+                    int resultStartIndex = Math.Min(otherAsInsertion.StartIndex, StartIndex);
+                    String resultText = Text.Insert(Math.Max(otherAsInsertion.StartIndex - StartIndex, 0), otherAsInsertion.Text);
+                    return new InsertionHunk(resultStartIndex, resultText);
+                }
+                else
+                {
+                    DeletionHunk otherAsDeletion = other as DeletionHunk;
+                    if (otherAsDeletion != null)
+                    {
+                        StringBuilder resultStringBuilder = new StringBuilder();
+                        foreach (IntegerInterval remnantInterval in ToIntegerInterval().Subtract(otherAsDeletion.ToIntegerInterval()))
+                        {
+                            resultStringBuilder.Append(Text.Substring(remnantInterval.Left - StartIndex, remnantInterval.Length));
+                        }
+                        String resultText = resultStringBuilder.ToString();
+                        int resultLength = resultText.Length;
+                        int mutualAnnihilationLength = Length - resultLength;
+                        int deletionRemainderLength = otherAsDeletion.Length - mutualAnnihilationLength;
+                        if (deletionRemainderLength > 0)
+                            other = new DeletionHunk(otherAsDeletion.StartIndex, deletionRemainderLength);
+                        else
+                            other = null;
+                        return new InsertionHunk(StartIndex, resultText);
+                    }
+                    else
+                    {
+                        return this;
+                    }
+                }
+            }
+            else
+            {
+                return this;
+            }
+        }
     }
 }

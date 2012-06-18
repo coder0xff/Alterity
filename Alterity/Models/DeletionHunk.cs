@@ -22,7 +22,7 @@ namespace Alterity.Models
 
         Hunk[] ApplyTransformationResults(IntegerInterval[] intervals)
         {
-            DeletionHunk[] results = intervals.Select(x => new DeletionHunk(x.Position, x.Length)).ToArray();
+            DeletionHunk[] results = intervals.Select(x => new DeletionHunk(x.Left, x.Length)).ToArray();
             for (int transformeeIndex = 1; transformeeIndex < results.Length; transformeeIndex++)
             {
                 for (int transformerIndex = 0; transformerIndex < transformeeIndex; transformerIndex++)
@@ -38,11 +38,11 @@ namespace Alterity.Models
             if (hunk == null) throw new ArgumentNullException("hunk");
             if (hunk is InsertionHunk)
             {
-                return ApplyTransformationResults(ToInterval().DeleteTransformSelection(hunk.ToInterval()));
+                return ApplyTransformationResults(ToIntegerInterval().DeleteTransformSelection(hunk.ToIntegerInterval()));
             }
             else if (hunk is DeletionHunk)
             {
-                return ApplyTransformationResults(ToInterval().InsertTransformSelection(hunk.ToInterval()));
+                return ApplyTransformationResults(ToIntegerInterval().InsertTransformSelection(hunk.ToIntegerInterval()));
             }
             else if (hunk is NoOperationHunk)
             {
@@ -62,11 +62,11 @@ namespace Alterity.Models
             if (hunk == null) throw new ArgumentNullException("hunk");
             if (hunk is InsertionHunk)
             {
-                return ApplyTransformationResults(ToInterval().InsertTransformSelection(hunk.ToInterval()));
+                return ApplyTransformationResults(ToIntegerInterval().InsertTransformSelection(hunk.ToIntegerInterval()));
             }
             else if (hunk is DeletionHunk)
             {
-                return ApplyTransformationResults(ToInterval().DeleteTransformSelection(hunk.ToInterval()));
+                return ApplyTransformationResults(ToIntegerInterval().DeleteTransformSelection(hunk.ToIntegerInterval()));
             }
             else if (hunk is NoOperationHunk)
             {
@@ -78,27 +78,6 @@ namespace Alterity.Models
             }
         }
 
-        public override Hunk[] SubjoinSubsequent(Hunk hunk)
-        {
-            if (hunk == null) throw new ArgumentNullException("hunk");
-            if (hunk is InsertionHunk)
-            {
-                return ApplyTransformationResults(ToInterval().InsertTransformSelection(hunk.ToInterval()));
-            }
-            else if (hunk is DeletionHunk)
-            {
-                return ApplyTransformationResults(ToInterval().DeleteTransformSelection(hunk.ToInterval()));
-            }
-            else if (hunk is NoOperationHunk)
-            {
-                throw new InvalidOperationException("NoOperationHunks should not be redone, undone, or subjoined.");
-            }
-            else
-            {
-                throw new ArgumentException("Unrecognized hunk type", "hunk");
-            }
-        }
-        
         public override void Apply(StringBuilder text)
         {
             if (text == null) throw new ArgumentNullException("text");
@@ -143,6 +122,42 @@ namespace Alterity.Models
                 if (x == null) return -1;
                 if (y == null) return 1;
                 return x.Id - y.Id;
+            }
+        }
+
+        public override Hunk MergeSubsequent(ref Hunk other)
+        {
+            if (other == null) throw new ArgumentNullException("other");
+            InsertionHunk otherAsInsertion = other as InsertionHunk;
+            if (otherAsInsertion != null)
+            {
+                return this;
+            }
+            else
+            {
+                DeletionHunk otherAsDeletion = other as DeletionHunk;
+                if (otherAsDeletion != null)
+                {
+                    IntegerInterval otherInterval = otherAsDeletion.ToIntegerInterval();
+                    if (otherInterval.Right == StartIndex - 1)
+                    {
+                        other = null;
+                        return new DeletionHunk(otherAsDeletion.StartIndex, Length + otherAsDeletion.Length);
+                    }
+                    else if (otherInterval.Left == StartIndex)
+                    {
+                        other = null;
+                        return new DeletionHunk(StartIndex, Length + otherAsDeletion.Length);
+                    }
+                    else
+                    {
+                        return this;
+                    }
+                }
+                else
+                {
+                    return this;
+                }
             }
         }
     }
