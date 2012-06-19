@@ -84,34 +84,10 @@ namespace Alterity.Models
         //The return value is an instance of the implementing class
         internal abstract EditOperation RedoPrior(EditOperation hunk);
 
-        private T SubjoinSubsequent<T>(Hunk hunk) where T : EditOperation, new()
-        {
-            if (hunk == null) throw new ArgumentNullException("hunk");
-            List<Hunk> resultingHunks = new List<Hunk>();
-            foreach (Hunk unprocessedHunk in Hunks)
-                resultingHunks.AddRange(unprocessedHunk.SubjoinSubsequent(hunk));
-            T result = new T();
-            result.Hunks = resultingHunks.ToArray();
-            return result;
-        }
-
-        internal T SubjoinSubsequent<T>(EditOperation operation) where T : EditOperation, new()
-        {
-            if (operation == null) throw new ArgumentNullException("operation");
-            T result = (T)this;
-            foreach (Hunk hunk in operation.Hunks)
-            {
-                result = result.SubjoinSubsequent<T>(hunk);
-            }
-            return result;
-        }
-
         internal void Apply(System.Text.StringBuilder stringBuilder)
         {
             foreach (Hunk hunk in Hunks)
                 hunk.Apply(stringBuilder);
         }
-        //The return value is an instance of the implementing class
-        internal abstract EditOperation SubjoinSubsequent(EditOperation hunk);
     }
 }

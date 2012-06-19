@@ -79,6 +79,7 @@ namespace Alterity.Models
         public static IHunkComparer IdComparer { get { return idComparer; } }
 
         public int Id { get; set; }
+        public EditOperation EditOperation { get; set; }
         public abstract int StartIndex { get; protected set; }
         public abstract int Length { get; protected set; }
         public IntegerInterval ToIntegerInterval() { return new IntegerInterval(StartIndex, Length); }

@@ -9,12 +9,11 @@ using Alterity.Models;
 
 namespace Alterity.Controllers
 { 
-    public class UserDataController : AlterityController
+    public class UserDataController : AlterityBaseController
     {
         public ViewResult Index()
         {
-            Save();
-            return View(db.UserData.ToList());
+            return View((new EntityMappingContext()).Users.ToList());
         }
 
         //
@@ -22,7 +21,7 @@ namespace Alterity.Controllers
 
         public ViewResult Details(string id)
         {
-            UserData userdata = db.UserData.Find(id);
+            User userdata = (new EntityMappingContext()).Users.Find(id);
             return View(userdata);
         }
 
@@ -38,12 +37,14 @@ namespace Alterity.Controllers
         // POST: /UserData/Create
 
         [HttpPost]
-        public ActionResult Create(UserData userdata)
+        public ActionResult Create(User userdata)
         {
             if (ModelState.IsValid)
             {
-                db.UserData.Add(userdata);
-                db.SaveChanges();
+                EntityMappingContext.AccessDataBase(() =>
+                    {
+                        EntityMappingContext.Current.Users.Add(userdata);
+                    });
                 return RedirectToAction("Index");  
             }
 
@@ -55,7 +56,7 @@ namespace Alterity.Controllers
  
         public ActionResult Edit(string id)
         {
-            UserData userdata = db.UserData.Find(id);
+            User userdata = (new EntityMappingContext()).Users.Find(id);
             return View(userdata);
         }
 
@@ -63,12 +64,14 @@ namespace Alterity.Controllers
         // POST: /UserData/Edit/5
 
         [HttpPost]
-        public ActionResult Edit(UserData userdata)
+        public ActionResult Edit(User userdata)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(userdata).State = EntityState.Modified;
-                db.SaveChanges();
+                EntityMappingContext.AccessDataBase(() =>
+                {
+                    EntityMappingContext.Current.Entry(userdata).State = EntityState.Modified;
+                });
                 return RedirectToAction("Index");
             }
             return View(userdata);
@@ -79,7 +82,7 @@ namespace Alterity.Controllers
  
         public ActionResult Delete(string id)
         {
-            UserData userdata = db.UserData.Find(id);
+            User userdata = (new EntityMappingContext()).Users.Find(id);
             return View(userdata);
         }
 
@@ -88,16 +91,17 @@ namespace Alterity.Controllers
 
         [HttpPost, ActionName("Delete")]
         public ActionResult DeleteConfirmed(string id)
-        {            
-            UserData userdata = db.UserData.Find(id);
-            db.UserData.Remove(userdata);
-            db.SaveChanges();
+        {
+            EntityMappingContext.AccessDataBase(() =>
+                {
+                    User userdata = EntityMappingContext.Current.Users.Find(id);
+                    EntityMappingContext.Current.Users.Remove(userdata);
+                });
             return RedirectToAction("Index");
         }
 
         protected override void Dispose(bool disposing)
         {
-            db.Dispose();
             base.Dispose(disposing);
         }
     }

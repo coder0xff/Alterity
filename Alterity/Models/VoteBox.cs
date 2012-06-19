@@ -30,5 +30,19 @@ namespace Alterity.Models
             }
             return (float)upVoteCount / totalVoteCount;
         }
+
+        /// <summary>
+        /// Adds a new VoteBox to the database, and returns it.
+        /// </summary>
+        /// <returns></returns>
+        public static VoteBox Create()
+        {
+            return EntityMappingContext.Current.VoteBoxes.Add(new VoteBox());
+        }
+
+        public void Destroy()
+        {
+            EntityMappingContext.Current.VoteBoxes.Remove(this);
+        }
     }
 }

@@ -4,18 +4,37 @@ using System.Linq;
 using System.Web;
 using System.Text;
 using System.ComponentModel.DataAnnotations;
+using Alterity.Models.Async;
 
 namespace Alterity.Models
 {
     public class Document
     {
         public int Id { get; set; }
-        public virtual ICollection<ChangeSet> ChangeSets { get; set; }     
-        public UserData Owner { get; set; }
-        public virtual ICollection<UserData> Administrators { get; set; }
-        public virtual ICollection<UserData> Moderators { get; set; }
+        public virtual ICollection<ChangeSet> ChangeSets { get; set; }
+        public User Owner { get; set; }
+        public virtual ICollection<User> Administrators { get; set; }
+        public virtual ICollection<User> Moderators { get; set; }
         public float? VoteRatioThreshold { get; set; }
         public bool Locked { get; set; }
+        public DocumentVisibility Visibility { get; set; }
+        public DocumentEditability Editability { get; set; }
+
+        public static Document Create(User owner, DocumentVisibility visibility, DocumentEditability editability)
+        {
+            Document document = new Document();
+            document.Owner = owner;
+            document.Visibility = visibility;
+            document.Editability = editability;
+            document.Locked = false;
+            return EntityMappingContext.Current.Documents.Add(document);
+        }
+
+        public void Destroy()
+        {
+            EntityMappingContext.Current.Documents.Remove(this);
+        }
+
         public ICollection<EditOperation> GetEditOperations()
         {
             List<EditOperation> results = new List<EditOperation>();
@@ -32,7 +51,7 @@ namespace Alterity.Models
             return results;
         }
 
-        public static String Generate(ICollection<EditOperation> Edits)
+        public static String GenerateDocumentText(ICollection<EditOperation> Edits)
         {
             StringBuilder result = new StringBuilder();
             foreach (EditOperation edit in Edits)
@@ -180,6 +199,21 @@ namespace Alterity.Models
                 allOperations.Add(operation.Id, operation);
             }
             return new List<EditOperation>(operationsToProcess.Select(x => TransformForTargetState(x, sortedTargetState, transformedOperations, allOperations)));
+        }
+
+        ChangeSet GetUsersChangeSet(User user)
+        {
+            ChangeSet result = null;
+            foreach (ChangeSet entry in (from changeSet in ChangeSets where changeSet.Owner == user orderby changeSet.Id descending select changeSet).Take(1))
+                result = entry;
+            if (result == null)
+                result = ChangeSet.Create(user, this);
+            return result;
+        }
+
+        public void AppendHunk(ClientLiveHunk Hunk)
+        {
+
         }
     }
 }

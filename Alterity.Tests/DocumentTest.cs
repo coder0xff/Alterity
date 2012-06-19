@@ -93,7 +93,7 @@ namespace Alterity.Tests
             //ICollection<EditOperation> expected 
             ICollection<EditOperation> processOperations;
             processOperations = Document.ProcessState(sortedOperations);
-            String actual = Document.Generate(processOperations);
+            String actual = Document.GenerateDocumentText(processOperations);
             String expected = "Hello, world! Goodbye, cruel world!";
             Assert.AreEqual(expected, actual);
         }
@@ -118,7 +118,7 @@ namespace Alterity.Tests
             if (!currentVoteState)
             {
                 VoteEntry voteEntry = new VoteEntry();
-                voteEntry.User = new UserData();
+                voteEntry.User = new User();
                 voteEntry.WasUpvote = false;
                 changeSet.VoteBox.Votes.Add(voteEntry);
                 changeSet.VoteBox.Votes.Add(voteEntry);
@@ -143,8 +143,8 @@ namespace Alterity.Tests
             insertOperation.ChangeSubset = changeSubset;
             changeSubset.ChangeSet = changeSet;
             changeSet.Document = document;
-            changeSet.User = new UserData();
-            changeSet.User.UserName = operationIndex.ToString();
+            changeSet.Owner = new User();
+            changeSet.Owner.UserName = operationIndex.ToString();
             return changeSet;
         }
     }

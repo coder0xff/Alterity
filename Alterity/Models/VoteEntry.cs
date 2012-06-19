@@ -16,7 +16,7 @@ namespace Alterity.Models
         [Key, Column(Order = 1)]
         public String UserName { get; set; }
         [ForeignKey("UserName")]
-        public virtual UserData User { get; set; }
+        public virtual User User { get; set; }
 
         public bool WasUpvote { get; set; }
     }

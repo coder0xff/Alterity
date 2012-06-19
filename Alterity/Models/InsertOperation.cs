@@ -25,10 +25,5 @@ namespace Alterity.Models
         {
             return RedoPrior<InsertOperation>(hunk);
         }
-
-        internal override EditOperation SubjoinSubsequent(EditOperation hunk)
-        {
-            return SubjoinSubsequent<InsertOperation>(hunk);
-        }
     }
 }

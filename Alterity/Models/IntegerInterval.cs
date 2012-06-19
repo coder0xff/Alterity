@@ -15,7 +15,7 @@ namespace Alterity.Models
             set { Length = value - Left + 1; }
         }
 
-        public IntegerInterval(int left, int length)
+        public IntegerInterval(int left, int length) : this()
         {
             Left = left;
             Length = length;
@@ -87,7 +87,7 @@ namespace Alterity.Models
         }
         public IntegerInterval Intersection(IntegerInterval other)
         {
-            IntegerInterval result;
+            IntegerInterval result = new IntegerInterval();
             if (other.Right >= Left && other.Left <= Right)
             {
                 result.Left = Math.Max(other.Left, Left);
@@ -102,7 +102,7 @@ namespace Alterity.Models
         }
         public IntegerInterval Union(IntegerInterval other)
         {
-            IntegerInterval result;
+            IntegerInterval result = new IntegerInterval();
             if (other.Right >= Left && other.Left <= Right)
             {
                 result.Left = Math.Min(other.Left, Left);

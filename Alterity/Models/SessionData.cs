@@ -75,25 +75,25 @@ namespace Alterity.Models
 
         const String cookieName = "persistedSession";
         const int sessionExpirationMinutes = 480;
-        static SessionData CreateSessionData(EntityMappingContext dbContext, Guid guid)
+        static SessionData CreateSessionData(Guid guid)
         {
             SessionData sessionData = new SessionData();
             sessionData.Id = guid;
             sessionData.Expiration = DateTime.Now.AddMinutes(sessionExpirationMinutes);
-            sessionData = dbContext.SessionDatas.Add(sessionData);
-            dbContext.SaveChanges();
+            sessionData = EntityMappingContext.Current.SessionDatas.Add(sessionData);
+            EntityMappingContext.Current.SaveChanges();
             return sessionData;
         }
 
-        public static dynamic GetSessionData(EntityMappingContext dbContext, HttpRequestBase request, HttpResponseBase response)
+        public static dynamic GetSessionData(HttpRequestBase request, HttpResponseBase response)
         {
             HttpCookie persistedSessionCookie = request.Cookies[cookieName];
             if (persistedSessionCookie == null)
                 persistedSessionCookie = new HttpCookie(cookieName, Guid.NewGuid().ToString());
             Guid sessionGuid = Guid.Parse(persistedSessionCookie.Value);
-            SessionData data = dbContext.SessionDatas.FirstOrDefault(x => x.Id == sessionGuid);
+            SessionData data = EntityMappingContext.Current.SessionDatas.FirstOrDefault(x => x.Id == sessionGuid);
             if (data == null)
-                data = CreateSessionData(dbContext, Guid.Parse(persistedSessionCookie.Value));
+                data = CreateSessionData(Guid.Parse(persistedSessionCookie.Value));
             persistedSessionCookie.Expires = DateTime.Now.AddMinutes(sessionExpirationMinutes);
             data.Expiration = persistedSessionCookie.Expires;
             response.AppendCookie(persistedSessionCookie);

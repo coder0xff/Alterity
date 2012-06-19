@@ -39,7 +39,7 @@ namespace Alterity.Models
             }
             else if (hunk is NoOperationHunk)
             {
-                throw new InvalidOperationException("NoOperationHunks should not be redone, undone, or subjoined.");
+                throw new InvalidOperationException("NoOperationHunks should not be redone or undone");
             }
             else
             {
