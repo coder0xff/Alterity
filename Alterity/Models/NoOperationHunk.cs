@@ -119,9 +119,10 @@ namespace Alterity.Models
             }
         }
 
-        public override Hunk MergeSubsequent(ref Hunk other)
+        public override bool MergeSubsequent(ref Hunk other, out Hunk result)
         {
-            return this;
+            result = this;
+            return false;
         }
     }
 }

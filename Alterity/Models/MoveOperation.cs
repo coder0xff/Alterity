@@ -9,12 +9,6 @@ namespace Alterity.Models
     {
         public MoveOperation() { }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public MoveOperation(int sourceIndex, int destinationIndex, string text)
-        {
-            Hunks.Add(new DeletionHunk(sourceIndex, new System.Globalization.StringInfo(text).LengthInTextElements));
-            Hunks.Add(new InsertionHunk(destinationIndex, text));
-        }
         internal override EditOperation UndoPrior(EditOperation hunk)
         {
             return UndoPrior<MoveOperation>(hunk);
@@ -23,6 +17,11 @@ namespace Alterity.Models
         internal override EditOperation RedoPrior(EditOperation hunk)
         {
             return RedoPrior<MoveOperation>(hunk);
+        }
+
+        public override bool MergeHunk(ref Hunk hunk)
+        {
+            return false;
         }
     }
 }

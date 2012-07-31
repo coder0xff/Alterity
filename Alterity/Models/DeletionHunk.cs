@@ -20,6 +20,8 @@ namespace Alterity.Models
             Length = length;
         }
 
+        protected DeletionHunk() { }
+
         Hunk[] ApplyTransformationResults(IntegerInterval[] intervals)
         {
             DeletionHunk[] results = intervals.Select(x => new DeletionHunk(x.Left, x.Length)).ToArray();
@@ -125,13 +127,14 @@ namespace Alterity.Models
             }
         }
 
-        public override Hunk MergeSubsequent(ref Hunk other)
+        public override bool MergeSubsequent(ref Hunk other, out Hunk result)
         {
             if (other == null) throw new ArgumentNullException("other");
             InsertionHunk otherAsInsertion = other as InsertionHunk;
             if (otherAsInsertion != null)
             {
-                return this;
+                result = this;
+                return false;
             }
             else
             {
@@ -139,24 +142,34 @@ namespace Alterity.Models
                 if (otherAsDeletion != null)
                 {
                     IntegerInterval otherInterval = otherAsDeletion.ToIntegerInterval();
-                    if (otherInterval.Right == StartIndex - 1)
+                    //if (otherInterval.Left <= StartIndex && otherInterval.Left + otherInterval.Length >= StartIndex)
+                    // we must not alter the starting index of a deletion because it would not work correctly if an
+                    // insertion was made between the two deletions
+                    if (otherInterval.Left == StartIndex)
                     {
+                        otherAsDeletion.Destroy();
                         other = null;
-                        return new DeletionHunk(otherAsDeletion.StartIndex, Length + otherAsDeletion.Length);
-                    }
-                    else if (otherInterval.Left == StartIndex)
-                    {
-                        other = null;
-                        return new DeletionHunk(StartIndex, Length + otherAsDeletion.Length);
+                        if (Id < 0)
+                            result = new DeletionHunk(otherAsDeletion.StartIndex, Length + otherAsDeletion.Length);
+                        else
+                        {
+                            EditOperation editOperation = EditOperation;
+                            Destroy();
+                            result = new DeletionHunk(otherAsDeletion.StartIndex, Length + otherAsDeletion.Length);
+                            editOperation.Hunks.Add(result);
+                        }
+                        return true;
                     }
                     else
                     {
-                        return this;
+                        result = this;
+                        return false;
                     }
                 }
                 else
                 {
-                    return this;
+                    result = this;
+                    return false;
                 }
             }
         }

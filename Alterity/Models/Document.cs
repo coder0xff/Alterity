@@ -20,19 +20,18 @@ namespace Alterity.Models
         public DocumentVisibility Visibility { get; set; }
         public DocumentEditability Editability { get; set; }
 
-        public static Document Create(User owner, DocumentVisibility visibility, DocumentEditability editability)
+        public Document(DocumentVisibility visibility, DocumentEditability editability)
         {
-            Document document = new Document();
-            document.Owner = owner;
-            document.Visibility = visibility;
-            document.Editability = editability;
-            document.Locked = false;
-            return EntityMappingContext.Current.Documents.Add(document);
+            Visibility = visibility;
+            Editability = editability;
+            Locked = false;
         }
 
-        public void Destroy()
+        protected Document() { }
+
+        public static Document GetById(int id)
         {
-            EntityMappingContext.Current.Documents.Remove(this);
+            return EntityMappingContext.Current.Documents.FirstOrDefault(_ => _.Id == id);
         }
 
         public ICollection<EditOperation> GetEditOperations()
@@ -182,6 +181,19 @@ namespace Alterity.Models
             return result;
         }
 
+        public static List<int> GetListOfActiveEditOperationIds(ICollection<EditOperation> editOperations)
+        {
+            var result = new List<int>(editOperations.Where(_ => _.GetVoteStatus() == EditOperation.ActivationState.Activated).Select(_ => _.Id));
+            result.Sort();
+            return result;
+        }
+        /// <summary>
+        /// Transforms all the operations in sortedOperations based on the active and inactive
+        /// hunks contained in sortedOperations. Essentially, this function reconciles the
+        /// state of all edits/hunks so that they could be output into a string
+        /// </summary>
+        /// <param name="sortedOperations">The operations to process, sorted by Id</param>
+        /// <returns></returns>
         public static ICollection<EditOperation> ProcessState(ICollection<EditOperation> sortedOperations)
         {
             int reserveCount = sortedOperations.Count;
@@ -207,13 +219,63 @@ namespace Alterity.Models
             foreach (ChangeSet entry in (from changeSet in ChangeSets where changeSet.Owner == user orderby changeSet.Id descending select changeSet).Take(1))
                 result = entry;
             if (result == null)
-                result = ChangeSet.Create(user, this);
+            {
+                result = new ChangeSet();
+                user.ChangeSets.Add(result);
+                this.ChangeSets.Add(result);
+            }
             return result;
         }
 
-        public void AppendHunk(ClientLiveHunk Hunk)
+        IEnumerable<EditOperation> GetCurrentActiveEdits()
         {
+            return EntityMappingContext.Current.EditOperations.Where(x => x.Document == this && x.GetVoteStatus() == EditOperation.ActivationState.Activated);
+        }
 
+        ChangeSubset GetUsersChangeSubset(User user)
+        {
+            ChangeSubset result = null;
+            foreach (ChangeSubset entry in GetUsersChangeSet(user).ChangeSubsets.OrderByDescending(_ => _.Id).Take(1))
+                result = entry;
+            if (result == null)
+            {
+                result = new ChangeSubset(SpringboardState.Create(GetCurrentActiveEdits()));
+                GetUsersChangeSet(user).ChangeSubsets.Add(result);
+            }
+            return result;
+        }
+
+        public void CloseAllLowerIndexedEdits(int EndIndex)
+        {
+            foreach (EditOperation editOperation in EntityMappingContext.Current.EditOperations.Where(x => x.Document == this && x.IsClosed == false && x.Hunks.Min(y => y.StartIndex) > EndIndex))
+                editOperation.Close();
+        }
+
+        public IEnumerable<EditOperation> GetUsersOpenEditOperations(User user)
+        {
+            return EntityMappingContext.Current.EditOperations.Where(_ => _.IsClosed == false && _.Document == this && _.User == user);
+        }
+
+        public void AppendHunk(Hunk hunk, User user)
+        {
+            foreach (EditOperation editOperation in GetUsersOpenEditOperations(user).OrderByDescending(_ => _.Hunks.Min(_2 => _2.StartIndex)))
+            {
+                editOperation.MergeHunk(ref hunk);
+                if (hunk == null) break;
+            }
+            if (hunk is InsertionHunk)
+            {
+                var operation = new InsertOperation();
+                GetUsersChangeSubset(user).EditOperations.Add(operation);
+                operation.Hunks.Add(hunk);
+            }
+            else if (hunk is DeletionHunk)
+            {
+                var operation = new DeleteOperation();
+                GetUsersChangeSubset(user).EditOperations.Add(operation);
+                operation.Hunks.Add(hunk);
+            }
+            else throw new ApplicationException("Cannot create NoOperation operation");
         }
     }
 }

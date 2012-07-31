@@ -1,4 +1,4 @@
-﻿@model Alterity.Models.UserData
+﻿@model Alterity.Models.User
 
 @{
     ViewBag.Title = "Edit";
@@ -12,7 +12,7 @@
 @using (Html.BeginForm()) {
     @Html.ValidationSummary(true)
     <fieldset>
-        <legend>UserData</legend>
+        <legend>User</legend>
 
         @Html.HiddenFor(model => model.UserName)
 

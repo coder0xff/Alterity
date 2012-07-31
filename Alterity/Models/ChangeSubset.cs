@@ -12,19 +12,22 @@ namespace Alterity.Models
         public ChangeSet ChangeSet { get; set; }
         public SpringboardState SpringboardState { get; set; }
         public virtual ICollection<EditOperation> EditOperations { get; set; }
+        public bool IsClosed { get; set; }
 
-        public static ChangeSubset Create(ChangeSet changeSet, SpringboardState springboardState)
+        public ChangeSubset(SpringboardState springboardState)
         {
-            ChangeSubset changeSubset = new ChangeSubset();
-            changeSubset.ChangeSet = changeSet;
-            changeSubset.SpringboardState = springboardState;
-            changeSubset.VoteBox = VoteBox.Create();
-            return EntityMappingContext.Current.ChangeSubsets.Add(changeSubset);
+            SpringboardState = springboardState;
+            VoteBox = VoteBox.Create();
+            IsClosed = false;
         }
 
-        public void Destroy()
+        public ChangeSubset(List<EditOperation> activeEditOperations) : this(SpringboardState.Create(activeEditOperations))
         {
-            EntityMappingContext.Current.ChangeSubsets.Remove(this);
+        }
+
+        public IEnumerable<EditOperation> GetOpenEditOperations()
+        {
+            return EditOperations.Where((_) => _.IsClosed == false);
         }
     }
 }

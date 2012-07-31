@@ -14,20 +14,17 @@ namespace Alterity.Models
         public DateTime LastModified { get; set; }
         public Document Document { get; set; }
         public virtual ICollection<ChangeSubset> ChangeSubsets { get; set; }
-
-        public static ChangeSet Create(User user, Document document)
+        public bool IsClosed { get; set; }
+        public ChangeSet()
         {
-            ChangeSet changeSet = new ChangeSet();
-            changeSet.Owner = user;
-            changeSet.Document = document;
-            changeSet.LastModified = DateTime.Now;
-            changeSet.VoteBox = VoteBox.Create();
-            return EntityMappingContext.Current.ChangeSets.Add(changeSet);
+            LastModified = DateTime.Now;
+            VoteBox = VoteBox.Create();
+            IsClosed = false;
         }
 
-        public void Destroy()
+        public IEnumerable<ChangeSubset> GetOpenChangeSubsets()
         {
-            EntityMappingContext.Current.ChangeSets.Remove(this);
+            return ChangeSubsets.Where((_) => _.IsClosed == false);
         }
     }
 }

@@ -73,7 +73,7 @@ namespace Alterity.Tests
         [TestMethod()]
         public void ProcessStateTest()
         {
-            Document document = new Document();
+            Document document = new Document(DocumentVisibility.Public, DocumentEditability.Public);
             document.VoteRatioThreshold = new float?(0.5f);
             List<ChangeSet> changeSets = new List<ChangeSet>();
             document.ChangeSets = changeSets;
@@ -103,8 +103,7 @@ namespace Alterity.Tests
             List<SpringboardStateEntry> entries = (List<SpringboardStateEntry>)((List<ChangeSubset>)changeSets[changeSetIndex].ChangeSubsets)[0].SpringboardState.Entries;
             foreach (int activeOperationId in activeOperationIds)
             {
-                SpringboardStateEntry entry = new SpringboardStateEntry();
-                entry.EditOperationId = activeOperationId;
+                SpringboardStateEntry entry = new SpringboardStateEntry(activeOperationId);
                 entries.Add(entry);
             }
         }
@@ -126,16 +125,15 @@ namespace Alterity.Tests
             }
             List<ChangeSubset> changeSubsets = new List<ChangeSubset>();
             changeSet.ChangeSubsets = changeSubsets;
-            ChangeSubset changeSubset = new ChangeSubset();
+            ChangeSubset changeSubset = new ChangeSubset(new SpringboardState());
             changeSubset.Id = operationIndex;
             changeSubset.VoteBox = new VoteBox();
             changeSubset.VoteBox.Votes = new List<VoteEntry>();
-            changeSubset.SpringboardState = new SpringboardState();
-            changeSubset.SpringboardState.Entries = new List<SpringboardStateEntry>();
             changeSubsets.Add(changeSubset);
             List<EditOperation> operations = new List<EditOperation>();
             changeSubset.EditOperations = operations;
-            InsertOperation insertOperation = new InsertOperation(insertPosition, insertText);
+            InsertOperation insertOperation = new InsertOperation();
+            insertOperation.Hunks.Add(new InsertionHunk(insertPosition, insertText));
             insertOperation.Id = operationIndex;
             insertOperation.VoteBox = new VoteBox();
             insertOperation.VoteBox.Votes = new List<VoteEntry>();

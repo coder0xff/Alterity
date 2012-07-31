@@ -73,8 +73,11 @@
   <ItemGroup>
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AlterityBaseController.cs" />
-    <Compile Include="Controllers\UserDataController.cs" />
+    <Compile Include="Controllers\AsyncController.cs" />
+    <Compile Include="Controllers\DocumentController.cs" />
+    <Compile Include="Controllers\UserController.cs" />
     <Compile Include="HunkComparer.cs" />
+    <Compile Include="Intermediaries\IEditServer.cs" />
     <Compile Include="Models\AccountModel.cs" />
     <Compile Include="Models\Async\ClientState.cs" />
     <Compile Include="Models\Async\ClientStateMachine.cs" />
@@ -182,18 +185,18 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Intermediaries\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AlterityKey.pfx" />
-    <Content Include="Views\UserData\Index.cshtml" />
-    <Content Include="Views\UserData\Details.cshtml" />
-    <Content Include="Views\UserData\Create.cshtml" />
-    <Content Include="Views\UserData\Edit.cshtml" />
-    <Content Include="Views\UserData\Delete.cshtml" />
+    <Content Include="Views\User\Index.cshtml" />
+    <Content Include="Views\User\Details.cshtml" />
+    <Content Include="Views\User\Create.cshtml" />
+    <Content Include="Views\User\Edit.cshtml" />
+    <Content Include="Views\User\Delete.cshtml" />
+    <Content Include="Views\Document.cshtml" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

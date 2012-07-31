@@ -23,8 +23,14 @@ namespace Alterity.Models
         public ChangeSubset ChangeSubset { get; set; }
         public ChangeSet ChangeSet { get { return ChangeSubset.ChangeSet; } }
         public Document Document { get { return ChangeSubset.ChangeSet.Document; } }
+        public User User { get { return ChangeSet.Owner; } }
+        public bool IsClosed { get; protected set; }
 
-        protected EditOperation() {}
+        protected EditOperation()
+        {
+            VoteBox = VoteBox.Create();
+            IsClosed = false;
+        }
 
         public ActivationState GetVoteStatus()
         {
@@ -89,5 +95,14 @@ namespace Alterity.Models
             foreach (Hunk hunk in Hunks)
                 hunk.Apply(stringBuilder);
         }
+
+        public void Close() { IsClosed = true; }
+
+        /// <summary>
+        /// The hunk MUST have this operation's hunks as active priors
+        /// </summary>
+        /// <param name="hunk"></param>
+        /// <returns></returns>
+        public abstract bool MergeHunk(ref Hunk hunk);
     }
 }

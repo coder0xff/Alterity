@@ -21,6 +21,8 @@ namespace Alterity.Models
             Length = new System.Globalization.StringInfo(Text).LengthInTextElements;
         }
 
+        protected InsertionHunk() { }
+
         Hunk[] ApplyTransformationResults(IntegerInterval[] intervals)
         {
             return new Hunk[] { new InsertionHunk(intervals[0].Left, Text) };
@@ -118,18 +120,31 @@ namespace Alterity.Models
             }
         }
 
-        public override Hunk MergeSubsequent(ref Hunk other)
+        public override bool MergeSubsequent(ref Hunk other, out Hunk result)
         {
             if (other == null) throw new ArgumentNullException("other");
-            if (other.StartIndex + Length >= StartIndex - 1 && other.StartIndex <= StartIndex + Length + 1)
+            if (other.StartIndex + Length >= StartIndex && other.StartIndex <= StartIndex + Length)
             {
                 InsertionHunk otherAsInsertion = other as InsertionHunk;
                 if (otherAsInsertion != null)
                 {
+                    if (other.StartIndex >= StartIndex)
+                        other.Destroy();
                     other = null;
-                    int resultStartIndex = Math.Min(otherAsInsertion.StartIndex, StartIndex);
-                    String resultText = Text.Insert(Math.Max(otherAsInsertion.StartIndex - StartIndex, 0), otherAsInsertion.Text);
-                    return new InsertionHunk(resultStartIndex, resultText);
+                    String resultText = Text.Insert(otherAsInsertion.StartIndex - StartIndex, otherAsInsertion.Text);
+                    if (Id < 0)
+                    {
+                        result = new InsertionHunk(StartIndex, resultText);
+                        return true;
+                    }
+                    else
+                    {
+                        EditOperation editOperation = EditOperation;
+                        Destroy();
+                        result = new InsertionHunk(StartIndex, resultText);
+                        editOperation.Hunks.Add(result);
+                        return true;
+                    }
                 }
                 else
                 {
@@ -145,21 +160,48 @@ namespace Alterity.Models
                         int resultLength = resultText.Length;
                         int mutualAnnihilationLength = Length - resultLength;
                         int deletionRemainderLength = otherAsDeletion.Length - mutualAnnihilationLength;
+                        EditOperation othersEditOperation = other.EditOperation;
+                        other.Destroy();
                         if (deletionRemainderLength > 0)
-                            other = new DeletionHunk(otherAsDeletion.StartIndex, deletionRemainderLength);
+                        {
+                            if (other.Id < 0)
+                                other = new DeletionHunk(otherAsDeletion.StartIndex, deletionRemainderLength);
+                            else
+                            {
+                                other = new DeletionHunk(otherAsDeletion.StartIndex, deletionRemainderLength);
+                                othersEditOperation.Hunks.Add(other);
+                            }
+                        }
                         else
+                        {
                             other = null;
-                        return new InsertionHunk(StartIndex, resultText);
+                        }
+
+                        if (Id < 0)
+                        {
+                            result = new InsertionHunk(StartIndex, resultText);
+                            return true;
+                        }
+                        else
+                        {
+                            EditOperation editOperation = EditOperation;
+                            Destroy();
+                            result = new InsertionHunk(StartIndex, resultText);
+                            EditOperation.Hunks.Add(result);
+                            return true;
+                        }
                     }
                     else
                     {
-                        return this;
+                        result = this;
+                        return false;
                     }
                 }
             }
             else
             {
-                return this;
+                result = this;
+                return false;
             }
         }
     }

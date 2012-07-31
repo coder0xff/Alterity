@@ -14,22 +14,41 @@ namespace Alterity.Models
         public virtual ICollection<Document> Documents { get; set; }
         public virtual ICollection<Document> AdministratorOf { get; set; }
         public virtual ICollection<Document> ModeratorOf { get; set; }
+        public virtual ICollection<ChangeSet> ChangeSets { get; set; }
 
         public static User GetUserByUserName(String userName)
         {
             return EntityMappingContext.Current.Users.FirstOrDefault(_ => _.UserName == userName);
         }
 
-        public static User Create(String userName, String emailOrIPAddress)
+        public static User Create(String userName, String emailAddress)
         {
             User user = new User();
             user.UserName = userName;
-            user.EmailOrIPAddress = emailOrIPAddress;
+            user.EmailOrIPAddress = emailAddress;
             return EntityMappingContext.Current.Users.Add(user);
+        }
+
+        public static User CreateAnonymous(String IPAddress)
+        {
+            User user = new User();
+            user.UserName = Guid.NewGuid().ToString();
+            user.EmailOrIPAddress = IPAddress;
+            return EntityMappingContext.Current.Users.Add(user);
+        }
+
+        public bool IsAnonymous { get { return EmailOrIPAddress.Contains('@'); } }
+
+        public void DeleteIfEmptyAnonymous()
+        {
+            if (IsAnonymous && Documents.Count == 0 && ChangeSets.Count == 0)
+            {
+                EntityMappingContext.Current.Users.Remove(this);
+            }
         }
     }
 
-    public static class UserDataExtensionMethods
+    public static class UserExtensionMethods
     {
         static User GetUser(this System.Security.Principal.IPrincipal user)
         {

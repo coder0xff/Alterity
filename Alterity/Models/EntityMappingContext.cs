@@ -20,7 +20,7 @@ namespace Alterity.Models
             }
         }
 
-        public static void AccessDataBase(Action action)
+        public static void Access(Action action)
         {
             bool ownsContext = false;
             lock (_current)

@@ -79,9 +79,18 @@ namespace Alterity.Models
         public static IHunkComparer IdComparer { get { return idComparer; } }
 
         public int Id { get; set; }
-        public EditOperation EditOperation { get; set; }
+        public EditOperation EditOperation { get; protected set; }
+        public ChangeSubset ChangeSubset { get { return EditOperation.ChangeSubset; } }
+        public ChangeSet ChangeSet { get { return ChangeSubset.ChangeSet; } }
+        public Document Document { get { return ChangeSet.Document; } }
         public abstract int StartIndex { get; protected set; }
         public abstract int Length { get; protected set; }
+        public Hunk()
+        {
+            Id = -1;
+            StartIndex = -1;
+            Length = 0;
+        }
         public IntegerInterval ToIntegerInterval() { return new IntegerInterval(StartIndex, Length); }
         public abstract Hunk[] UndoPrior(Hunk hunk);
         public abstract Hunk[] RedoPrior(Hunk hunk);
@@ -95,6 +104,11 @@ namespace Alterity.Models
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public abstract Hunk MergeSubsequent(ref Hunk other);
+        public abstract bool MergeSubsequent(ref Hunk other, out Hunk result);
+
+        public void Destroy()
+        {
+            if (EditOperation != null) EditOperation.Hunks.Remove(this);
+        }
     }
 }

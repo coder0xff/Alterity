@@ -9,7 +9,7 @@ using Alterity.Models;
 
 namespace Alterity.Controllers
 { 
-    public class UserDataController : AlterityBaseController
+    public class UserController : AlterityBaseController
     {
         public ViewResult Index()
         {
@@ -17,16 +17,16 @@ namespace Alterity.Controllers
         }
 
         //
-        // GET: /UserData/Details/5
+        // GET: /User/Details/5
 
         public ViewResult Details(string id)
         {
-            User userdata = (new EntityMappingContext()).Users.Find(id);
-            return View(userdata);
+            User user = (new EntityMappingContext()).Users.Find(id);
+            return View(user);
         }
 
         //
-        // GET: /UserData/Create
+        // GET: /User/Create
 
         public ActionResult Create()
         {
@@ -34,68 +34,68 @@ namespace Alterity.Controllers
         } 
 
         //
-        // POST: /UserData/Create
+        // POST: /User/Create
 
         [HttpPost]
-        public ActionResult Create(User userdata)
+        public ActionResult Create(User user)
         {
             if (ModelState.IsValid)
             {
-                EntityMappingContext.AccessDataBase(() =>
+                EntityMappingContext.Access(() =>
                     {
-                        EntityMappingContext.Current.Users.Add(userdata);
+                        EntityMappingContext.Current.Users.Add(user);
                     });
                 return RedirectToAction("Index");  
             }
 
-            return View(userdata);
+            return View(user);
         }
         
         //
-        // GET: /UserData/Edit/5
+        // GET: /User/Edit/5
  
         public ActionResult Edit(string id)
         {
-            User userdata = (new EntityMappingContext()).Users.Find(id);
-            return View(userdata);
+            User user = (new EntityMappingContext()).Users.Find(id);
+            return View(user);
         }
 
         //
-        // POST: /UserData/Edit/5
+        // POST: /User/Edit/5
 
         [HttpPost]
-        public ActionResult Edit(User userdata)
+        public ActionResult Edit(User user)
         {
             if (ModelState.IsValid)
             {
-                EntityMappingContext.AccessDataBase(() =>
+                EntityMappingContext.Access(() =>
                 {
-                    EntityMappingContext.Current.Entry(userdata).State = EntityState.Modified;
+                    EntityMappingContext.Current.Entry(user).State = EntityState.Modified;
                 });
                 return RedirectToAction("Index");
             }
-            return View(userdata);
+            return View(user);
         }
 
         //
-        // GET: /UserData/Delete/5
+        // GET: /User/Delete/5
  
         public ActionResult Delete(string id)
         {
-            User userdata = (new EntityMappingContext()).Users.Find(id);
-            return View(userdata);
+            User user = (new EntityMappingContext()).Users.Find(id);
+            return View(user);
         }
 
         //
-        // POST: /UserData/Delete/5
+        // POST: /User/Delete/5
 
         [HttpPost, ActionName("Delete")]
         public ActionResult DeleteConfirmed(string id)
         {
-            EntityMappingContext.AccessDataBase(() =>
+            EntityMappingContext.Access(() =>
                 {
-                    User userdata = EntityMappingContext.Current.Users.Find(id);
-                    EntityMappingContext.Current.Users.Remove(userdata);
+                    User user = EntityMappingContext.Current.Users.Find(id);
+                    EntityMappingContext.Current.Users.Remove(user);
                 });
             return RedirectToAction("Index");
         }
