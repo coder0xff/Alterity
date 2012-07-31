@@ -5,6 +5,9 @@ using System.Web;
 using System.Web.Mvc;
 using Alterity.Models;
 
+
+using UserClass = Alterity.Models.User;
+
 namespace Alterity.Controllers
 {
     public class AlterityBaseController : Controller
@@ -26,14 +29,19 @@ namespace Alterity.Controllers
                     else
                     {
                         result = User.CreateAnonymous(this.Request.UserHostAddress);
+                        SessionState.UserName = result.UserName;
                     }
                 }
                 else
                 {
-                    result = User.GetUserByUserName(SessionState.UserName);
-                    if (result == null) throw new ApplicationException("User has a session, but has no data.");
+                    result = UserClass.GetUserByUserName(SessionState.UserName);
+                    if (result == null)
+                    {
+                        SessionState.UserName = null;
+                        return User;
+                    }
                 }
-                throw new NotImplementedException();
+                return result;
             }
         }
     }

@@ -16,6 +16,14 @@ namespace Alterity.Models
         public virtual ICollection<Document> ModeratorOf { get; set; }
         public virtual ICollection<ChangeSet> ChangeSets { get; set; }
 
+        public User()
+        {
+            Documents = new List<Document>();
+            AdministratorOf = new List<Document>();
+            ModeratorOf = new List<Document>();
+            ChangeSets = new List<ChangeSet>();
+        }
+
         public static User GetUserByUserName(String userName)
         {
             return EntityMappingContext.Current.Users.FirstOrDefault(_ => _.UserName == userName);
@@ -37,7 +45,7 @@ namespace Alterity.Models
             return EntityMappingContext.Current.Users.Add(user);
         }
 
-        public bool IsAnonymous { get { return EmailOrIPAddress.Contains('@'); } }
+        public bool IsAnonymous { get { return !EmailOrIPAddress.Contains('@'); } }
 
         public void DeleteIfEmptyAnonymous()
         {

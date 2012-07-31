@@ -23,22 +23,16 @@ namespace Alterity.Models
         public static void Access(Action action)
         {
             bool ownsContext = false;
-            lock (_current)
+            if (_current == null) //thread safety is inherent because it's a thread static variable
             {
-                if (_current == null)
-                {
-                    _current = new EntityMappingContext();
-                    ownsContext = true;
-                }
+                _current = new EntityMappingContext();
+                ownsContext = true;
             }
             action();
-            lock (_current)
+            _current.SaveChanges();
+            if (ownsContext)
             {
-                _current.SaveChanges();
-                if (ownsContext)
-                {
-                    _current = null;
-                }
+                _current = null;
             }
         }
         public DbSet<User> Users { get; set; }
