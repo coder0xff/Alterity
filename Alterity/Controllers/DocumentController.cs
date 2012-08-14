@@ -104,5 +104,11 @@ namespace Alterity.Controllers
             db.Dispose();
             base.Dispose(disposing);
         }
+
+        public ActionResult Alter(int id)
+        {
+            Document document = db.Documents.Find(id);
+            return View(document);
+        }
     }
 }

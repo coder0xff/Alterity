@@ -67,10 +67,6 @@ namespace Alterity.Models
                         x.MapRightKey("Document");
                         x.ToTable("DocumentModerators");
                     });
-            modelBuilder.Entity<Document>()
-                .HasRequired(x => x.Owner)
-                .WithMany(x => x.Documents)
-                .WillCascadeOnDelete(true);
             base.OnModelCreating(modelBuilder);
         }
     }

@@ -13,10 +13,6 @@ namespace Alterity.Controllers
     {
         public ViewResult Index()
         {
-            EntityMappingContext.Access(() =>
-                {
-                    User.Documents.Remove(User.Documents.First());
-                });
             return View((new EntityMappingContext()).Users.ToList());
         }
 
