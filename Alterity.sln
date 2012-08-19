@@ -1,50 +1,24 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7ECEABAC-6E7D-4098-9C4B-DD3A32C3C667}"
-	ProjectSection(SolutionItems) = preProject
-		Alterity.vsmdi = Alterity.vsmdi
-		Local.testsettings = Local.testsettings
-		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
-	EndProjectSection
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alterity", "Alterity\Alterity.csproj", "{87401063-54E4-43B0-9FEF-955D9FF13E2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alterity", "Alterity\Alterity.csproj", "{AE86E8DF-824F-452B-BCF7-D8E04B8735FC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alterity.Tests", "Alterity.Tests\Alterity.Tests.csproj", "{32D14F0E-AD7D-41FE-AFB1-BF00491A7671}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alterity.Tests", "Alterity.Tests\Alterity.Tests.csproj", "{F22B4532-2E47-4972-A645-E61AADD55697}"
 EndProject
 Global
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = Alterity.vsmdi
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		Debug|Mixed Platforms = Debug|Mixed Platforms
-		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
-		Release|Mixed Platforms = Release|Mixed Platforms
-		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AE86E8DF-824F-452B-BCF7-D8E04B8735FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AE86E8DF-824F-452B-BCF7-D8E04B8735FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AE86E8DF-824F-452B-BCF7-D8E04B8735FC}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{AE86E8DF-824F-452B-BCF7-D8E04B8735FC}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{AE86E8DF-824F-452B-BCF7-D8E04B8735FC}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{AE86E8DF-824F-452B-BCF7-D8E04B8735FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AE86E8DF-824F-452B-BCF7-D8E04B8735FC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AE86E8DF-824F-452B-BCF7-D8E04B8735FC}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{AE86E8DF-824F-452B-BCF7-D8E04B8735FC}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{AE86E8DF-824F-452B-BCF7-D8E04B8735FC}.Release|x86.ActiveCfg = Release|Any CPU
-		{32D14F0E-AD7D-41FE-AFB1-BF00491A7671}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{32D14F0E-AD7D-41FE-AFB1-BF00491A7671}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{32D14F0E-AD7D-41FE-AFB1-BF00491A7671}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{32D14F0E-AD7D-41FE-AFB1-BF00491A7671}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{32D14F0E-AD7D-41FE-AFB1-BF00491A7671}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{32D14F0E-AD7D-41FE-AFB1-BF00491A7671}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{32D14F0E-AD7D-41FE-AFB1-BF00491A7671}.Release|Any CPU.Build.0 = Release|Any CPU
-		{32D14F0E-AD7D-41FE-AFB1-BF00491A7671}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{32D14F0E-AD7D-41FE-AFB1-BF00491A7671}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{32D14F0E-AD7D-41FE-AFB1-BF00491A7671}.Release|x86.ActiveCfg = Release|Any CPU
+		{87401063-54E4-43B0-9FEF-955D9FF13E2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87401063-54E4-43B0-9FEF-955D9FF13E2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87401063-54E4-43B0-9FEF-955D9FF13E2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87401063-54E4-43B0-9FEF-955D9FF13E2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F22B4532-2E47-4972-A645-E61AADD55697}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F22B4532-2E47-4972-A645-E61AADD55697}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F22B4532-2E47-4972-A645-E61AADD55697}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F22B4532-2E47-4972-A645-E61AADD55697}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

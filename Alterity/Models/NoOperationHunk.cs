@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Alterity.Models
 {
@@ -95,7 +96,7 @@ namespace Alterity.Models
             return StartIndex.ToString() + ", " + Length.ToString();
         }
 
-        public class ValueComparer : IComparer<NoOperationHunk>
+        public new class ValueComparer : IComparer<NoOperationHunk>
         {
             public int Compare(NoOperationHunk x, NoOperationHunk y)
             {
@@ -108,7 +109,7 @@ namespace Alterity.Models
             }
         }
 
-        public class IdComparer : IComparer<NoOperationHunk>
+        public new class IdComparer : IComparer<NoOperationHunk>
         {
             public int Compare(NoOperationHunk x, NoOperationHunk y)
             {

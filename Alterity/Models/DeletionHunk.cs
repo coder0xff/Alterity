@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace Alterity.Models
@@ -103,7 +103,7 @@ namespace Alterity.Models
             return StartIndex.ToString() + ", " + Length.ToString();
         }
 
-        public class ValueComparer : IComparer<DeletionHunk>
+        public new class ValueComparer : IComparer<DeletionHunk>
         {
             public int Compare(DeletionHunk x, DeletionHunk y)
             {
@@ -116,7 +116,7 @@ namespace Alterity.Models
             }
         }
 
-        public class IdComparer : IComparer<DeletionHunk>
+        public new class IdComparer : IComparer<DeletionHunk>
         {
             public int Compare(DeletionHunk x, DeletionHunk y)
             {

@@ -71,8 +71,6 @@ namespace Alterity.Models
 
     internal class SessionDataWrapper
     {
-        private SessionData Data;
-
         const String cookieName = "persistedSession";
         const int sessionExpirationMinutes = 480;
         static SessionData CreateSessionData(Guid guid)

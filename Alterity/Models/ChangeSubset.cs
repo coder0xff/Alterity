@@ -11,6 +11,7 @@ namespace Alterity.Models
         public VoteBox VoteBox { get; set; }
         public ChangeSet ChangeSet { get; set; }
         public SpringboardState SpringboardState { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<EditOperation> EditOperations { get; set; }
         public bool IsClosed { get; set; }
 
@@ -21,7 +22,8 @@ namespace Alterity.Models
             IsClosed = false;
         }
 
-        public ChangeSubset(List<EditOperation> activeEditOperations) : this(SpringboardState.Create(activeEditOperations))
+        public ChangeSubset(IEnumerable<EditOperation> activeEditOperations)
+            : this(SpringboardState.Create(activeEditOperations))
         {
         }
 

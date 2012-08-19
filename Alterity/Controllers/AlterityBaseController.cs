@@ -13,7 +13,7 @@ namespace Alterity.Controllers
     public class AlterityBaseController : Controller
     {
         protected dynamic SessionState { get { return SessionDataWrapper.GetSessionData(Request, Response); } }
-        protected User User
+        protected new User User
         {
             get
             {
@@ -24,11 +24,11 @@ namespace Alterity.Controllers
                     {
                         SessionState.UserName = ((Controller)this).User.Identity.Name;
                         result = User.GetUserByUserName(SessionState.UserName);
-                        if (result == null) throw new ApplicationException("User is authenticated, but has no data.");
+                        if (result == null) WebMatrix.WebData.WebSecurity.Logout();
                     }
                     else
                     {
-                        result = User.CreateAnonymous(this.Request.UserHostAddress);
+                        result = UserClass.CreateAnonymous(this.Request.UserHostAddress);
                         SessionState.UserName = result.UserName;
                     }
                 }

@@ -27,7 +27,7 @@ namespace Alterity.Models
             Locked = false;
         }
 
-        protected Document() { }
+        public Document() { }
 
         public static Document GetById(int id)
         {
