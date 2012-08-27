@@ -5,7 +5,7 @@ using System.Web;
 
 namespace Alterity.Models.Async
 {
-    public class LiveHunk
+    public class HunkDTO
     {
         public int documentId;
         public String type; //may be insert, delete, cut, copy, or paste. 
@@ -29,9 +29,9 @@ namespace Alterity.Models.Async
             }
         }
 
-        private LiveHunk() {}
+        private HunkDTO() {}
 
-        public LiveHunk(InsertionHunk hunk)
+        public HunkDTO(InsertionHunk hunk)
         {
             type = "insert";
             startIndex = hunk.StartIndex;
@@ -40,7 +40,7 @@ namespace Alterity.Models.Async
             documentId = hunk.Document.Id;
         }
 
-        public LiveHunk(DeletionHunk hunk)
+        public HunkDTO(DeletionHunk hunk)
         {
             type = "delete";
             startIndex = hunk.StartIndex;
@@ -49,7 +49,7 @@ namespace Alterity.Models.Async
             documentId = hunk.Document.Id;
         }
 
-        public LiveHunk(NoOperationHunk hunk, String type)
+        public HunkDTO(NoOperationHunk hunk, String type)
         {
             this.type = type;
             startIndex = hunk.StartIndex;

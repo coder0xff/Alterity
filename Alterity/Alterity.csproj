@@ -165,6 +165,8 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AlterityBaseController.cs" />
+    <Compile Include="Controllers\BlahController.cs" />
+    <Compile Include="Controllers\TestController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Filters\InitializeSimpleMembershipAttribute.cs" />
     <Compile Include="Global.asax.cs">
@@ -174,7 +176,7 @@
     <Compile Include="Models\Async\ClientState.cs" />
     <Compile Include="Models\Async\ClientStateMachine.cs" />
     <Compile Include="Models\Async\EditOperationActiveStateChange.cs" />
-    <Compile Include="Models\Async\LiveHunk.cs" />
+    <Compile Include="Models\Async\HunkDTO.cs" />
     <Compile Include="Models\ChangeSet.cs" />
     <Compile Include="Models\ChangeSubset.cs" />
     <Compile Include="Models\CopyOperation.cs" />
@@ -260,6 +262,7 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <None Include="Scripts\jquery-1.7.1.intellisense.js" />
+    <Content Include="Scripts\AJAX\Hunk.js" />
     <Content Include="Scripts\jquery-1.7.1.js" />
     <Content Include="Scripts\jquery-1.7.1.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
@@ -313,6 +316,7 @@
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Web.config" />
+    <Content Include="Views\Home\Test.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
