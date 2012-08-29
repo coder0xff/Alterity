@@ -19,7 +19,7 @@ namespace Alterity.SlimAPI
                     (_.GetCustomAttribute<System.Web.Http.HttpGetAttribute>(false) != null ||
                     _.GetCustomAttribute<System.Web.Http.HttpPostAttribute>(false) != null) &&
                     _.Name != "GetAPI"
-                ).Select(_ => new ApiMethodInfo(_)));
+                ).Select((_, i) => new ApiMethodInfo(_, i)));
         }
     }
 }

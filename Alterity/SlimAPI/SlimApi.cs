@@ -20,11 +20,10 @@ namespace Alterity.SlimAPI
             return thisApi;
         }
         
-        [HttpPost, HttpGet]
-        public Object InvokeAPI(JObject jsonData)
-        {            
+        [HttpPost]
+        public Object InvokeApi(JObject jsonData)
+        {
             dynamic json = jsonData;
-
             ApiMethodInfo methodInfo = thisApi.Methods[json.SlimAPIMethodIndex];
             Object[] parameters = methodInfo.ParameterNames.Select(_ => (Object)json[_]).ToArray();
             return methodInfo.Invoke(this, parameters);
