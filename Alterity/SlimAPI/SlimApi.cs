@@ -11,7 +11,7 @@ namespace Alterity.SlimAPI
 {
     public class SlimApi : ApiController
     {
-        static Dictionary<Type, ApiInfo> registeredAPIs;
+        static Dictionary<Type, ApiInfo> registeredAPIs = new Dictionary<Type, ApiInfo>();
         readonly ApiInfo thisApi;
 
         [HttpGet]

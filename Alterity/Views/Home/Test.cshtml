@@ -4,6 +4,13 @@
 
 
 <script type="text/javascript" src="/Scripts/AJAX/Hunk.js"></script>
-
+<script type="text/javascript" src="/SlimApi/SlimApi.js"></script>
+<script type="text/javascript">
+    var SlimApiTestFunc = function () {
+        var SlimApiTestApi = new SlimAPI(ApiLocation + "SlimApiTest");
+        var hunk = new HunkDTO(0, "insert", 0, 12, "Hello world!")
+        var result = SlimApiTestApi.Test(hunk);
+    }
+</script>
 <h2>Test</h2>
-<button onclick="HunkDTOTest()">Go</button>
+<button onclick="SlimApiTestFunc()">Go</button>
