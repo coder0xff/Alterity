@@ -1,30 +1,26 @@
-﻿var SlimApiArgumentsObjectToObject= function(argumentsObject, parametersArray)
+﻿var SlimApiAsyncDispatch = function (apiURL, methodIndex, parameterValues, callback)
 {
-    var results = new Object();
-    for (i = 0; i < parametersArray.length; i++)
-        results[parametersArray[i]] = argumentsObject[i]
-    return results;
-}
-
-var SlimApiAsyncDispatch = function (apiURL, methodIndex, parametersArray, callback)
-{
-    parametersArray["SlimApiMethodIndex"] = methodIndex;
+    var dispatchData = new Object();
+    dispatchData.ParameterValues = parameterValues;
+    dispatchData.MethodIndex = methodIndex;
     $.ajax({
         cache: false,
         type: "POST",
         url: apiUrl + "/InvokeApi",
         contentType: 'application/json',
         dataType: "json",
-        data: JSON.stringify(parametersArray),
+        data: JSON.stringify(dispatchData),
         success: callback
     });
 }
 
-var SlimApiSyncDispatch = function(apiUrl, methodIndex, parametersArray)
+var SlimApiSyncDispatch = function(apiUrl, methodIndex, parameterValues)
 {
     var result;
-    parametersArray["SlimApiMethodIndex"] = methodIndex;
-    var jsonString = JSON.stringify(parametersArray);
+
+    var dispatchData = new Object();
+    dispatchData.ParameterValues = parameterValues;
+    dispatchData.MethodIndex = methodIndex;
     $.ajax({
         cache: false,
         async: false,
@@ -32,7 +28,7 @@ var SlimApiSyncDispatch = function(apiUrl, methodIndex, parametersArray)
         url: apiUrl + "/InvokeApi",
         contentType: 'application/json',
         dataType: "json",
-        data: JSON.stringify(parametersArray),
+        data: JSON.stringify(dispatchData),
         success: function (receivedData) { result = receivedData; }
     });
     return result;
@@ -62,18 +58,14 @@ var SlimAPI = function(apiURL)
                 var FunctionFunctionArguments = value.ParameterNames.slice(0);
                 FunctionFunctionArguments.push("slimApiCallback");
                 FunctionFunctionArguments.push(" \
-                    var argNames = eval('" + JSON.stringify(value.ParameterNames) + "'); \
-                    var args = SlimApiArgumentsObjectToObject(arguments, argNames); \
                     args.pop(); \
-                    SlimApiAsyncDispatch('" + apiURL + "', " + value.MethodIndex + ", args, slimApiCallback); \
+                    SlimApiAsyncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments, slimApiCallback); \
                     ");
                 apiObj[apiMethodName + "Async"] = Function.apply(value, FunctionFunctionArguments)
 
                 FunctionFunctionArguments = value.ParameterNames.slice(0);
                 FunctionFunctionArguments.push(" \
-                    var argNames = eval('" + JSON.stringify(value.ParameterNames) + "'); \
-                    var args = SlimApiArgumentsObjectToObject(arguments, argNames); \
-                    return SlimApiSyncDispatch('" + apiURL + "', " + value.MethodIndex + ", args); \
+                    return SlimApiSyncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments); \
                     ");
 
                 apiObj[apiMethodName] = Function.apply(value, FunctionFunctionArguments)

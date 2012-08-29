@@ -6,12 +6,14 @@ using System.Net.Http;
 using System.Reflection;
 using System.Web.Http;
 using Newtonsoft.Json.Linq;
+using System.Web.Script.Serialization;
 
 namespace Alterity.SlimAPI
 {
     public class SlimApi : ApiController
     {
         static Dictionary<Type, ApiInfo> registeredAPIs = new Dictionary<Type, ApiInfo>();
+        static JavaScriptSerializer serializer = new JavaScriptSerializer();
         readonly ApiInfo thisApi;
 
         [HttpGet]
@@ -24,9 +26,14 @@ namespace Alterity.SlimAPI
         public Object InvokeApi(JObject jsonData)
         {
             dynamic json = jsonData;
-            ApiMethodInfo methodInfo = thisApi.Methods[json.SlimAPIMethodIndex];
-            Object[] parameters = methodInfo.ParameterNames.Select(_ => (Object)json[_]).ToArray();
-            return methodInfo.Invoke(this, parameters);
+            int methodIndex = json.MethodIndex;
+            ApiMethodInfo methodInfo = thisApi.Methods[methodIndex];
+
+            JToken parameterValuesToken = json.ParameterValues;
+            Object[] parameterValues = new Object[methodInfo.ParameterTypes.Count];
+            for (int paramIndex = 0; paramIndex < methodInfo.ParameterTypes.Count; paramIndex++)
+                parameterValues[paramIndex] = serializer.Deserialize(parameterValuesToken[paramIndex.ToString()].ToString(), methodInfo.ParameterTypes[paramIndex]);
+            return methodInfo.Invoke(this, parameterValues);
         }
 
         public SlimApi()

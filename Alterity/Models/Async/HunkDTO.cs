@@ -29,7 +29,7 @@ namespace Alterity.Models.Async
             }
         }
 
-        private HunkDTO() {}
+        public HunkDTO() {}
 
         public HunkDTO(InsertionHunk hunk)
         {

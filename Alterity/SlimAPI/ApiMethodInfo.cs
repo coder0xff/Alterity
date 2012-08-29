@@ -14,6 +14,7 @@ namespace Alterity.SlimAPI
         public bool UseGet { get; set; }
         public List<string> ParameterNames { get; set; }
 
+        internal List<Type> ParameterTypes { get; set; }
         internal Func<Object, Object[], Object> fastCall;
 
         public ApiMethodInfo(MethodInfo method, int methodIndex)
@@ -22,6 +23,7 @@ namespace Alterity.SlimAPI
             MethodIndex = methodIndex;
             UseGet = method.GetCustomAttribute<HttpPostAttribute>(false) == null; //favors post if both are accepted
             ParameterNames = new List<string>(method.GetParameters().Select(_ => _.Name));
+            ParameterTypes = new List<Type>(method.GetParameters().Select(_ => _.ParameterType));
             fastCall = method.Bind();
         }
 
