@@ -4,13 +4,11 @@
 
 
 <script type="text/javascript" src="/Scripts/AJAX/Hunk.js"></script>
-<script type="text/javascript" src="/JRPCNet/Api.js"></script>
+<script type="text/javascript" src="/JRPCNet/JRPCNet.js"></script>
 <script type="text/javascript">
     var TestFunc = function () {
-        var api = new JRPCNet(ApiLocation + "JRPCNetTest");
-        var hunk = new HunkDTO(0, "insert", 0, 12, "Hello world!");
-        var result = api.Test(hunk, 'a string yeah!', 31);
-        alert(result);
+var api = new JRPCNet(ApiLocation + "Example");
+alert(api.Add(3, 5));
     }
 </script>
 <h2>Test</h2>

@@ -1,4 +1,4 @@
-﻿var JRPCNetAsyncDispatch = function (apiURL, methodIndex, parameterValues, callback)
+﻿var JRPCNetAsyncDispatch = function (apiUrl, methodIndex, parameterValues, callback)
 {
     var dispatchData = new Object();
     dispatchData.ParameterValues = parameterValues;
@@ -58,7 +58,8 @@ var JRPCNet = function(apiURL)
                 var FunctionFunctionArguments = value.ParameterNames.slice(0);
                 FunctionFunctionArguments.push("JRPCNetCallback");
                 FunctionFunctionArguments.push(" \
-                    args.pop(); \
+                    var args = Array.prototype.slice.call(arguments); \n\
+                    args.pop(); \n\
                     JRPCNetAsyncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments, JRPCNetCallback); \
                     ");
                 apiObj[apiMethodName + "Async"] = Function.apply(value, FunctionFunctionArguments)

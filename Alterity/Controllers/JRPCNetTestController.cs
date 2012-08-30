@@ -7,12 +7,12 @@ using System.Web.Http;
 
 namespace Alterity.Controllers
 {
-    public class JRPCNetTestController : JRPCNet.Api
+public class ExampleController : JRPCNet.ApiController
+{
+    [JRPCNet.ApiMethod]
+    public int Add(int left, int right)
     {
-        [HttpPost]
-        public bool Test(Alterity.Models.Async.HunkDTO hunk, String primitive1, int primitive2)
-        {
-            return true;
-        }
+        return left + right;
     }
+}
 }

@@ -1,4 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Reflection;
+using System.Web.Http;
+using Newtonsoft.Json.Linq;
+using System.Web.Script.Serialization;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -29,7 +38,7 @@ namespace JRPCNet
         {
             ParameterExpression argumentsParameter = Expression.Parameter(typeof(Object[]), "arguments");
 
-            MethodCallExpression call = Expression.Call(              
+            MethodCallExpression call = Expression.Call(
               method,
               CreateParameterExpressions(method, argumentsParameter));
 
@@ -108,6 +117,97 @@ namespace JRPCNet
                     return (Object target, Object[] parameters) => { return wrapped(target, parameters); };
                 }
             }
+        }
+    }
+
+    internal class ApiMethodInfo
+    {
+        public string MethodName { get; set; }
+        public int MethodIndex { get; set; }
+        public List<string> ParameterNames { get; set; }
+
+        internal List<Type> ParameterTypes { get; set; }
+        internal Func<Object, Object[], Object> fastCall;
+
+        public ApiMethodInfo(MethodInfo method, int methodIndex)
+        {
+            MethodName = method.Name;
+            MethodIndex = methodIndex;
+            ParameterNames = new List<string>(method.GetParameters().Select(_ => _.Name));
+            ParameterTypes = new List<Type>(method.GetParameters().Select(_ => _.ParameterType));
+            fastCall = method.Bind();
+        }
+
+        public Object Invoke(Object target, Object[] parameters)
+        {
+            return fastCall(target, parameters);
+        }
+    }
+
+    internal class ApiInfo
+    {
+        public Type ApiClass { get; set; }
+        public List<ApiMethodInfo> Methods { get; set; }
+
+        internal ApiInfo(Type apiClass)
+        {
+            ApiClass = apiClass;
+            Methods = new List<ApiMethodInfo>(
+                apiClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy).Where(_ =>
+                    _.GetCustomAttribute<JRPCNet.ApiMethodAttribute>(false) != null &&
+                    _.Name != "InvokeApi"
+                ).Select((_, i) => new ApiMethodInfo(_, i)));
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
+    public class ApiMethodAttribute : Attribute
+    {
+    }
+
+    public class ApiController : System.Web.Http.ApiController
+    {
+        static Dictionary<Type, ApiInfo> registeredAPIs = new Dictionary<Type, ApiInfo>();
+        static JavaScriptSerializer serializer = new JavaScriptSerializer();
+        readonly ApiInfo thisApi;
+
+        [HttpGet]
+        public Object GetApi()
+        {
+            return thisApi;
+        }
+
+        [HttpPost]
+        public Object InvokeApi(JObject jsonData)
+        {
+            dynamic json = jsonData;
+            int methodIndex = json.MethodIndex;
+            ApiMethodInfo methodInfo = thisApi.Methods[methodIndex];
+
+            JToken parameterValuesToken = json.ParameterValues;
+            Object[] parameterValues = new Object[methodInfo.ParameterTypes.Count];
+            for (int paramIndex = 0; paramIndex < methodInfo.ParameterTypes.Count; paramIndex++)
+            {
+                if (methodInfo.ParameterTypes[paramIndex].IsPrimitive)
+                    parameterValues[paramIndex] = Convert.ChangeType(parameterValuesToken[paramIndex.ToString()].ToString(), methodInfo.ParameterTypes[paramIndex]);
+                else if (methodInfo.ParameterTypes[paramIndex] == typeof(string))
+                    parameterValues[paramIndex] = parameterValuesToken[paramIndex.ToString()].ToString();
+                else
+                    parameterValues[paramIndex] = serializer.Deserialize(parameterValuesToken[paramIndex.ToString()].ToString(), methodInfo.ParameterTypes[paramIndex]);
+            }
+            return methodInfo.Invoke(this, parameterValues);
+        }
+
+        public ApiController()
+        {
+            RegisterThisAPI();
+            thisApi = registeredAPIs[this.GetType()];
+        }
+
+        private void RegisterThisAPI()
+        {
+            if (!registeredAPIs.ContainsKey(this.GetType()))
+                registeredAPIs[this.GetType()] = new ApiInfo(this.GetType());
         }
     }
 }
