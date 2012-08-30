@@ -15,10 +15,9 @@ namespace Alterity.SlimAPI
         {
             ApiClass = apiClass;
             Methods = new List<ApiMethodInfo>(
-                apiClass.GetMethods(BindingFlags.Instance | BindingFlags.Public).Where(_ =>
-                    (_.GetCustomAttribute<System.Web.Http.HttpGetAttribute>(false) != null ||
-                    _.GetCustomAttribute<System.Web.Http.HttpPostAttribute>(false) != null) &&
-                    _.Name != "GetAPI"
+                apiClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy).Where(_ =>
+                    _.GetCustomAttribute<System.Web.Http.HttpPostAttribute>(false) != null &&
+                    _.Name != "InvokeApi"
                 ).Select((_, i) => new ApiMethodInfo(_, i)));
         }
     }
