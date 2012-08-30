@@ -8,16 +8,16 @@ using System.Web.Http;
 using Newtonsoft.Json.Linq;
 using System.Web.Script.Serialization;
 
-namespace Alterity.SlimAPI
+namespace JRPCNet
 {
-    public class SlimApi : ApiController
+    public class Api : ApiController
     {
         static Dictionary<Type, ApiInfo> registeredAPIs = new Dictionary<Type, ApiInfo>();
         static JavaScriptSerializer serializer = new JavaScriptSerializer();
         readonly ApiInfo thisApi;
 
         [HttpGet]
-        public ApiInfo GetApi()
+        public Object GetApi()
         {
             return thisApi;
         }
@@ -32,11 +32,18 @@ namespace Alterity.SlimAPI
             JToken parameterValuesToken = json.ParameterValues;
             Object[] parameterValues = new Object[methodInfo.ParameterTypes.Count];
             for (int paramIndex = 0; paramIndex < methodInfo.ParameterTypes.Count; paramIndex++)
-                parameterValues[paramIndex] = serializer.Deserialize(parameterValuesToken[paramIndex.ToString()].ToString(), methodInfo.ParameterTypes[paramIndex]);
+            {
+                if (methodInfo.ParameterTypes[paramIndex].IsPrimitive)
+                    parameterValues[paramIndex] = Convert.ChangeType(parameterValuesToken[paramIndex.ToString()].ToString(), methodInfo.ParameterTypes[paramIndex]);
+                else if (methodInfo.ParameterTypes[paramIndex] == typeof(string))
+                    parameterValues[paramIndex] = parameterValuesToken[paramIndex.ToString()].ToString();
+                else
+                    parameterValues[paramIndex] = serializer.Deserialize(parameterValuesToken[paramIndex.ToString()].ToString(), methodInfo.ParameterTypes[paramIndex]);
+            }
             return methodInfo.Invoke(this, parameterValues);
         }
 
-        public SlimApi()
+        public Api()
         {
             RegisterThisAPI();
             thisApi = registeredAPIs[this.GetType()];

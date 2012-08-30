@@ -3,9 +3,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Alterity.SlimAPI
+namespace JRPCNet
 {
-    public static class DelegateFactory
+    internal static class DelegateFactory
     {
         public static Func<Object, Object[], Object> CreateForNonVoidInstanceMethod(MethodInfo method)
         {

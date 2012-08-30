@@ -5,9 +5,9 @@ using System.Web;
 using System.Reflection;
 using System.Web.Http;
 
-namespace Alterity.SlimAPI
+namespace JRPCNet
 {
-    public class ApiMethodInfo
+    internal class ApiMethodInfo
     {
         public string MethodName { get; set; }
         public int MethodIndex { get; set; }

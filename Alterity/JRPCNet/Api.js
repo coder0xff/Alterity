@@ -1,4 +1,4 @@
-﻿var SlimApiAsyncDispatch = function (apiURL, methodIndex, parameterValues, callback)
+﻿var JRPCNetAsyncDispatch = function (apiURL, methodIndex, parameterValues, callback)
 {
     var dispatchData = new Object();
     dispatchData.ParameterValues = parameterValues;
@@ -14,7 +14,7 @@
     });
 }
 
-var SlimApiSyncDispatch = function(apiUrl, methodIndex, parameterValues)
+var JRPCNetSyncDispatch = function(apiUrl, methodIndex, parameterValues)
 {
     var result;
 
@@ -34,7 +34,7 @@ var SlimApiSyncDispatch = function(apiUrl, methodIndex, parameterValues)
     return result;
 }
 
-var SlimAPI = function(apiURL)
+var JRPCNet = function(apiURL)
 {
     var apiObj = this;
     $.ajax({
@@ -56,16 +56,16 @@ var SlimAPI = function(apiURL)
                 }
 
                 var FunctionFunctionArguments = value.ParameterNames.slice(0);
-                FunctionFunctionArguments.push("slimApiCallback");
+                FunctionFunctionArguments.push("JRPCNetCallback");
                 FunctionFunctionArguments.push(" \
                     args.pop(); \
-                    SlimApiAsyncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments, slimApiCallback); \
+                    JRPCNetAsyncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments, JRPCNetCallback); \
                     ");
                 apiObj[apiMethodName + "Async"] = Function.apply(value, FunctionFunctionArguments)
 
                 FunctionFunctionArguments = value.ParameterNames.slice(0);
                 FunctionFunctionArguments.push(" \
-                    return SlimApiSyncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments); \
+                    return JRPCNetSyncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments); \
                     ");
 
                 apiObj[apiMethodName] = Function.apply(value, FunctionFunctionArguments)

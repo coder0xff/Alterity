@@ -7,10 +7,10 @@ using System.Web.Http;
 
 namespace Alterity.Controllers
 {
-    public class SlimApiTestController : SlimAPI.SlimApi
+    public class JRPCNetTestController : JRPCNet.Api
     {
         [HttpPost]
-        public bool Test(Alterity.Models.Async.HunkDTO hunk)
+        public bool Test(Alterity.Models.Async.HunkDTO hunk, String primitive1, int primitive2)
         {
             return true;
         }
