@@ -1,0 +1,6 @@
+Alterity/bin/*
+Alterity/obj/*
+Alterity.Tests/bin/*
+Alterity.Tests/obj/*
+*.user
+*.suo
