@@ -7,9 +7,9 @@ using System.Web.Http;
 
 namespace Alterity.Controllers
 {
-public class ExampleController : JRPCNet.ApiController
+public class ExampleController : JSRPCNet.ApiController
 {
-    [JRPCNet.ApiMethod]
+    [JSRPCNet.ApiMethod]
     public int Add(int left, int right)
     {
         return left + right;

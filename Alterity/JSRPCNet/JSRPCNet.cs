@@ -12,7 +12,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace JRPCNet
+namespace JSRPCNet
 {
     internal static class DelegateFactory
     {
@@ -154,7 +154,7 @@ namespace JRPCNet
             ApiClass = apiClass;
             Methods = new List<ApiMethodInfo>(
                 apiClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy).Where(_ =>
-                    _.GetCustomAttribute<JRPCNet.ApiMethodAttribute>(false) != null &&
+                    _.GetCustomAttribute<JSRPCNet.ApiMethodAttribute>(false) != null &&
                     _.Name != "InvokeApi"
                 ).Select((_, i) => new ApiMethodInfo(_, i)));
         }
