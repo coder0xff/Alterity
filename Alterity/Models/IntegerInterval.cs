@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using SharpKit.JavaScript;
 
 namespace Alterity.Models
 {
-    public struct IntegerInterval
+    [JsType(JsMode.Prototype, Filename = "Contact.js")]
+    public class IntegerInterval
     {
         public int Left { get; set; }
         public int Length { get; set; }
@@ -15,7 +17,12 @@ namespace Alterity.Models
             set { Length = value - Left + 1; }
         }
 
-        public IntegerInterval(int left, int length) : this()
+        public IntegerInterval()
+        {
+
+        }
+
+        public IntegerInterval(int left, int length)
         {
             Left = left;
             Length = length;

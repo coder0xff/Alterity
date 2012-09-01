@@ -83,7 +83,7 @@ namespace Alterity.Models
             return sessionData;
         }
 
-        public static dynamic GetSessionData(HttpRequestBase request, HttpResponseBase response)
+        public static dynamic GetSessionData(HttpRequest request, HttpResponse response)
         {
             HttpCookie persistedSessionCookie = request.Cookies[cookieName];
             if (persistedSessionCookie == null)
@@ -94,7 +94,7 @@ namespace Alterity.Models
                 data = CreateSessionData(Guid.Parse(persistedSessionCookie.Value));
             persistedSessionCookie.Expires = DateTime.Now.AddMinutes(sessionExpirationMinutes);
             data.Expiration = persistedSessionCookie.Expires;
-            response.AppendCookie(persistedSessionCookie);
+            if (response != null) response.AppendCookie(persistedSessionCookie);
             return data;
         }
     }
