@@ -1,0 +1,36 @@
+﻿@model Alterity.Models.User
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<fieldset>
+    <legend>User</legend>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.UserName)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.UserName)
+    </div>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.EmailOrIPAddress)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.EmailOrIPAddress)
+    </div>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.IsAnonymous)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.IsAnonymous)
+    </div>
+</fieldset>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id=Model.Id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

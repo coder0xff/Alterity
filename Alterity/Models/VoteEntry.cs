@@ -15,8 +15,8 @@ namespace Alterity.Models
         public virtual VoteBox VoteBox { get; set; }
 
         [Key, Column(Order = 1)]
-        public String UserName { get; set; }
-        [ForeignKey("UserName")]
+        public int UserId { get; set; }
+        [ForeignKey("UserId")]
         public virtual User User { get; set; }
 
         public bool WasUpvote { get; set; }

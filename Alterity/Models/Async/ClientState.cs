@@ -7,7 +7,6 @@ namespace Alterity.Models.Async
 {
     public class ClientState
     {
-//         public System.Text.StringBuilder DocumentText { get; set; }
         public SortedSet<int> ActiveEditOperationIds { get; set; }
         public int MostRecentTransmissionSequenceNumber { get; set; }
     }

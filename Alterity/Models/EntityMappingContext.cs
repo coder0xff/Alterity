@@ -54,7 +54,7 @@ namespace Alterity.Models
                 .WithMany(x => x.Administrators)
                 .Map(x =>
                     {
-                        x.MapLeftKey("UserName");
+                        x.MapLeftKey("UserId");
                         x.MapRightKey("Document");
                         x.ToTable("DocumentAdministrators");
                     });
@@ -63,7 +63,7 @@ namespace Alterity.Models
                 .WithMany(x => x.Moderators)
                 .Map(x =>
                     {
-                        x.MapLeftKey("UserName");
+                        x.MapLeftKey("UserId");
                         x.MapRightKey("Document");
                         x.ToTable("DocumentModerators");
                     });

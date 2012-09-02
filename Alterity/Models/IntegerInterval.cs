@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using SharpKit.JavaScript;
 
 namespace Alterity.Models
 {
-    [JsType(JsMode.Prototype, Filename = "Contact.js")]
     public class IntegerInterval
     {
         public int Left { get; set; }

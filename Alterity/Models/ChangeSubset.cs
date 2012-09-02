@@ -27,9 +27,12 @@ namespace Alterity.Models
         {
         }
 
-        public IEnumerable<EditOperation> GetOpenEditOperations()
+        public IEnumerable<EditOperation> OpenEditOperations
         {
-            return EditOperations.Where((_) => _.IsClosed == false);
+            get
+            {
+                return EditOperations.Where((_) => _.IsClosed == false);
+            }
         }
     }
 }

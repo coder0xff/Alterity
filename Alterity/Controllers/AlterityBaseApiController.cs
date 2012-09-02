@@ -12,7 +12,7 @@ namespace Alterity.Controllers
 {
     public class AlterityBaseApiController : JSRPCNet.ApiController
     {
-        protected dynamic SessionState
+        static protected dynamic SessionState
         {
             get
             {
