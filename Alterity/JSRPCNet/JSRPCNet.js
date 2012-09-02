@@ -19,27 +19,27 @@
                     }
                 }
 
-                var FunctionFunctionArguments = value.ParameterNames.slice(0);
-                FunctionFunctionArguments.push("JSRPCNetCallback");
-                FunctionFunctionArguments.push(" \
+                var functionFunctionArguments = value.ParameterNames.slice(0);
+                functionFunctionArguments.push("JSRPCNetCallback");
+                functionFunctionArguments.push(" \
                     var args = Array.prototype.slice.call(arguments); \n\
                     args.pop(); \n\
-                    JSRPCNet.AsyncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments, JSRPCNetCallback); \
+                    JSRPCNet.asyncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments, JSRPCNetCallback); \
                     ");
-                apiObj[apiMethodName + "Async"] = Function.apply(value, FunctionFunctionArguments)
+                apiObj[apiMethodName + "Async"] = Function.apply(value, functionFunctionArguments)
 
-                FunctionFunctionArguments = value.ParameterNames.slice(0);
-                FunctionFunctionArguments.push(" \
-                    return JSRPCNet.SyncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments); \
+                functionFunctionArguments = value.ParameterNames.slice(0);
+                functionFunctionArguments.push(" \
+                    return JSRPCNet.syncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments); \
                     ");
 
-                apiObj[apiMethodName] = Function.apply(value, FunctionFunctionArguments)
+                apiObj[apiMethodName] = Function.apply(value, functionFunctionArguments)
             });
         }
     });
 }
 
-JSRPCNet.AsyncDispatch = function(apiUrl, methodIndex, parameterValues, callback) {
+JSRPCNet.asyncDispatch = function(apiUrl, methodIndex, parameterValues, callback) {
     var dispatchData = new Object();
     dispatchData.ParameterValues = parameterValues;
     dispatchData.MethodIndex = methodIndex;
@@ -54,7 +54,7 @@ JSRPCNet.AsyncDispatch = function(apiUrl, methodIndex, parameterValues, callback
     });
 }
 
-JSRPCNet.SyncDispatch = function(apiUrl, methodIndex, parameterValues) {
+JSRPCNet.syncDispatch = function(apiUrl, methodIndex, parameterValues) {
     var result;
 
     var dispatchData = new Object();
