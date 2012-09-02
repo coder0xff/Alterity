@@ -10,6 +10,7 @@ namespace Alterity.Controllers
     {
         public ActionResult Edit()
         {
+            ViewBag.DocumentId = 0;
             return View();
         }
     }
