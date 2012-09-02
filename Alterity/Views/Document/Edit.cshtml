@@ -4,10 +4,11 @@
     ViewBag.Title = "Edit";
 }
 
-<script type="text/javascript" src="~/Scripts/DocumentEdit/jquery.selection.js"></script>
-<script data-main="~/Scripts/DocumentEdit/main" src="~/Scripts/require.js"></script>
+<script type="text/javascript" src="/Scripts/DocEdit/jquery.selection.js"></script>
+<script type="text/javascript">var documentId = @ViewBag.DocumentId;</script>
+<script type="text/javascript" src="/Scripts/require.js"></script>
 <script>
-
+    require("/Scripts/DocEdit/main.js");
 </script>
 <h2>Edit</h2>
 <textarea id="plainTextArea" rows="2" cols="20"></textarea>

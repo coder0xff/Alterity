@@ -5,26 +5,34 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using Alterity.Models;
+using Alterity.Models.Async;
 
 namespace Alterity.Controllers
 {
     public class DocEditController : AlterityBaseApiController
     {
-        [JSRPCNet.ApiMethod]
-        public bool ReceiveInsertionHunk(int documentId, int startIndex, String text, int liveHunkStateSequenceIndex)
-        {
-            Document.GetById(documentId).AppendHunk(new InsertionHunk(startIndex, text), this.User);
-            return true;
-        }
+//         [JSRPCNet.ApiMethod]
+//         public bool ReceiveInsertionHunk(int documentId, int startIndex, String text, int liveHunkStateSequenceIndex)
+//         {
+//             Document.GetById(documentId).AppendHunk(new InsertionHunk(startIndex, text), this.User);
+//             return true;
+//         }
+// 
+//         [JSRPCNet.ApiMethod]
+//         public bool ReceiveDeletionHunk(int documentId, int startIndex, int length, int liveHunkStateSequenceIndex)
+//         {
+//             EntityMappingContext.Access(() =>
+//             {
+//                 Document.GetById(documentId).AppendHunk(new DeletionHunk(startIndex, length), this.User);
+//             });
+//             return true;
+//         }
 
         [JSRPCNet.ApiMethod]
-        public bool ReceiveDeletionHunk(int documentId, int startIndex, int length, int liveHunkStateSequenceIndex)
+        public void ReceiveHunks(int documentId, HunkDTO[] hunkDTOs)
         {
-            EntityMappingContext.Access(() =>
-            {
-                Document.GetById(documentId).AppendHunk(new DeletionHunk(startIndex, length), this.User);
-            });
-            return true;
+            List<Hunk> hunks = new List<Hunk>(hunkDTOs.Select(_ => _.Convert()));
+            return;
         }
     }
 }
