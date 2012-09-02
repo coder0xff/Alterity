@@ -4,23 +4,10 @@
     ViewBag.Title = "Edit";
 }
 
-<script type="text/javascript" src="~/JSRPCNet/JSRPCNet.js"></script>
-<script type="text/javascript" src="~/Scripts/jquery.selection.js"></script>
+<script type="text/javascript" src="~/Scripts/DocumentEdit/jquery.selection.js"></script>
+<script data-main="~/Scripts/DocumentEdit/main" src="~/Scripts/require.js"></script>
 <script>
-    var DocEditApi = new JSRPCNet("/api/DocEdit");
-    function BlockDeleted(index, length) {
-        DocEditApi.ReceiveDeletionHunk(@ViewBag.DocumentId , index, length, 0); 
-    }
-    function CharacterInserted(index, character) {
-    }
-    $(function () {
-        $("#plainTextArea").keypress(function(event) {
-            var selectionRange = $("#plainTextArea").selection();
-            if (selectionRange.end - selectionRange.start > 0) {
-                BlockDeleted(selectionRange.start, selectionRange.end - selectionRange.start);
-            }
-        });
-    });
+
 </script>
 <h2>Edit</h2>
 <textarea id="plainTextArea" rows="2" cols="20"></textarea>
