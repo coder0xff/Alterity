@@ -23,6 +23,8 @@ DeletionHunk.prototype.mergeSubsequent = function (other) {
             return other;
         }
     }
-    if (other.type == "insertion") return other;
-    throw "invalid hunk type";
+    else if (other.type == "insertion") {
+        return other;
+    }
+    return other;
 }
