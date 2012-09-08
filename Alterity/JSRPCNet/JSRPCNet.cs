@@ -119,7 +119,6 @@ namespace JSRPCNet
     {
         public string MethodName { get; set; }
         public int MethodIndex { get; set; }
-        public List<string> ParameterNames { get; set; }
 
         internal List<Type> ParameterTypes { get; set; }
         internal Func<Object, Object[], Object> fastCall;
@@ -128,7 +127,6 @@ namespace JSRPCNet
         {
             MethodName = method.Name;
             MethodIndex = methodIndex;
-            ParameterNames = new List<string>(method.GetParameters().Select(_ => _.Name));
             ParameterTypes = new List<Type>(method.GetParameters().Select(_ => _.ParameterType));
             fastCall = method.Bind();
         }
@@ -141,12 +139,10 @@ namespace JSRPCNet
 
     internal class ApiInfo
     {
-        public Type ApiClass { get; set; }
         public List<ApiMethodInfo> Methods { get; set; }
 
         internal ApiInfo(Type apiClass)
         {
-            ApiClass = apiClass;
             Methods = new List<ApiMethodInfo>(
                 apiClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy).Where(_ =>
                     _.GetCustomAttribute<JSRPCNet.ApiMethodAttribute>(false) != null &&
@@ -184,11 +180,11 @@ namespace JSRPCNet
             for (int paramIndex = 0; paramIndex < methodInfo.ParameterTypes.Count; paramIndex++)
             {
                 if (methodInfo.ParameterTypes[paramIndex].IsPrimitive)
-                    parameterValues[paramIndex] = Convert.ChangeType(parameterValuesToken[paramIndex.ToString()].ToString(), methodInfo.ParameterTypes[paramIndex]);
+                    parameterValues[paramIndex] = Convert.ChangeType(parameterValuesToken[paramIndex].ToString(), methodInfo.ParameterTypes[paramIndex]);
                 else if (methodInfo.ParameterTypes[paramIndex] == typeof(string))
-                    parameterValues[paramIndex] = parameterValuesToken[paramIndex.ToString()].ToString();
+                    parameterValues[paramIndex] = parameterValuesToken[paramIndex].ToString();
                 else
-                    parameterValues[paramIndex] = serializer.Deserialize(parameterValuesToken[paramIndex.ToString()].ToString(), methodInfo.ParameterTypes[paramIndex]);
+                    parameterValues[paramIndex] = serializer.Deserialize(parameterValuesToken[paramIndex].ToString(), methodInfo.ParameterTypes[paramIndex]);
             }
             return methodInfo.Invoke(this, parameterValues);
         }

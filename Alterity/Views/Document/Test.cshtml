@@ -1,0 +1,59 @@
+﻿@{
+    ViewBag.Title = "Test";
+}
+
+<script>
+    (function () {
+        Node.prototype.thisOrPriorSiblingHasChanged = true;
+        Node.prototype.thisOrSiblingOrParentHasChanged = function () {
+            var currentNode = this;
+            var hasChanged = currentNode.thisOrPriorSiblingHasChanged;
+            while (!hasChanged && currentNode.parentNode != null) {
+                currentNode = currentNode.parentNode;
+                isDirty = currentNode.thisOrPriorSiblingHasChanged;
+            }
+            return isDirty;
+        }
+
+        Node.prototype.updateIndex = function() {
+
+        }
+
+        Object.defineProperty(Node.prototype, "startIndex", {
+            get: function () {
+                if (
+            }
+        });
+    })();
+    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+
+    function docNode() {
+        return editorIFrame.document.getElementsByTagName('body')[0];
+    }
+
+    $(function () {
+        editorIFrame.document.designMode = 'On';
+        $(editorIFrame.document).click(function (event) { alert(docNode().innerHTML); });
+
+        var mutationObserver = new MutationObserver(function (mutationRecords) {
+        });
+
+        mutationObserver.observe(docNode(), {
+            childList: true,
+            attributes: true,
+            characterData: true,
+            subtree: true,
+            attributeOldValue: true,
+            characterDataOldValue: true
+        });
+
+
+
+        var inspect = docNode();
+        debugger;
+    });
+</script>
+
+<h2>Test</h2>
+
+<iframe id="editorIFrame"></iframe>

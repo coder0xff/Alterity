@@ -17,5 +17,11 @@ namespace Alterity.Controllers
             List<Hunk> hunks = new List<Hunk>(hunkDTOs.Select(_ => _.Convert()));
             return;
         }
+
+        [JSRPCNet.ApiMethod]
+        public String Test(int anInt, String aString)
+        {
+            return "Hello world! " + anInt.ToString() + " " + aString;
+        }
     }
 }

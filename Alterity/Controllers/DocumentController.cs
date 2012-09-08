@@ -13,5 +13,10 @@ namespace Alterity.Controllers
             ViewBag.DocumentId = 0;
             return View();
         }
+
+        public ActionResult Test()
+        {
+            return View();
+        }
     }
 }

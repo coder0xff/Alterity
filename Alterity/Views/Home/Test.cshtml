@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = "Test";
+}
+
+<h2>Test</h2>
+
+<script src="/JSRPCNet/JSRPCNet.js"></script>
+<script>
+    var docEdit = new JSRPCNet("/api/DocEdit");
+    alert(docEdit.Test(31, "Woot!"));
+    docEdit.TestAsync(31, "Woot!", function (text) { alert(text); });
+</script>

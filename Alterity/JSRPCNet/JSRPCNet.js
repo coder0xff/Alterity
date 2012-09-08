@@ -1,39 +1,30 @@
-﻿var JSRPCNet = function(apiURL)
+﻿var JSRPCNet = function(apiUrl)
 {
     var apiObj = this;
     $.ajax({
         cache: false,
         async: false,
         type: "GET",
-        url: apiURL + "/GetApi",
+        url: apiUrl + "/GetApi",
         contentType: 'application/json',
         success: function (response) {
             $.each(response["Methods"], function (key, value)
             {
                 var apiMethodName = value.MethodName;
-                if (!apiMethodName.match(/^\w+$/)) { return; } //regex to protect code execution attacks
-                for (paramName in value.ParameterNames) {
-                    // regex to protect from code execution attacks
-                    if (!paramName.match(/^\w+$/)) {
-                        return;
-                    }
+
+                apiObj[apiMethodName + "Async"] = function()
+                {
+                    var args = Array.prototype.slice.call(arguments);
+                    var callback = args.pop();
+                    if (typeof (callback) != "function") throw "The last argument must be a callback function";
+                    return JSRPCNet.asyncDispatch(apiUrl, value.MethodIndex, args, callback);
                 }
 
-                var functionFunctionArguments = value.ParameterNames.slice(0);
-                functionFunctionArguments.push("JSRPCNetCallback");
-                functionFunctionArguments.push(" \
-                    var args = Array.prototype.slice.call(arguments); \n\
-                    args.pop(); \n\
-                    JSRPCNet.asyncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments, JSRPCNetCallback); \
-                    ");
-                apiObj[apiMethodName + "Async"] = Function.apply(value, functionFunctionArguments)
-
-                functionFunctionArguments = value.ParameterNames.slice(0);
-                functionFunctionArguments.push(" \
-                    return JSRPCNet.syncDispatch('" + apiURL + "', " + value.MethodIndex + ", arguments); \
-                    ");
-
-                apiObj[apiMethodName] = Function.apply(value, functionFunctionArguments)
+                apiObj[apiMethodName] = function ()
+                {
+                    var args = Array.prototype.slice.call(arguments);
+                    return JSRPCNet.syncDispatch(apiUrl, value.MethodIndex, args);
+                }
             });
         }
     });
