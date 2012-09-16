@@ -269,6 +269,15 @@
     <Content Include="Scripts\DocEdit\IntegerInterval.js" />
     <Content Include="Scripts\DocEdit\DeletionHunk.js" />
     <Content Include="Scripts\DocEdit\main.js" />
+    <Content Include="Scripts\DOM\Core.js" />
+    <Content Include="Scripts\DOM\Document.js" />
+    <Content Include="Scripts\DOM\DocumentFragment.js" />
+    <Content Include="Scripts\DOM\DOMException.js" />
+    <Content Include="Scripts\DOM\DOMImplementation.js" />
+    <Content Include="Scripts\DOM\Element.js" />
+    <Content Include="Scripts\DOM\NamedNodeMap.js" />
+    <Content Include="Scripts\DOM\Node.js" />
+    <Content Include="Scripts\DOM\NodeList.js" />
     <Content Include="Scripts\jquery-1.7.1.js" />
     <Content Include="Scripts\jquery-1.7.1.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
