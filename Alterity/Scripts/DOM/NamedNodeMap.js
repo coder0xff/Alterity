@@ -1,6 +1,8 @@
 ﻿define(function () {
-    function NamedNodeMap()
-    { }
+    function NamedNodeMap(document)
+    {
+        Object.defineProperty(this, "ownerDocument", { value: document });
+    }
 
     Object.defineProperty(NamedNodeMap.prototype, "getNamedItem", {
         value: function (name) {
@@ -29,13 +31,19 @@
         value: function (name) {
             name = name.toLowerCase();
             for (var keyName in this) {
-                if (keyName.toLowerCase() == name) delete this[keyName];
+                if (keyName.toLowerCase() == name) {
+                    delete this[keyName];
+                    return;
+                }
             }
+            throw require("DOM").NOT_FOUND_ERR
         }
     });
 
     Object.defineProperty(NamedNodeMap.prototype, "setNamedItem", {
         value: function (node) {
+            if (node.ownerDocument != ownerDocument) throw require("DOM").WRONG_DOCUMENT_ERROR;
+            if (node.ownerElement !== null) throw require("DOM").INUSE_ATTRIBUTE_ERR;
             var nodeName = node.nodeName.toLowerCase();
             this[nodeName] = node;
         }

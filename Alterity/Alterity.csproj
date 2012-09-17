@@ -269,7 +269,8 @@
     <Content Include="Scripts\DocEdit\IntegerInterval.js" />
     <Content Include="Scripts\DocEdit\DeletionHunk.js" />
     <Content Include="Scripts\DocEdit\main.js" />
-    <Content Include="Scripts\DOM\Core.js" />
+    <Content Include="Scripts\DOM\CharacterData.js" />
+    <Content Include="Scripts\DOM\DOM.js" />
     <Content Include="Scripts\DOM\Document.js" />
     <Content Include="Scripts\DOM\DocumentFragment.js" />
     <Content Include="Scripts\DOM\DOMException.js" />

@@ -1,4 +1,4 @@
-﻿define(["DOMException", "DOMImplementation", "DocumentFragment", "NamedNodeMap", "Node", "NodeList"], function () {
+﻿define(["DOMException", "DOMImplementation", "DocumentFragment", "Document", "Node", "NodeList"], "NamedNodeMap", function () {
     
     var DOM = new Object();
 
@@ -23,8 +23,10 @@
     });
 
     DOM.DOMImplementation = DOMImplementation;
-
     DOM.DocumenFragment = DocumentFragment;
+    DOM.Document = Document;
+    DOM.Node = Node;
+    DOM.NodeList = NodeList;
 
     return DOM;
 });

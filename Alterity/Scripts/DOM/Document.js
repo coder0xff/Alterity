@@ -72,7 +72,10 @@
     }
 
     Document.prototype = new Node;
+
     Object.defineProperty(Document.prototype, "doctype", { value: null });
     Object.defineProperty(Document.prototype, "implementation", { get: function () { return new (require("DOMImplementation"))(); } });
+
+    return Document;
 
 });

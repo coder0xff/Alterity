@@ -1,13 +1,11 @@
 ﻿define(function () {
-    function Node() {
+    function Node(ownerDocument) {
 
         var _nextSibling = null;
         Object.defineProperty(this, "nextSibling", { get: function () { return _nextSibling; } });
         this._setNextSibling = function (node) { _nextSibling = node; }
 
-        var _ownerDocument = null;
-        Object.defineProperty(this, "ownerDocument", { get: function () { return _ownerDocument; } });
-        this._setOwnerDocument = function (document) { ownerDocument = document; }
+        Object.defineProperty(this, "ownerDocument", { get: function () { return ownerDocument; } });
 
         var _parentNode = null;
         Object.defineProperty(this, "parentNode", { get: function () { return parentNode; } });
@@ -39,15 +37,15 @@
 
     Object.defineProperty(Node.prototype, "prefix", { value: null });
 
-    Object.prototype.appendChild = function (newChild) { throw HIERARCHY_REQUEST_ERR; }
+    Node.prototype.appendChild = function (newChild) { throw HIERARCHY_REQUEST_ERR; }
         
-    Object.prototype.clone = function () { throw "Not implemented by inheritor!"; }
+    Node.prototype.clone = function () { throw "Not implemented by inheritor!"; }
 
-    Object.prototype.hasChildNodes = function () { return false; }
+    Node.prototype.hasChildNodes = function () { return false; }
 
-    Object.prototype.insertBefore = function (newChild, refChild) { throw HIERARCHY_REQUEST_ERR; }
+    Node.prototype.insertBefore = function (newChild, refChild) { throw HIERARCHY_REQUEST_ERR; }
 
-    Object.prototype.normalize = function () {
+    Node.prototype.normalize = function () {
         var previousWasText = false;
         for (var i = 0; i < childNodes.length; i++) {
             if (childNodes[i].nodeType == Node.TEXT_NODE) {
@@ -70,11 +68,11 @@
         }
     }
 
-    Object.prototype.removeChild = function (oldChild) { throw HIERARCHY_REQUEST_ERR; }
+    Node.prototype.removeChild = function (oldChild) { throw HIERARCHY_REQUEST_ERR; }
 
-    Object.prototype.replaceChild = function (newChild, oldChild) { throw HIERARCHY_REQUEST_ERR; }
+    Node.prototype.replaceChild = function (newChild, oldChild) { throw HIERARCHY_REQUEST_ERR; }
 
-    Object.prototype.supports = function (feature, version) { return false; }
+    Node.prototype.supports = function (feature, version) { return false; }
 
     Object.defineProperties(Node, {
         "ELEMENT_NODE": { value: 1 },
