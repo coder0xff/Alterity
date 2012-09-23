@@ -32,8 +32,10 @@
             name = name.toLowerCase();
             for (var keyName in this) {
                 if (keyName.toLowerCase() == name) {
+                    var node = this[keyName]
+                    node._setOwnerElement(null);
                     delete this[keyName];
-                    return;
+                    return node;
                 }
             }
             throw require("DOM").NOT_FOUND_ERR
@@ -45,7 +47,10 @@
             if (node.ownerDocument != ownerDocument) throw require("DOM").WRONG_DOCUMENT_ERROR;
             if (node.ownerElement !== null) throw require("DOM").INUSE_ATTRIBUTE_ERR;
             var nodeName = node.nodeName.toLowerCase();
+            removeNamedItem(nodeName);
             this[nodeName] = node;
+            node._setOwnerElement(this);
+            return node;
         }
     });
 

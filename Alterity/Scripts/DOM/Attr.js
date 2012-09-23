@@ -1,6 +1,7 @@
 ﻿define("Node", function (Node) {
     function Attr(ownerDocument, name, specified)
     {
+        if (!Attr._validateName(name)) throw require("DOM").INVALID_CHARACTER_ERR;
         Node.apply(this, ownerDocument);
 
         Object.defineProperty(this, "name", { enumerable: true, value: name });
@@ -17,6 +18,12 @@
     }
 
     extend(Attr, Node);
+
+
+    Attr._validateName = function (name) {
+        var regExp = /^[^\t\n\f />\0"'<=]*$/;
+        return !regExp.test(name);
+    }
 
     Object.defineProperties(Attr.prototype, {
         "_cloneForParentClone": { value: function () { return new Attr(ownerDocument, name, specified); } },

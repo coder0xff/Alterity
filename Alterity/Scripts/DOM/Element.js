@@ -1,6 +1,7 @@
 ﻿define(["Node", "enableChildren", "enableParentNode"], function (Node, enableChildren, enableParentNode) {
     function Element(ownerDocument, tagName)
     {
+        if (!Element._validateTagName(tagName)) throw require("DOM").INVALID_CHARACTER_ERR;
         Node.apply(this, ownerDocument);
         enableChildren.instance(this);
         enableParentNode.instance(this);
@@ -13,6 +14,11 @@
 
     extend(Element, Node);
     enableChildren.class(Element);
+
+    Element._validateTagName(name)
+    {
+        var regex = /^[A-Za-z0-9]*$/
+    }
 
     Object.defineProperties(Element.prototype, {
         "_getElementsByTagNameRecursive": {
@@ -36,8 +42,22 @@
             }
         },
         "hasAttribute": { enumerable: true, value: function (name) { return attributes.getNamedItem(name) !== null } },
-        "removeAttribute": { enumerable: true, value: function (name) { delete attributes[name] } },
-        "removeAttributeNode": { enumerable: true, value: function (oldAttr) { delete attributes[oldAttr.name]; } },
+        "removeAttribute": { enumerable: true, value: function (name) { attributes.removeNamedItem(name) } },
+        "removeAttributeNode": { enumerable: true, value: function (oldAttr) { removeAttribute(oldAttr.name); } },
+        "setAttribute": {
+            enumerable: true, value: function (name, value) {
+                var attr = getAttribute(name);
+                if (attr === null) attr = setAttributeNode(attr = ownerDocument.createAttribute(name))
+                attr.value = value;
+            }
+        },
+        "setAttributeNode": {
+            enumerable: true, value: function (newAttr) {
+                removeAttribute(newAttr.name);
+                attributes.setNamedItem(newAttr);
+            }
+        }
     });
 
+    return Element;
 });
