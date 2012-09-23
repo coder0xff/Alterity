@@ -279,6 +279,7 @@
     <Content Include="Scripts\DOM\Element.js" />
     <Content Include="Scripts\DOM\enableChildren.js" />
     <Content Include="Scripts\DOM\enableParentNode.js" />
+    <Content Include="Scripts\DOM\Text.js" />
     <Content Include="Scripts\extend.js" />
     <Content Include="Scripts\DOM\NamedNodeMap.js" />
     <Content Include="Scripts\DOM\Node.js" />

@@ -9,22 +9,24 @@
     class: function(nodeClass)
     {
         Object.defineProperties(nodeClass.prototype, {
-            "_insertChildAtIndex": { value: function (newChild, index) {
-                if (newChild.ownerDocument != ownerDocument) throw require("DOM").WRONG_DOCUMENT_ERROR;
-                if (newChild._isAncestorOf(this)) throw require("DOM").HIERARCHY_REQUEST_ERROR;
-                if (newChild.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
-                    while (newChild.hasChildren) {
-                        _insertChildAtIndex(newChild.firstChild, index);
-                        index++;
+            "_insertChildAtIndex": {
+                value: function (newChild, index) {
+                    if (newChild.ownerDocument != ownerDocument) throw require("DOM").WRONG_DOCUMENT_ERROR;
+                    if (newChild._isAncestorOf(this)) throw require("DOM").HIERARCHY_REQUEST_ERROR;
+                    if (newChild.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
+                        while (newChild.hasChildren) {
+                            _insertChildAtIndex(newChild.firstChild, index);
+                            index++;
+                        }
+                    }
+                    else {
+                        if (!newChild._canHaveParent) throw require("DOM").HIERARCHY_REQUEST_ERROR;
+                        if (newChild.parentNode !== null) newChild.parentNode.removeChild(newChild);
+                        childNodes.splice(index, 0, newChild);
+                        newChild._setParentNode(this);
                     }
                 }
-                else {
-                    if (!newChild._canHaveParent) throw require("DOM").HIERARCHY_REQUEST_ERROR;
-                    if (newChild.parentNode !== null) newChild.parentNode.removeChild(newChild);
-                    childNodes.splice(index, 0, newChild);
-                    newChild._setParentNode(this);
-                }
-        }},
+            },
             "appendChild": {
                 enumerable: true, value: function (newChild) {
                     _insertChildAtIndex(newChild, childNodes.length);
@@ -49,13 +51,15 @@
                     return oldChild;
                 }
             },
-            "replaceChild": { enumerable: true, value: function(newChild, oldChild) {
-                var oldChildIndex = childNodes.indexOf(oldChild);
-                if (oldChildIndex == -1) throw require("DOM").NOT_FOUND_ERROR;
-                childNodes.splice(oldChildIndex, 1);
-                _insertChildAIndex(newChild, oldChildIndex);
-                return oldChild;
-            }}
+            "replaceChild": {
+                enumerable: true, value: function (newChild, oldChild) {
+                    var oldChildIndex = childNodes.indexOf(oldChild);
+                    if (oldChildIndex == -1) throw require("DOM").NOT_FOUND_ERROR;
+                    childNodes.splice(oldChildIndex, 1);
+                    _insertChildAIndex(newChild, oldChildIndex);
+                    return oldChild;
+                }
+            }
         });
     }
 })

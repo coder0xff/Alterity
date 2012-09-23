@@ -22,7 +22,7 @@
         "childNodes": { enumerable: true, get: function () { return new (require("NodeList"))(); } },
         "cloneNode": { enumerable: true, value: function (deep) { throw "Not implemented by inheritor!"; } },
         "firstChild": { enumerable: true, value: null },
-        "hasChildNodes": { enumerable: true, value: function () { return childNodes.length > 0; } },
+        "hasChildNodes": { enumerable: true, value: function () { return (typeof childNodes == 'undefined') ? false : childNodes.length > 0; } },
         "insertBefore": { enumerable: true, value: function (newChild, refChild) { throw require("DOM").HIERARCHY_REQUEST_ERR; } },
         "lastChild": { enumerable: true, value: null },
         "localName": { enumerable: true, value: null },
