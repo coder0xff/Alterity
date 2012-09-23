@@ -271,6 +271,7 @@
     <Content Include="Scripts\DocEdit\main.js" />
     <Content Include="Scripts\DOM\Attr.js" />
     <Content Include="Scripts\DOM\CharacterData.js" />
+    <Content Include="Scripts\DOM\Comment.js" />
     <Content Include="Scripts\DOM\DOM.js" />
     <Content Include="Scripts\DOM\Document.js" />
     <Content Include="Scripts\DOM\DocumentFragment.js" />
