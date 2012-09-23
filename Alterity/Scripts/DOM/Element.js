@@ -1,6 +1,5 @@
 ﻿define(["Node", "enableChildren", "enableParentNode"], function (Node, enableChildren, enableParentNode) {
-    function Element(ownerDocument, tagName)
-    {
+    function Element(ownerDocument, tagName) {
         if (!Element._validateTagName(tagName)) throw require("DOM").INVALID_CHARACTER_ERR;
         Node.apply(this, ownerDocument);
         enableChildren.instance(this);
@@ -10,15 +9,14 @@
 
         var _attributes = new (Require("NamedNodeMap"))(ownerDocument);
         Object.defineProperty(this, "attributes", { enumerable: true, get: function () { return _attributes; } });
-    }
+    };
 
     extend(Element, Node);
     enableChildren.class(Element);
 
-    Element._validateTagName(name)
-    {
+    Element._validateTagName = function (name) {
         var regex = /^[A-Za-z0-9]*$/
-    }
+    };
 
     Object.defineProperties(Element.prototype, {
         "_getElementsByTagNameRecursive": {

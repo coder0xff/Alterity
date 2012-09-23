@@ -1,19 +1,19 @@
 ﻿define(["Node", "enableParenNode"], function (Node, enableParentNode) {
-    function CharacterData(ownerDocument, data)
-    {
+    function CharacterData(ownerDocument, data) {
         Node.apply(this, ownerDocument);
         enableParentNode.instance(this);
 
         var data_storage;
         Object.defineProperty(this, "data", { enumerable: true, get: function () { return data_storage; }, set: function (value) { data_storage = "" + value; } });
-    }
+    };
 
     extend(CharacterData, Node);
 
     Object.defineProperties(CharacterData.prototype, {
         "appendData": { enumerable: true, value: function (arg) { data += arg; } },
         "cloneNode": {
-            enumerable: true, value: function () { return new CharacterData(ownerDocument, data); }},
+            enumerable: true, value: function () { return new CharacterData(ownerDocument, data); }
+        },
         "deleteData": {
             enumerable: true, value: function (offset, count) {
                 if (offset < 0 || offset > length) throw require("DOM").INDEX_SIZE_ERR;
@@ -45,8 +45,7 @@
                 return data.substr(offset, count);
             }
         }
-    }
-    );
+    });
 
     return CharacterData;
 });

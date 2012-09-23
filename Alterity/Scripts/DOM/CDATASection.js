@@ -1,7 +1,7 @@
 ﻿define("Text", function (Text) {
-    function CDATASection(ownerDocument) {
-        Text.apply(this, ownerDocument);
-    }
+    function CDATASection(ownerDocument, data) {
+        Text.apply(this, ownerDocument, data);
+    };
 
     extend(CDATASection, Text);
 

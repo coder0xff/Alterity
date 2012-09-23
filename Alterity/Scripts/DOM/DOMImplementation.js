@@ -5,7 +5,7 @@
         this.hasFeature = function (feature, version) {
             return false;
         }
-    }
+    };
 
     return DOMImplementation;
 });

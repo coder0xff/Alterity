@@ -1,13 +1,11 @@
 ﻿define({
-    instance: function(node)
-    {
+    instance: function (node) {
         var _children = new NodeList();
         Object.defineProperty(node, "childNodes", { enumerable: true, get: function () { return _children; } });
 
         Object.defineProperty(node, "_canHaveChildren", { value: true });
     },
-    class: function(nodeClass)
-    {
+    class: function (nodeClass) {
         Object.defineProperties(nodeClass.prototype, {
             "_insertChildAtIndex": {
                 value: function (newChild, index) {
@@ -62,4 +60,4 @@
             }
         });
     }
-})
+});

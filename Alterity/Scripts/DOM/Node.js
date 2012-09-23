@@ -1,7 +1,7 @@
 ﻿define(function () {
     function Node(ownerDocument) {
         Object.defineProperty(this, "ownerDocument", { enumerable: true, value: ownerDocument });
-    }
+    };
 
     Object.defineProperties(Node.prototype, {
         "_canHaveParent": { value: false },

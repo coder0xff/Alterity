@@ -2,7 +2,7 @@
     function DocumentFragment(ownerDocument) {
         Node.apply(ownerDocument)
         enableChildren.instance(this);
-    }
+    };
 
     extend(DocumentFragment, Node);
     enableChildren.class(DocumentFragment);

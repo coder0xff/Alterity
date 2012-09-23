@@ -1,7 +1,7 @@
 ﻿define("CharacterData", function (CharacterData) {
-    function Comment(ownerDocument) {
-        CharacterData.apply(this, ownerDocument);
-    }
+    function Comment(ownerDocument, data) {
+        CharacterData.apply(this, ownerDocument, data);
+    };
 
     extend(Comment, CharacterData);
 

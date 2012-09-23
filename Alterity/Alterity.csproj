@@ -265,7 +265,7 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <None Include="Scripts\jquery-1.7.1.intellisense.js" />
-    <Content Include="Scripts\DocEdit\CDATASection.js" />
+    <Content Include="Scripts\DOM\CDATASection.js" />
     <Content Include="Scripts\DocEdit\InsertionHunk.js" />
     <Content Include="Scripts\DocEdit\IntegerInterval.js" />
     <Content Include="Scripts\DocEdit\DeletionHunk.js" />

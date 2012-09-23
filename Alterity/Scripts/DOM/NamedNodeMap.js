@@ -1,8 +1,7 @@
 ﻿define(function () {
-    function NamedNodeMap(ownerDocument)
-    {
+    function NamedNodeMap(ownerDocument) {
         Object.defineProperty(this, "ownerDocument", { value: ownerDocument });
-    }
+    };
 
     Object.defineProperty(NamedNodeMap.prototype, "getNamedItem", {
         value: function (name) {

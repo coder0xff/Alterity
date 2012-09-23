@@ -1,8 +1,7 @@
 ﻿define("CharacterData", function (CharacterData) {
-    function Text(ownerDocument)
-    {
-        CharacterData.apply(this, ownerDocument);
-    }
+    function Text(ownerDocument, data) {
+        CharacterData.apply(this, ownerDocument, data);
+    };
 
     extend(Text, CharacterData);
 
