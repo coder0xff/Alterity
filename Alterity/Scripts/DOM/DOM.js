@@ -23,10 +23,11 @@
     });
 
     DOM.DOMImplementation = DOMImplementation;
-    DOM.DocumenFragment = DocumentFragment;
-    DOM.Document = Document;
-    DOM.Node = Node;
-    DOM.NodeList = NodeList;
+//These don't need to be accessible!
+//     DOM.DocumenFragment = DocumentFragment;
+//     DOM.Document = Document;
+//     DOM.Node = Node;
+//     DOM.NodeList = NodeList;
 
     return DOM;
 });

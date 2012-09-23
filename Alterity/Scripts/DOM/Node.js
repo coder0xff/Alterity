@@ -1,92 +1,105 @@
 ﻿define(function () {
     function Node(ownerDocument) {
-
-        var _nextSibling = null;
-        Object.defineProperty(this, "nextSibling", { get: function () { return _nextSibling; } });
-        this._setNextSibling = function (node) { _nextSibling = node; }
-
-        Object.defineProperty(this, "ownerDocument", { get: function () { return ownerDocument; } });
-
-        var _parentNode = null;
-        Object.defineProperty(this, "parentNode", { get: function () { return parentNode; } });
-        this._setParentNode = function (node) { _parentNode = node; }
-
-        var _previousSibling = null;
-        Object.defineProperty(this, "previousSibling", { get: function () { return previousSibling; } });
-        this._setPreviousSibling = function (node) { _previousSibling = node; }
-
+        Object.defineProperty(this, "ownerDocument", { enumerable: true, value: ownerDocument });
     }
 
-    Object.defineProperty(Node.prototype, "attributes", { value: null });
-
-    Object.defineProperty(Node.prototype, "childNodes", { get: function () { return new (require("NodeList"))(); } });
-
-    Object.defineProperty(Node.prototype, "firstChild", { value: null });
-
-    Object.defineProperty(Node.prototype, "lastChild", { value: null });
-
-    Object.defineProperty(Node.prototype, "nodeName", { get: function () { throw "Not implemented by inheritor!"; } });
-
-    Object.defineProperty(Node.prototype, "nodeType", { get: function () { throw "Not implemented by inheritor!"; } });
-
-    Object.defineProperty(Node.prototype, "nodeValue", { get: function () { return null; }, set: function (value) { } });
-
-    Object.defineProperty(Node.prototype, "localName", { value: null });
-
-    Object.defineProperty(Node.prototype, "namespaceURI", { value: null });
-
-    Object.defineProperty(Node.prototype, "prefix", { value: null });
-
-    Node.prototype.appendChild = function (newChild) { throw HIERARCHY_REQUEST_ERR; }
-        
-    Node.prototype.clone = function () { throw "Not implemented by inheritor!"; }
-
-    Node.prototype.hasChildNodes = function () { return false; }
-
-    Node.prototype.insertBefore = function (newChild, refChild) { throw HIERARCHY_REQUEST_ERR; }
-
-    Node.prototype.normalize = function () {
-        var previousWasText = false;
-        for (var i = 0; i < childNodes.length; i++) {
-            if (childNodes[i].nodeType == Node.TEXT_NODE) {
-                if (previousWasText) {
-                    replaceChild(ownerDocument.createTextNode(childNodes[i - 1].nodeValue + childNodes[i].nodeValue), childNodes[i - 1]);
-                    i--;
-                } else {
-                    previousWasText = true;
+    Object.defineProperties(Node.prototype, {
+        "_canHaveParent": { value: false },
+        "_canHaveChildren": { value: false},
+        "_isAncestorOf": {
+            value: function (node) {
+                var currentAncestor = node.parentNode;
+                while (currentAncestor !== null)
+                {
+                    if (this == currentAncestor) return true;
+                    currentAncestor = currentAncestor.parentNode;
                 }
-            } else {
-                childNodes[i].normalize();
-                previousWasText = false;
+                return false;
             }
-        }
-
-        if (attributes !== null) {
-            for (var i = 0; i < attributes.length; i++) {
-                attributes[i].normalize();
+        },
+        "appendChild": { enumerable: true, value: function (newChild) { throw require("DOM").HIERARCHY_REQUEST_ERR; } },
+        "attributes": { enumerable: true, value: null },
+        "childNodes": { enumerable: true, get: function () { return new (require("NodeList"))(); } },
+        "cloneNode": { enumerable: true, value: function (deep) { throw "Not implemented by inheritor!"; } },
+        "firstChild": { enumerable: true, value: null },
+        "hasChildNodes": { enumerable: true, value: function () { return childNodes.length > 0; } },
+        "insertBefore": { enumerable: true, value: function (newChild, refChild) { throw require("DOM").HIERARCHY_REQUEST_ERR; } },
+        "lastChild": { enumerable: true, value: null },
+        "localName": { enumerable: true, value: null },
+        "namespaceURI": { enumerable: true, value: null },
+        "nodeName": { enumerable: true, get: function () { throw "Not implemented by inheritor!"; } },
+        "nodeType": { enumerable: true, get: function () { throw "Not implemented by inheritor!"; } },
+        "nodeValue": { enumerable: true, get: function () { return null; }, set: function (value) { } },
+        "nextSibling": {
+            enumerable: true, get: function () {
+                if (parentNode !== null) {
+                    var selfIndex = parentNode.childNodes.indexOf(this);
+                    return (selfIndex == parentNode.childNodes.length - 1)
+                        ? null
+                        : parentNode.childNodes[selfIndex + 1];
+                }
+                else {
+                    return null;
+                }
             }
-        }
-    }
+        },
+        "normalize": {
+            enumerable: true, value: function () {
+                var previousWasText = false;
+                for (var i = 0; i < childNodes.length; i++) {
+                    if (childNodes[i].nodeType == Node.TEXT_NODE) {
+                        if (previousWasText) {
+                            replaceChild(ownerDocument.createTextNode(childNodes[i - 1].nodeValue + childNodes[i].nodeValue), childNodes[i - 1]);
+                            i--;
+                        } else {
+                            previousWasText = true;
+                        }
+                    } else {
+                        childNodes[i].normalize();
+                        previousWasText = false;
+                    }
+                }
 
-    Node.prototype.removeChild = function (oldChild) { throw HIERARCHY_REQUEST_ERR; }
-
-    Node.prototype.replaceChild = function (newChild, oldChild) { throw HIERARCHY_REQUEST_ERR; }
-
-    Node.prototype.supports = function (feature, version) { return false; }
+                if (attributes !== null) {
+                    for (var i = 0; i < attributes.length; i++) {
+                        attributes[i].normalize();
+                    }
+                }
+            }
+        },
+        "parentNode": { enumerable: true, value: null },
+        "prefix": { enumerable: true, value: null },
+        "previousSibling": {
+            enumerable: true, get: function () {
+                if (parentNode !== null) {
+                    var selfIndex = parentNode.childNodes.indexOf(this);
+                    return (selfIndex == 0)
+                        ? null
+                        : parentNode.childNodes[selfIndex - 1];
+                }
+                else {
+                    return null;
+                }
+            }
+        },
+        "removeChild": { enumerable: true, value: function (oldChild) { throw require("DOM").HIERARCHY_REQUEST_ERR; } },
+        "replaceChild": { enumerable: true, value: function (newChild, oldChild) { throw require("DOM").HIERARCHY_REQUEST_ERR; } },
+        "supports": { enumerable: true, value: function (feature, version) { return false; } }
+    });
 
     Object.defineProperties(Node, {
         "ELEMENT_NODE": { value: 1 },
-        "ATTRIBUTE_NODE": { value: 1 },
-        "TEXT_NODE": { value: 1 },
-        "CDATA_SECTION_NODE": { value: 1 },
-        "ENTITY_REFERENCE_NODE": { value: 1 },
-        "ENTITY_NODE": { value: 1 },
-        "PROCESSING_INSTRUCTION_NODE": { value: 1 },
-        "COMMENT_NODE": { value: 1 },
-        "DOCUMENT_NODE": { value: 1 },
-        "DOCUMENT_TYPE_NODE": { value: 1 },
-        "DOCUMENT_FRAGMENT_NODE": { value: 1 },
-        "NOTATION_NODE": { value: 1 },
+        "ATTRIBUTE_NODE": { value: 2 },
+        "TEXT_NODE": { value: 3 },
+        "CDATA_SECTION_NODE": { value: 4 },
+        "ENTITY_REFERENCE_NODE": { value: 5 },
+        "ENTITY_NODE": { value: 6 },
+        "PROCESSING_INSTRUCTION_NODE": { value: 7 },
+        "COMMENT_NODE": { value: 8 },
+        "DOCUMENT_NODE": { value: 9 },
+        "DOCUMENT_TYPE_NODE": { value: 10 },
+        "DOCUMENT_FRAGMENT_NODE": { value: 11 },
+        "NOTATION_NODE": { value: 12 },
     });
 
     return Node;

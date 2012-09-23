@@ -269,6 +269,7 @@
     <Content Include="Scripts\DocEdit\IntegerInterval.js" />
     <Content Include="Scripts\DocEdit\DeletionHunk.js" />
     <Content Include="Scripts\DocEdit\main.js" />
+    <Content Include="Scripts\DOM\Attr.js" />
     <Content Include="Scripts\DOM\CharacterData.js" />
     <Content Include="Scripts\DOM\DOM.js" />
     <Content Include="Scripts\DOM\Document.js" />
@@ -276,6 +277,9 @@
     <Content Include="Scripts\DOM\DOMException.js" />
     <Content Include="Scripts\DOM\DOMImplementation.js" />
     <Content Include="Scripts\DOM\Element.js" />
+    <Content Include="Scripts\DOM\enableChildren.js" />
+    <Content Include="Scripts\DOM\enableParentNode.js" />
+    <Content Include="Scripts\extend.js" />
     <Content Include="Scripts\DOM\NamedNodeMap.js" />
     <Content Include="Scripts\DOM\Node.js" />
     <Content Include="Scripts\DOM\NodeList.js" />
