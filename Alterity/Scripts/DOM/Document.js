@@ -20,8 +20,7 @@
         }
 
         this.createElement = function (tagName) {
-            //todo
-            throw "Not implemented.";
+            return new (require("Element"))(this, tagName);
         };
 
         this.createEntityReference = function (name) {
