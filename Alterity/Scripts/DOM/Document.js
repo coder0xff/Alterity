@@ -3,58 +3,72 @@
         var rootElement = new Element("html");
         Object.defineProperty(this, "documentElement", { get: function () { return rootElement; } });
 
-        this.createAttribute = function (name) {
-            return new (require("Attribute"))(this, name, true);
-        }
 
-        this.createCDATASection = function (data) {
-            return new (require("CDATASection"))(this, data);
-        }
-
-        this.createComment = function (data) {
-            return new (require("Comment"))(this, data);
-        }
-
-        this.createDocumentFragment = function () {
-            return new (require("DocumentFragment"))()
-        }
-
-        this.createElement = function (tagName) {
-            return new (require("Element"))(this, tagName);
-        };
-
-        this.createEntityReference = function (name) {
-            //todo
-            throw "Not implemented.";
-        }
-
-        this.createProcessingInstruction = function (target, data) {
-            //todo
-            throw "Not implemented.";
-        }
-
-        this.createTextNode = function (data) {
-            //todo
-            throw "Not implemented.";
-        }
-
-        this.getElementById = function (elementId) {
-            //todo
-            throw "Not implemented.";
-        }
-
-        this.getElementsByTagName = function (tagName) {
-            //todo
-            throw "Not implemented.";
-        }
-
-        this.importNode = function (importedNode, deep) {
-            //todo
-            throw "Not implemented.";
-        }
     };
 
-    Document.prototype = new Node;
+    extend(Document, Node);
+
+    Object.defineProperties(Document.prototype, {
+        "createAttribute": {
+            enumerable: true, value: function (name) {
+                return new (require("Attribute"))(this, name, true);
+            }
+        },
+        "createCDATASection": {
+            enumerable: true, value: function (data) {
+                return new (require("CDATASection"))(this, data);
+            }
+        },
+        "createComment": {
+            enumerable: true, value: function (data) {
+                return new (require("Comment"))(this, data);
+            }
+        },
+        "createDocumentFragment": {
+            enumerable: true, value: function () {
+                return new (require("DocumentFragment"))()
+            }
+        },
+        "createElement": {
+            enumerable: true, value: function (tagName) {
+                return new (require("Element"))(this, tagName);
+            }
+        },
+        "createTextNode": {
+            enumerable: true, value: function (data) {
+                return new (require("Text"))(this, data);
+            }
+        },
+        "getElementById": {
+            enumerable: true, value: function (elementId) {
+                function getElementByIdRecursive(element, elementId) {
+                    if (element.getAttribute("id") == elementId) return element;
+                    for (childNode in element.childNodes)
+                        if (childNode.nodeType == Node.ELEMENT_NODE) {
+                            var recurseResult = getElementByIdRecursive(childNode, elementId);
+                            if (recurseResult !== null) return recurseResult;
+                        }
+                    return null;
+                }
+                return getElementByIdRecursive(documentElement, elementId);
+            }
+        },
+        "getElementsByTagName": {
+            enumerable: true, value: function (tagName) {
+                tagName = tagName.toLowerCase();
+                var result = new (require("NodeList"))();
+                if (documentElement.tagName == tagName) result.push(documentElement);
+                documentElement._getElementsByTagNameRecursive(tagName, result);
+                return result;
+            }
+        },
+        "importNode": {
+            enumerable: true, value: function (importedNode, deep) {
+                return importedNode._cloneNodeForImport(this, deep);
+            }
+        }
+    });
+
 
     Object.defineProperty(Document.prototype, "doctype", { value: null });
     Object.defineProperty(Document.prototype, "implementation", { get: function () { return new (require("DOMImplementation"))(); } });

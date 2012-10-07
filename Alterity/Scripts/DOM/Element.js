@@ -19,14 +19,34 @@
     };
 
     Object.defineProperties(Element.prototype, {
+        "_cloneNodeForImport": {
+            value: function (document, deep) {
+                var clone = document.createElement(tagName);
+                for (attr in attributes)
+                    clone.setAttribute(attr, attributes[attr]);
+                if (deep)
+                    _cloneChildNodes(document, clone);
+                return clone;
+            }
+        },
         "_getElementsByTagNameRecursive": {
             value: function (tagName, namedNodeMap) {
                 for (childNode in childNodes)
                     if (childNode.nodeType == Node.ELEMENT_NODE) {
-                        if (childNode.tagName.toLowerCase() == tagName)
+                        if (tagName == "*" || childNode.tagName.toLowerCase() == tagName)
                             result.push(childNode);
                         childNode._getElementsByTagNameRecursive(tagName, namedNodeMap);
                     }
+            }
+        },
+        "cloneNode": {
+            enumerable: true, value: function (deep) {
+                var clone = ownerDocument.createElement(tagName);
+                for (attr in attributes)
+                    clone.setAttribute(attr, attributes[attr]);
+                if (deep)
+                    _cloneChildNodes(ownerDocument, clone);
+                return clone;
             }
         },
         "getAttribute": { enumerable: true, value: function (name) { var attr = attributes.getNamedItem(name); attr === null ? "" : attr.value; } },
@@ -40,6 +60,9 @@
             }
         },
         "hasAttribute": { enumerable: true, value: function (name) { return attributes.getNamedItem(name) !== null } },
+        "nodeName": { enumerable: true, get: function () { return tagName; } },
+        "nodeType": { enumerable: true, value: Node.ELEMENT_NODE },
+        "nodeValue": { enumerable: true, get: function () { return null; }, set: function (nodeValue) { } },
         "removeAttribute": { enumerable: true, value: function (name) { attributes.removeNamedItem(name) } },
         "removeAttributeNode": { enumerable: true, value: function (oldAttr) { removeAttribute(oldAttr.name); } },
         "setAttribute": {

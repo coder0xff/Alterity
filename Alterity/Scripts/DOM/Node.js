@@ -20,15 +20,12 @@
         "appendChild": { enumerable: true, value: function (newChild) { throw require("DOM").HIERARCHY_REQUEST_ERR; } },
         "attributes": { enumerable: true, value: null },
         "childNodes": { enumerable: true, get: function () { return new (require("NodeList"))(); } },
-        "cloneNode": { enumerable: true, value: function (deep) { throw "Not implemented by inheritor!"; } },
         "firstChild": { enumerable: true, value: null },
         "hasChildNodes": { enumerable: true, value: function () { return (typeof childNodes == 'undefined') ? false : childNodes.length > 0; } },
         "insertBefore": { enumerable: true, value: function (newChild, refChild) { throw require("DOM").HIERARCHY_REQUEST_ERR; } },
         "lastChild": { enumerable: true, value: null },
         "localName": { enumerable: true, value: null },
         "namespaceURI": { enumerable: true, value: null },
-        "nodeName": { enumerable: true, get: function () { throw "Not implemented by inheritor!"; } },
-        "nodeType": { enumerable: true, get: function () { throw "Not implemented by inheritor!"; } },
         "nodeValue": { enumerable: true, get: function () { return null; }, set: function (value) { } },
         "nextSibling": {
             enumerable: true, get: function () {

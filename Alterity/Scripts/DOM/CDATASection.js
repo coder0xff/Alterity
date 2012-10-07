@@ -6,9 +6,14 @@
     extend(CDATASection, Text);
 
     Object.defineProperties(CDATASection.prototype, {
+        "_cloneNodeForImport": {
+            value: function(document, deep) {
+                return new CDATASection(document, data);
+            }
+        },
         "cloneNode": {
             enumerable: true, value: function (deep) {
-                return ownerDocument.createComment(data);
+                return new CDATASection(ownerDocument, data);
             }
         },
         "nodeName": { enumerable: true, get: function () { return "#cdata-section"; } },

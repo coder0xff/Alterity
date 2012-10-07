@@ -6,6 +6,11 @@
     extend(Text, CharacterData);
 
     Object.defineProperties(Text.prototype, {
+        "_cloneNodeForImport": {
+            value: function (document, deep) {
+                return new Text(document, data);
+            }
+        },
         "cloneNode": {
             enumerable: true, value: function (deep) {
                 return ownerDocument.createTextNode(data);

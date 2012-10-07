@@ -6,6 +6,11 @@
     extend(Comment, CharacterData);
 
     Object.defineProperties(Comment.prototype, {
+        "_cloneNodeForImport": {
+            value: function (document, deep) {
+                return new Comment(document, data);
+            }
+        },
         "cloneNode": {
             enumerable: true, value: function (deep) {
                 return ownerDocument.createComment(data);

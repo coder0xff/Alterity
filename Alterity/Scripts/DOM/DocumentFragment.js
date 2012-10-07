@@ -8,14 +8,23 @@
     enableChildren.class(DocumentFragment);
 
     Object.defineProperties(DocumentFragment.prototype, {
+        "_cloneNodeForImport": {
+            value: function (document, deep) {
+                var clone = ownerDocument.createDocumentFragment();
+                //no attributes on a DocumentFragment
+                if (deep)
+                    _cloneChildNodes(document, clone);
+                return clone;
+            }
+        },
         "_setParentNode": { value: function () { throw "DocumentFragment cannot have a parentNode" } },
         "cloneNode": {
             enumerable: true, value: function(deep)
             {
                 var clone = ownerDocument.createDocumentFragment();
                 //no attributes on a DocumentFragment
-                for (childNode in childNodes)
-                    clone.appendChild(childNode.cloneNode());
+                if (deep)
+                    _cloneChildNodes(ownerDocument, clone);
                 return clone;
             }
         },

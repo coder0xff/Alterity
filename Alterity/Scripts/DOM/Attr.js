@@ -25,6 +25,11 @@
 
     Object.defineProperties(Attr.prototype, {
         "_cloneForParentClone": { value: function () { return new Attr(ownerDocument, name, specified); } },
+        "_cloneNodeForImport": {
+            value: function (document, deep) {
+                return new Attr(document, name, true);
+            }
+        },
         "_setParentNode": { value: function (parentNode) { throw "Attributes may not have parent nodes." } },
         "cloneNode": { enumerable: true, value: function (deep) { return new Attr(ownerDocument, name, true); } },
         "nodeName": { enumerable: true, get: function () { return name; } },

@@ -31,6 +31,12 @@
                     return newChild;
                 }
             },
+            "_cloneChildNodes": {
+                enumerable: false, value: function(document, clone) {
+                    for (childNode in childNodes)
+                        clone.appendChild(childNode._cloneNodeForImport(document, true));
+                }
+            },
             "firstChild": { enumerable: true, value: function () { return childNodes.length > 0 ? childNodes[0] : null } },
             "insertBefore": {
                 enumerable: true, value: function (newChild, refChild) {

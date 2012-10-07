@@ -10,6 +10,11 @@
     extend(CharacterData, Node);
 
     Object.defineProperties(CharacterData.prototype, {
+        "_cloneNodeForImport": {
+            value: function (document, deep) {
+                return new CharacterData(document, data);
+            }
+        },
         "appendData": { enumerable: true, value: function (arg) { data += arg; } },
         "cloneNode": {
             enumerable: true, value: function () { return new CharacterData(ownerDocument, data); }
