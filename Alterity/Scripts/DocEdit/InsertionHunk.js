@@ -7,7 +7,8 @@ define(["require", "exports", 'IHunk', 'IntegerInterval', 'DeletionHunk'], funct
 
     (function (Alterity) {
         var InsertionHunk = (function () {
-            function InsertionHunk(left, text) {
+            function InsertionHunk(tick, left, text) {
+                this.tick = tick;
                 this.left = left;
                 this.text = text;
                 this.type = "insertion";
@@ -26,7 +27,18 @@ define(["require", "exports", 'IHunk', 'IntegerInterval', 'DeletionHunk'], funct
                 enumerable: true,
                 configurable: true
             });
+            InsertionHunk.prototype.ToIntegerInterval = function () {
+                return new IntegerIntervalModule.Alterity.IntegerInterval(this.left, this.length);
+            };
+            InsertionHunk.prototype.ApplyTransformationResults = function (newTick, intervals) {
+                return [
+                    new InsertionHunk(newTick, intervals[0].left, this.text)
+                ];
+            };
             InsertionHunk.prototype.MergeSubsequent = function (other) {
+                if(other.tick != this.tick) {
+                    return other;
+                }
                 if(other.type == "insertion") {
                     var asInsertion = other;
                     if(asInsertion.left >= this.left && asInsertion.left <= this.left + this.length) {
@@ -35,7 +47,7 @@ define(["require", "exports", 'IHunk', 'IntegerInterval', 'DeletionHunk'], funct
                         this.text = newText;
                         return null;
                     } else {
-                        return new InsertionHunk(asInsertion.left, asInsertion.text);
+                        return asInsertion;
                     }
                 } else {
                     if(other.type == "deletion") {
@@ -52,13 +64,34 @@ define(["require", "exports", 'IHunk', 'IntegerInterval', 'DeletionHunk'], funct
                             var deletionRemainderLength = asDeletion.length - mutualAnnihilationLength;
                             this.text = resultText;
                             if(deletionRemainderLength > 0) {
-                                return new DeletionHunkModule.Alterity.DeletionHunk(asDeletion.left, deletionRemainderLength);
+                                return new DeletionHunkModule.Alterity.DeletionHunk(this.tick, asDeletion.left, deletionRemainderLength);
                             } else {
                                 return null;
                             }
                         }
                     }
                 }
+            };
+            InsertionHunk.prototype.RedoPrior = function (newTick, other) {
+                if(other.type == "insertion") {
+                    return this.ApplyTransformationResults(newTick, this.ToIntegerInterval().InsertTransformInsertion(other.ToIntegerInterval()));
+                } else {
+                    if(other.type == "deletion") {
+                        return this.ApplyTransformationResults(newTick, this.ToIntegerInterval().DeleteTransformInsertion(other.ToIntegerInterval()));
+                    }
+                }
+            };
+            InsertionHunk.prototype.UndoPrior = function (newTick, other) {
+                if(other.type == "insertion") {
+                    return this.ApplyTransformationResults(newTick, this.ToIntegerInterval().DeleteTransformInsertion(other.ToIntegerInterval()));
+                } else {
+                    if(other.type == "deletion") {
+                        return this.ApplyTransformationResults(newTick, this.ToIntegerInterval().InsertTransformInsertion(other.ToIntegerInterval()));
+                    }
+                }
+            };
+            InsertionHunk.prototype.Apply = function (text) {
+                return text.substr(0, this.left) + this.text + text.substr(this.left);
             };
             return InsertionHunk;
         })();

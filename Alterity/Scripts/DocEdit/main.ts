@@ -1,6 +1,6 @@
 /// <reference path='../../JSRPCNet/JSRPCNet.d.ts'/>
 /// <reference path="../jquery.d.ts" />
-/// <reference path="../assert.js" />
+/// <reference path="../assert.ts" />
 
 import IHunkModule = module("IHunk");
 import InsertionHunkModule = module("InsertionHunk");
