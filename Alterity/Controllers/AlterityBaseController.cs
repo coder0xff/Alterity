@@ -10,21 +10,34 @@ using UserClass = Alterity.Models.User;
 
 namespace Alterity.Controllers
 {
+    [Serializable]
+    public class NoUserDataEntryException : Exception
+    {
+        public NoUserDataEntryException() { }
+        public NoUserDataEntryException(string message) : base(message) { }
+        public NoUserDataEntryException(string message, Exception inner) : base(message, inner) { }
+        protected NoUserDataEntryException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context)
+            : base(info, context) { }
+    }
+
     public class AlterityBaseController : Controller
     {
         protected dynamic SessionState { get { return SessionDataWrapper.GetSessionData(System.Web.HttpContext.Current.Request, System.Web.HttpContext.Current.Response); } }
-        protected new User User
+        protected new UserClass User
         {
             get
             {
-                User result = null;
+                UserClass result = null;
                 if (SessionState.UserName == null)
                 {
                     if (((Controller)this).User.Identity.IsAuthenticated)
                     {
-                        SessionState.UserName = ((Controller)this).User.Identity.Name;
-                        result = User.GetUserByUserName(SessionState.UserName);
-                        if (result == null) WebMatrix.WebData.WebSecurity.Logout();
+                        string UserName = ((Controller)this).User.Identity.Name;
+                        SessionState.UserName = UserName;
+                        result = User.GetUserByUserName(UserName);
+                        if (result == null) throw new NoUserDataEntryException();
                     }
                     else
                     {
@@ -44,5 +57,6 @@ namespace Alterity.Controllers
                 return result;
             }
         }
+        protected void DB(Action action) { EntityMappingContext.Access(action); }
     }
 }
