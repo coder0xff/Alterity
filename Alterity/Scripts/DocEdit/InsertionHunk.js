@@ -1,46 +1,69 @@
-﻿require(["IntegerInterval"], function(IntegerInterval) {
-    var InsertionHunk = function(startIndex, text)
-    {
-        this.type = "insertion";
-        this.startIndex = startIndex;
-        this.text = text;
-    }
+define(["require", "exports", 'IHunk', 'IntegerInterval', 'DeletionHunk'], function(require, exports, __IHunkModule__, __IntegerIntervalModule__, __DeletionHunkModule__) {
+    var IHunkModule = __IHunkModule__;
 
-    Object.defineProperty(InsertionHunk.prototype, "length", {
-        get: function () { return this.text.length; }
-    });
+    var IntegerIntervalModule = __IntegerIntervalModule__;
 
-    InsertionHunk.prototype.mergeSubsequent = function (other) {
-        if (!other) throw "argument null";
-        if (other.startIndex + this.length >= this.startIndex && other.startIndex <= this.startIndex + this.length) {
-            if (other.type == "deletion") {
-                var resultText = "";
-                var remnantIntervals = new IntegerInterval(this.startIndex, this.text.length).Subtract(new IntegerInterval(other.startIndex, other.length));
-                for (var remnantIndex = 0; remnantIndex < remnantIntervals.length; remnantIndex++) {
-                    var remnantInterval = remnantIntervals[remnantIndex];
-                    resultText += this.text.substr(remnantInterval.left - this.startIndex, remnantInterval.length);
-                }
-                var resultLength = resultText.length;
-                var mutualAnnihilationLength = this.text.length - resultLength;
-                var deletionRemainderLength = other.length - mutualAnnihilationLength;
-                this.text = resultText;
-                if (deletionRemainderLength > 0) {
-                    return new DeletionHunk(other.startIndex, deletionRemainderLength);
-                }
-                else {
-                    return null;
-                }
+    var DeletionHunkModule = __DeletionHunkModule__;
+
+    (function (Alterity) {
+        var InsertionHunk = (function () {
+            function InsertionHunk(left, text) {
+                this.left = left;
+                this.text = text;
+                this.type = "insertion";
             }
-            else if (other.type == "insertion") {
-                var insertionIndex = other.startIndex - this.startIndex;
-                this.text = this.text.substr(0, insertionIndex) + other.text + this.text.substr(insertionIndex);
-            }
-        }
-        else
-        {
-            return other;
-        }
-    }
+            Object.defineProperty(InsertionHunk.prototype, "length", {
+                get: function () {
+                    return this.text.length;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InsertionHunk.prototype, "right", {
+                get: function () {
+                    return this.left + this.length - 1;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            InsertionHunk.prototype.MergeSubsequent = function (other) {
+                if(other.type == "insertion") {
+                    var asInsertion = other;
+                    if(asInsertion.left >= this.left && asInsertion.left <= this.left + this.length) {
+                        var insertionIndex = asInsertion.left - this.left;
+                        var newText = this.text.substr(0, insertionIndex) + asInsertion.text + this.text.substr(insertionIndex);
+                        this.text = newText;
+                        return null;
+                    } else {
+                        return new InsertionHunk(asInsertion.left, asInsertion.text);
+                    }
+                } else {
+                    if(other.type == "deletion") {
+                        var asDeletion = other;
+                        if(asDeletion.left + this.length >= this.left && asDeletion.left <= this.left + this.length) {
+                            var resultText = "";
+                            var remnantIntervals = new IntegerIntervalModule.Alterity.IntegerInterval(this.left, this.text.length).Subtract(new IntegerIntervalModule.Alterity.IntegerInterval(asDeletion.left, asDeletion.length));
+                            for(var remnantIndex = 0; remnantIndex < remnantIntervals.length; remnantIndex++) {
+                                var remnantInterval = remnantIntervals[remnantIndex];
+                                resultText += this.text.substr(remnantInterval.left - this.left, remnantInterval.length);
+                            }
+                            var resultLength = resultText.length;
+                            var mutualAnnihilationLength = this.text.length - resultLength;
+                            var deletionRemainderLength = asDeletion.length - mutualAnnihilationLength;
+                            this.text = resultText;
+                            if(deletionRemainderLength > 0) {
+                                return new DeletionHunkModule.Alterity.DeletionHunk(asDeletion.left, deletionRemainderLength);
+                            } else {
+                                return null;
+                            }
+                        }
+                    }
+                }
+            };
+            return InsertionHunk;
+        })();
+        Alterity.InsertionHunk = InsertionHunk;        
+    })(exports.Alterity || (exports.Alterity = {}));
 
-    return InsertionHunk;
-});
+})
+

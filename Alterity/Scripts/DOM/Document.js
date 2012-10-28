@@ -2,8 +2,6 @@
     function Document() {
         var rootElement = new Element("html");
         Object.defineProperty(this, "documentElement", { get: function () { return rootElement; } });
-
-
     };
 
     extend(Document, Node);

@@ -1,32 +1,51 @@
-﻿require(["IntegerInterval"], function (IntegerInterval, InsertionHunk) {
-    var DeletionHunk = function (startIndex, length) {
-        this.type = "deletion";
-        this.startIndex = startIndex;
-        this.length = length;
-    };
+define(["require", "exports", 'IHunk', 'InsertionHunk'], function(require, exports, __IHunkModule__, __InsertionHunkModule__) {
+    var IHunkModule = __IHunkModule__;
 
-    DeletionHunk.prototype.getIntegerInterval = function () {
-        return new IntegerInterval(this.startIndex, this.length);
-    }
+    
+    var InsertionHunkModule = __InsertionHunkModule__;
 
-    DeletionHunk.prototype.mergeSubsequent = function (other) {
-        if (!other) throw "argument null";
-        if (other.type == "deletion") {
-            //We merge if they are touching because, unlike server side,
-            //we only merge with the last queued hunk - so we have more freedom
-            if (other.startIndex <= this.startIndex && other.startIndex + other.length >= this.startIndex) {
-                this.length += other.length;
-                this.startIndex = other.startIndex;
-                return null;
-            } else {
-                return other;
+    (function (Alterity) {
+        var DeletionHunk = (function () {
+            function DeletionHunk(left, length) {
+                this.left = left;
+                this.length = length;
+                this.type = "deletion";
             }
-        }
-        else if (other.type == "insertion") {
-            return other;
-        }
-        return other;
-    }
+            Object.defineProperty(DeletionHunk.prototype, "length", {
+                get: function () {
+                    return this.length;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeletionHunk.prototype, "right", {
+                get: function () {
+                    return this.left + this.length - 1;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            DeletionHunk.prototype.MergeSubsequent = function (other) {
+                if(other.type == "deletion") {
+                    var asDeletion = other;
+                    if(asDeletion.left <= this.left && asDeletion.left + asDeletion.length >= this.left) {
+                        this.length += asDeletion.length;
+                        this.left = asDeletion.left;
+                        return null;
+                    } else {
+                        return new DeletionHunk(asDeletion.left, asDeletion.length);
+                    }
+                } else {
+                    if(other.type == "insertion") {
+                        var asInsertion = other;
+                        return new InsertionHunkModule.Alterity.InsertionHunk(asInsertion.left, asInsertion.text);
+                    }
+                }
+            };
+            return DeletionHunk;
+        })();
+        Alterity.DeletionHunk = DeletionHunk;        
+    })(exports.Alterity || (exports.Alterity = {}));
 
-    return DeletionHunk;
-});
+})
+

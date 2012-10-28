@@ -1,4 +1,10 @@
-﻿define(function () {
+﻿class Node
+{
+    private _ownerDocument: Document;
+   	get ownerDocument() { return this._ownerDocument; };
+
+}    
+
     function Node(ownerDocument) {
         Object.defineProperty(this, "ownerDocument", { enumerable: true, value: ownerDocument });
     };
@@ -98,6 +104,3 @@
         "DOCUMENT_FRAGMENT_NODE": { value: 11 },
         "NOTATION_NODE": { value: 12 },
     });
-
-    return Node;
-});

@@ -1,0 +1,9 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup> 
+     <TypeScriptCompile Include="$(ProjectDir)\**\*.ts" />
+  </ItemGroup>
+  <Target Name="TypeScriptCompile" BeforeTargets="Build">
+    <Message Text="Compiling TypeScript files" />
+    <Exec Command="&quot;$(PROGRAMFILES)\Microsoft SDKs\TypeScript\0.8.0.0\tsc&quot; -target ES5 -module amd @(TypeScriptCompile ->'&quot;%(fullpath)&quot;', ' ')" />
+  </Target>
+</Project>

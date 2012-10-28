@@ -30,7 +30,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -265,11 +265,33 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <None Include="Scripts\jquery-1.7.1.intellisense.js" />
+    <TypeScriptCompile Include="Scripts\DocEdit\IntegerInterval.ts" />
+    <TypeScriptCompile Include="Scripts\DocEdit\InsertionHunk.ts" />
+    <TypeScriptCompile Include="Scripts\DocEdit\DeletionHunk.ts" />
+    <TypeScriptCompile Include="JSRPCNet\JSRPCNet.d.ts" />
+    <Content Include="Scripts\assert.js" />
+    <Content Include="Scripts\DocEdit\DeletionHunk.js">
+      <DependentUpon>DeletionHunk.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="Scripts\DocEdit\IHunk.ts" />
+    <Content Include="Scripts\DocEdit\Hunk.js">
+      <DependentUpon>IHunk.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\DocEdit\InsertionHunk.js">
+      <DependentUpon>InsertionHunk.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\DocEdit\IntegerInterval.js">
+      <DependentUpon>IntegerInterval.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="Scripts\DocEdit\main.ts" />
+    <Content Include="Scripts\DocEdit\main.js">
+      <DependentUpon>main.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="Scripts\DocEdit\NoOpHunk.ts" />
+    <Content Include="Scripts\DocEdit\NoOpHunk.js">
+      <DependentUpon>NoOpHunk.ts</DependentUpon>
+    </Content>
     <Content Include="Scripts\DOM\CDATASection.js" />
-    <Content Include="Scripts\DocEdit\InsertionHunk.js" />
-    <Content Include="Scripts\DocEdit\IntegerInterval.js" />
-    <Content Include="Scripts\DocEdit\DeletionHunk.js" />
-    <Content Include="Scripts\DocEdit\main.js" />
     <Content Include="Scripts\DOM\Attr.js" />
     <Content Include="Scripts\DOM\CharacterData.js" />
     <Content Include="Scripts\DOM\Comment.js" />
@@ -281,10 +303,9 @@
     <Content Include="Scripts\DOM\Element.js" />
     <Content Include="Scripts\DOM\enableChildren.js" />
     <Content Include="Scripts\DOM\enableParentNode.js" />
-    <Content Include="Scripts\DOM\Text.js" />
-    <Content Include="Scripts\extend.js" />
-    <Content Include="Scripts\DOM\NamedNodeMap.js" />
     <Content Include="Scripts\DOM\Node.js" />
+    <Content Include="Scripts\DOM\Text.js" />
+    <Content Include="Scripts\DOM\NamedNodeMap.js" />
     <Content Include="Scripts\DOM\NodeList.js" />
     <Content Include="Scripts\jquery-1.7.1.js" />
     <Content Include="Scripts\jquery-1.7.1.min.js" />
@@ -292,6 +313,7 @@
     <Content Include="Scripts\jquery-ui-1.8.20.js" />
     <Content Include="Scripts\jquery-ui-1.8.20.min.js" />
     <Content Include="Scripts\DocEdit\jquery.selection.js" />
+    <TypeScriptCompile Include="Scripts\jquery.d.ts" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
     <Content Include="Scripts\jquery.validate.js" />
@@ -388,6 +410,10 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <Target Name="TypeScriptCompile" BeforeTargets="Build">
+    <Message Text="Compiling TypeScript files" />
+    <Exec Command="&quot;$(PROGRAMFILES)\Microsoft SDKs\TypeScript\0.8.0.0\tsc&quot; -target ES5 -module amd @(TypeScriptCompile ->'&quot;%(fullpath)&quot;', ' ')" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
