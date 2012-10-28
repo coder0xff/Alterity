@@ -10,6 +10,7 @@ namespace Alterity.Models
     {
         [ThreadStatic]
         static EntityMappingContext _current;
+
         public static EntityMappingContext Current
         {
             get
@@ -26,13 +27,16 @@ namespace Alterity.Models
             if (_current == null) //thread safety is inherent because it's a thread static variable
             {
                 _current = new EntityMappingContext();
+                _current.Database.Initialize(false);
                 ownsContext = true;
             }
             action();
             _current.SaveChanges();
             if (ownsContext)
             {
+                _current.Dispose();
                 _current = null;
+                ownsContext = false;
             }
         }
         public DbSet<User> Users { get; set; }
