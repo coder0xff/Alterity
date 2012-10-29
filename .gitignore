@@ -3,3 +3,4 @@ Alterity/obj/*
 Alterity.Tests/bin/*
 Alterity.Tests/obj/*
 *.suo
+App_Data
