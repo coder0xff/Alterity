@@ -11,7 +11,7 @@ export module Alterity {
             return new IntegerIntervalModule.Alterity.IntegerInterval(this.left, this.length);
         }
         ApplyTransformationResults(newTick: number, intervals: IntegerIntervalModule.Alterity.IntegerInterval[]): IHunkModule.Alterity.IHunk[] {
-            var results = new IHunkModule.Alterity.IHunk[];
+            var results = [];
             for (var index = 0; index < intervals.length; index++) {
                 var integerInterval = intervals[index];
                 results.push(new NoOpHunk(newTick, integerInterval.left, integerInterval.length));

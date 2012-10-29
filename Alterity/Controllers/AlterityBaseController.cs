@@ -25,6 +25,7 @@ namespace Alterity.Controllers
     public class AlterityBaseController : Controller
     {
         protected static dynamic SessionState { get { return SessionDataWrapper.GetSessionData(System.Web.HttpContext.Current.Request, System.Web.HttpContext.Current.Response); } }
+
         protected new UserClass User
         {
             get
@@ -37,7 +38,14 @@ namespace Alterity.Controllers
                         string UserName = ((Controller)this).User.Identity.Name;
                         SessionState.UserName = UserName;
                         result = User.GetUserByUserName(UserName);
-                        if (result == null) throw new NoUserDataEntryException();
+                        if (result == null)
+                        {
+                            //SimpleMembershipProvider thinks we're logged in, but the account doesn't exist!
+                            //Logout and return a new anonymous user
+                            AccountController.InternalLogout();
+                            result = UserClass.CreateAnonymous(this.Request.UserHostAddress);
+                            SessionState.UserName = result.UserName;
+                        }
                     }
                     else
                     {
@@ -47,6 +55,8 @@ namespace Alterity.Controllers
                 }
                 else
                 {
+                    string userName = SessionState.UserName;
+                    System.Diagnostics.Debug.Assert(!((Controller)this).User.Identity.IsAuthenticated || ((Controller)this).User.Identity.Name == userName);
                     result = UserClass.GetUserByUserName(SessionState.UserName);
                     if (result == null)
                     {

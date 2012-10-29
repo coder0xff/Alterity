@@ -524,7 +524,6 @@ input[type="checkbox"].input-validation-error {
     display: none;
 }
 
-
 /* tables
 ----------------------------------------------------------*/
 table {
@@ -584,6 +583,19 @@ td {
 
 tr.pager td {
     padding: 0 0.25em 0 0;
+}
+
+/* misc */
+
+.document-link-list {
+    background-color: #fff;
+    font-size: 1.5em;
+    border: 1px;
+    border-color: #333;
+    border-style: solid;
+}
+
+.document-link {
 }
 
 

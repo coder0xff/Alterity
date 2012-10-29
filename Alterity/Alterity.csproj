@@ -168,13 +168,13 @@
     <Compile Include="Controllers\AlterityBaseController.cs" />
     <Compile Include="Controllers\DocEditController.cs" />
     <Compile Include="Controllers\DocumentController.cs" />
+    <Compile Include="Controllers\DocumentTempController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Filters\InitializeSimpleMembershipAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="JSRPCNet\JSRPCNet.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\Async\ClientState.cs" />
@@ -266,6 +266,11 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <None Include="Scripts\jquery-1.7.1.intellisense.js" />
+    <Content Include="Views\DocumentTemp\Index.cshtml" />
+    <Content Include="Views\DocumentTemp\Details.cshtml" />
+    <Content Include="Views\Document\Create.cshtml" />
+    <Content Include="Views\DocumentTemp\Edit.cshtml" />
+    <Content Include="Views\DocumentTemp\Delete.cshtml" />
     <TypeScriptCompile Include="Scripts\DocEdit\IntegerInterval.ts" />
     <TypeScriptCompile Include="Scripts\DocEdit\InsertionHunk.ts" />
     <TypeScriptCompile Include="Scripts\DocEdit\DeletionHunk.ts" />
@@ -372,7 +377,6 @@
     <Content Include="Views\User\Edit.cshtml" />
     <Content Include="Views\User\Delete.cshtml" />
     <Content Include="Views\Document\Test.cshtml" />
-    <Content Include="Views\Home\Test.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

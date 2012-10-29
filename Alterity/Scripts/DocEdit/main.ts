@@ -15,17 +15,17 @@ var documentId = 0;
 //the most recent document state corroborated by the server
 var sharedState: string;
 //hunks are constructed, manipulated, and ultimately transmitted from this array
-var hunkTransmitQueue: IHunkModule.Alterity.IHunk[] = new IHunkModule.Alterity.IHunk[];
+var hunkTransmitQueue: IHunkModule.Alterity.IHunk[] = [];
 
 interface UnconfirmedTransmitInfo {
     updateIndex: number;
     hunks: IHunkModule.Alterity.IHunk[];
 }
-var unconfirmedTransmissions = new UnconfirmedTransmitInfo[];
+var unconfirmedTransmissions = [];
 
 //While TCP transactions are ordered, separate TCP transactions are not
 //so we store confirmations and incoming hunks here if they arrive out of order
-var outOfOrderReceivedTransmisionConfirmations = new number[];
+var outOfOrderReceivedTransmisionConfirmations = [];
 var lastReceivedServerTick = -1;
 var lastTransmittedUpdateIndex = -1;
 
@@ -45,14 +45,14 @@ var lastTransmittedUpdateIndex = -1;
     function processReceivedHunk(hunk: IHunkModule.Alterity.IHunk) {
         for (var unconfirmedTransmissionIndex = 0; unconfirmedTransmissionIndex < unconfirmedTransmissions.length; unconfirmedTransmissionIndex++) {
             var unconfirmedTransmission = unconfirmedTransmissions[unconfirmedTransmissionIndex];
-            var transformedHunks: IHunkModule.Alterity.IHunk[] = new IHunkModule.Alterity.IHunk[];
+            var transformedHunks: IHunkModule.Alterity.IHunk[] = [];
             for (var unconfirmedHunkIndex = 0; unconfirmedHunkIndex < unconfirmedTransmission.hunks.length; unconfirmedHunkIndex++) {
                 var untransformedHunk = unconfirmedTransmission.hunks[unconfirmedHunkIndex];
                 transformedHunks.concat(untransformedHunk.RedoPrior(untransformedHunk.tick, hunk));
             }
             unconfirmedTransmission.hunks = transformedHunks;
         }
-        var transformedHunks: IHunkModule.Alterity.IHunk[] = new IHunkModule.Alterity.IHunk[];
+        var transformedHunks: IHunkModule.Alterity.IHunk[] = [];
         for (var queuedHunkIndex = 0; queuedHunkIndex < hunkTransmitQueue.length; queuedHunkIndex++) {
             var untransformedHunk = hunkTransmitQueue[queuedHunkIndex];
             transformedHunks.concat(untransformedHunk.RedoPrior(untransformedHunk.tick, hunk));
@@ -83,14 +83,14 @@ var lastTransmittedUpdateIndex = -1;
     }    
 
     function redoTransformNoOpHunks(noOps: NoOpHunkModule.Alterity.NoOpHunk[], hunk: IHunkModule.Alterity.IHunk) {
-        var result = new NoOpHunkModule.Alterity.NoOpHunk[];
+        var result = [];
         for (var noOpIndex = 0; noOpIndex < noOps.length; noOpIndex++)
             result.concat(noOps[noOpIndex].RedoPrior(0, hunk));
         return result;
     }
 
     function undoTransformNoOpHunks(noOps: NoOpHunkModule.Alterity.NoOpHunk[], hunk: IHunkModule.Alterity.IHunk) {
-        var result = new NoOpHunkModule.Alterity.NoOpHunk[];
+        var result = [];
         for (var noOpIndex = 0; noOpIndex < noOps.length; noOpIndex++)
             result.concat(noOps[noOpIndex].UndoPrior(0, hunk));
         return result;

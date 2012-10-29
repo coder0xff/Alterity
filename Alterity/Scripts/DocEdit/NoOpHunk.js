@@ -29,7 +29,7 @@ define(["require", "exports", 'IHunk', 'IntegerInterval'], function(require, exp
                 return new IntegerIntervalModule.Alterity.IntegerInterval(this.left, this.length);
             };
             NoOpHunk.prototype.ApplyTransformationResults = function (newTick, intervals) {
-                var results = new ();
+                var results = [];
                 for(var index = 0; index < intervals.length; index++) {
                     var integerInterval = intervals[index];
                     results.push(new NoOpHunk(newTick, integerInterval.left, integerInterval.length));

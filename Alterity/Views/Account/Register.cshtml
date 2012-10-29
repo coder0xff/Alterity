@@ -17,14 +17,19 @@
         <ol>
             <li>
                 @Html.LabelFor(m => m.UserName)
-                @Html.TextBoxFor(m => m.UserName)
+                @Html.TextBoxFor(m => m.UserName) Required
             </li>
             <li>
-                @Html.LabelFor(m => m.Password)
+                @Html.LabelFor(m => m.EmailAddress)
+                @Html.TextBoxFor(m => m.EmailAddress) Required
+                @Html.ValidationMessageFor(m => m.EmailAddress)
+            </li>
+            <li>
+                @Html.LabelFor(m => m.Password) Required
                 @Html.PasswordFor(m => m.Password)
             </li>
             <li>
-                @Html.LabelFor(m => m.ConfirmPassword)
+                @Html.LabelFor(m => m.ConfirmPassword) Required
                 @Html.PasswordFor(m => m.ConfirmPassword)
             </li>
         </ol>

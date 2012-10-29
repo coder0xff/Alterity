@@ -11,9 +11,9 @@ define(["require", "exports", "InsertionHunk", "DeletionHunk", "NoOpHunk"], func
     var docEditApi = new JSRPCNet("/api/DocEdit");
     var documentId = 0;
     var sharedState;
-    var hunkTransmitQueue = new ();
-    var unconfirmedTransmissions = new Array();
-    var outOfOrderReceivedTransmisionConfirmations = new Array();
+    var hunkTransmitQueue = [];
+    var unconfirmedTransmissions = [];
+    var outOfOrderReceivedTransmisionConfirmations = [];
     var lastReceivedServerTick = -1;
     var lastTransmittedUpdateIndex = -1;
     function flushTransmitQueue() {
@@ -31,14 +31,14 @@ define(["require", "exports", "InsertionHunk", "DeletionHunk", "NoOpHunk"], func
     function processReceivedHunk(hunk) {
         for(var unconfirmedTransmissionIndex = 0; unconfirmedTransmissionIndex < unconfirmedTransmissions.length; unconfirmedTransmissionIndex++) {
             var unconfirmedTransmission = unconfirmedTransmissions[unconfirmedTransmissionIndex];
-            var transformedHunks = new ();
+            var transformedHunks = [];
             for(var unconfirmedHunkIndex = 0; unconfirmedHunkIndex < unconfirmedTransmission.hunks.length; unconfirmedHunkIndex++) {
                 var untransformedHunk = unconfirmedTransmission.hunks[unconfirmedHunkIndex];
                 transformedHunks.concat(untransformedHunk.RedoPrior(untransformedHunk.tick, hunk));
             }
             unconfirmedTransmission.hunks = transformedHunks;
         }
-        var transformedHunks = new ();
+        var transformedHunks = [];
         for(var queuedHunkIndex = 0; queuedHunkIndex < hunkTransmitQueue.length; queuedHunkIndex++) {
             var untransformedHunk = hunkTransmitQueue[queuedHunkIndex];
             transformedHunks.concat(untransformedHunk.RedoPrior(untransformedHunk.tick, hunk));
@@ -61,14 +61,14 @@ define(["require", "exports", "InsertionHunk", "DeletionHunk", "NoOpHunk"], func
         updatePredictedState();
     }
     function redoTransformNoOpHunks(noOps, hunk) {
-        var result = new ();
+        var result = [];
         for(var noOpIndex = 0; noOpIndex < noOps.length; noOpIndex++) {
             result.concat(noOps[noOpIndex].RedoPrior(0, hunk));
         }
         return result;
     }
     function undoTransformNoOpHunks(noOps, hunk) {
-        var result = new ();
+        var result = [];
         for(var noOpIndex = 0; noOpIndex < noOps.length; noOpIndex++) {
             result.concat(noOps[noOpIndex].UndoPrior(0, hunk));
         }

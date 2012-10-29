@@ -22,7 +22,7 @@ namespace Alterity.Controllers
 
     [Authorize]
     [InitializeSimpleMembership]
-    public class AccountController : Controller
+    public class AccountController : AlterityBaseController
     {
         //
         // GET: /Account/Login
@@ -45,6 +45,7 @@ namespace Alterity.Controllers
             if (model == null) throw new ArgumentNullException("model");
             if (ModelState.IsValid && WebSecurity.Login(model.UserName, model.Password, persistCookie: model.RememberMe))
             {
+                DB(() => { SessionState.UserName = model.UserName; });
                 return RedirectToLocal(returnUrl);
             }
 
@@ -53,14 +54,21 @@ namespace Alterity.Controllers
             return View(model);
         }
 
-        //
-        // POST: /Account/LogOff
+        internal static void InternalLogout()
+        {
+            InitializeSimpleMembershipAttribute.EnsureInitialized();
+            WebSecurity.Logout();
+            EntityMappingContext.Access(() => { SessionState.UserName = null; });
+        }
 
+        //
+        // GET: /Account/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult LogOff()
+        public ActionResult Logout()
         {
             WebSecurity.Logout();
+            DB(() => { SessionState.UserName = null; });
 
             return RedirectToAction("Index", "Home");
         }
@@ -83,6 +91,12 @@ namespace Alterity.Controllers
         public ActionResult Register(RegisterModel model)
         {
             if (model == null) throw new ArgumentNullException("model");
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(model.EmailAddress, @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$"))
+            {
+                ModelState.AddModelError("Email", "Email format is invalid.");
+            }
+
             if (ModelState.IsValid)
             {
                 // Attempt to register the user
@@ -90,6 +104,10 @@ namespace Alterity.Controllers
                 {
                     WebSecurity.CreateUserAndAccount(model.UserName, model.Password);
                     WebSecurity.Login(model.UserName, model.Password);
+                    DB(() => {
+                        User.GetUserByUserName(model.UserName).EmailOrIPAddress = model.EmailAddress;
+                        SessionState.UserName = model.UserName;
+                    });
                     return RedirectToAction("Index", "Home");
                 }
                 catch (MembershipCreateUserException e)
@@ -113,13 +131,13 @@ namespace Alterity.Controllers
             AccountManagementMessageId? message = null;
 
             // Only disassociate the account if the currently logged in user is the owner
-            if (ownerAccount == User.Identity.Name)
+            if (ownerAccount == ((Controller)this).User.Identity.Name)
             {
                 // Use a transaction to prevent the user from deleting their last login credential
                 using (var scope = new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
                 {
-                    bool hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
-                    if (hasLocalAccount || OAuthWebSecurity.GetAccountsFromUserName(User.Identity.Name).Count > 1)
+                    bool hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(((Controller)this).User.Identity.Name));
+                    if (hasLocalAccount || OAuthWebSecurity.GetAccountsFromUserName(((Controller)this).User.Identity.Name).Count > 1)
                     {
                         OAuthWebSecurity.DeleteAccount(provider, providerUserId);
                         scope.Complete();
@@ -141,7 +159,7 @@ namespace Alterity.Controllers
                 : message == AccountManagementMessageId.SetPasswordSuccess ? "Your password has been set."
                 : message == AccountManagementMessageId.RemoveLoginSuccess ? "The external login was removed."
                 : "";
-            ViewBag.HasLocalPassword = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
+            ViewBag.HasLocalPassword = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(((Controller)this).User.Identity.Name));
             ViewBag.ReturnUrl = Url.Action("Manage");
             return View();
         }
@@ -154,7 +172,7 @@ namespace Alterity.Controllers
         public ActionResult Manage(LocalPasswordModel model)
         {
             if (model == null) throw new ArgumentNullException("model");
-            bool hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
+            bool hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(((Controller)this).User.Identity.Name));
             ViewBag.HasLocalPassword = hasLocalAccount;
             ViewBag.ReturnUrl = Url.Action("Manage");
             if (hasLocalAccount)
@@ -165,7 +183,7 @@ namespace Alterity.Controllers
                     bool changePasswordSucceeded = false;
                     try
                     {
-                        changePasswordSucceeded = WebSecurity.ChangePassword(User.Identity.Name, model.OldPassword, model.NewPassword);
+                        changePasswordSucceeded = WebSecurity.ChangePassword(((Controller)this).User.Identity.Name, model.OldPassword, model.NewPassword);
                     }
                     catch
                     {
@@ -196,7 +214,7 @@ namespace Alterity.Controllers
                 {
                     try
                     {
-                        WebSecurity.CreateAccount(User.Identity.Name, model.NewPassword);
+                        WebSecurity.CreateAccount(((Controller)this).User.Identity.Name, model.NewPassword);
                         return RedirectToAction("Manage", new { Message = AccountManagementMessageId.SetPasswordSuccess });
                     }
                     catch (Exception e)
@@ -238,10 +256,10 @@ namespace Alterity.Controllers
                 return RedirectToLocal(returnUrl);
             }
 
-            if (User.Identity.IsAuthenticated)
+            if (((Controller)this).User.Identity.IsAuthenticated)
             {
                 // If the current user is logged in add the new account
-                OAuthWebSecurity.CreateOrUpdateAccount(result.Provider, result.ProviderUserId, User.Identity.Name);
+                OAuthWebSecurity.CreateOrUpdateAccount(result.Provider, result.ProviderUserId, ((Controller)this).User.Identity.Name);
                 return RedirectToLocal(returnUrl);
             }
             else
@@ -265,7 +283,7 @@ namespace Alterity.Controllers
             string provider = null;
             string providerUserId = null;
 
-            if (User.Identity.IsAuthenticated || !OAuthWebSecurity.TryDeserializeProviderUserId(model.ExternalLoginData, out provider, out providerUserId))
+            if (((Controller)this).User.Identity.IsAuthenticated || !OAuthWebSecurity.TryDeserializeProviderUserId(model.ExternalLoginData, out provider, out providerUserId))
             {
                 return RedirectToAction("Manage");
             }
@@ -320,7 +338,7 @@ namespace Alterity.Controllers
         [ChildActionOnly]
         public ActionResult RemoveExternalLogins()
         {
-            ICollection<OAuthAccount> accounts = OAuthWebSecurity.GetAccountsFromUserName(User.Identity.Name);
+            ICollection<OAuthAccount> accounts = OAuthWebSecurity.GetAccountsFromUserName(((Controller)this).User.Identity.Name);
             List<ExternalLogin> externalLogins = new List<ExternalLogin>();
             foreach (OAuthAccount account in accounts)
             {
@@ -334,7 +352,7 @@ namespace Alterity.Controllers
                 });
             }
 
-            ViewBag.ShowRemoveButton = externalLogins.Count > 1 || OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
+            ViewBag.ShowRemoveButton = externalLogins.Count > 1 || OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(((Controller)this).User.Identity.Name));
             return PartialView("_RemoveExternalLoginsPartial", externalLogins);
         }
 

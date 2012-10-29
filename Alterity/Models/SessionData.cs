@@ -60,6 +60,7 @@ namespace Alterity.Models
 
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
+            if (cache == null) CacheLoad();
             if (value == null)
                 cache.Remove(binder.Name);
             else

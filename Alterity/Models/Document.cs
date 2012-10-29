@@ -11,6 +11,7 @@ namespace Alterity.Models
     public class Document
     {
         public int Id { get; set; }
+        public string Title { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<ChangeSet> ChangeSets { get; set; }
         public User Owner { get; set; }

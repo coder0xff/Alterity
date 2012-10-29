@@ -1,11 +1,11 @@
 ﻿@{
-    ViewBag.Title = "Home Page";
+    ViewBag.Title = "Home";
 }
 @section featured {
     <section class="featured">
         <div class="content-wrapper">
             <hgroup class="title">
-                <h1>@ViewBag.Title.</h1>
+                <h1>@ViewBag.Title</h1>
                 <h2>@ViewBag.Message</h2>
             </hgroup>
             <p>
@@ -17,6 +17,19 @@
             </p>
         </div>
     </section>
+}
+@if (!ViewBag.IsAnonymousUser)
+{
+    <div>
+        Your documents:
+        <p>@Html.ActionLink("Create a new document", "Create", "Document")</p>
+        <div class="document-link-list">
+            @foreach (Alterity.Models.Document document in ViewBag.UserDocuments)
+            {
+                <p class="document-link">@Html.ActionLink(document.Title, "Edit", new { controller = "Document", id = document.Id })</p>
+            }
+        </div>
+    </div>
 }
 <h3>We suggest the following:</h3>
 <ol class="round">
