@@ -7,14 +7,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Alterity.Models
 {
+    public enum EditOperationActivationState
+    {
+        Deactivated = 0,
+        Activated = 1
+    }
+    
     public abstract class EditOperation
     {
-        public enum ActivationState
-        {
-            Deactivated = 0,
-            Activated = 1
-        }
-
         public int Id { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Hunk> Hunks { get; set; }
@@ -33,12 +33,12 @@ namespace Alterity.Models
             IsClosed = false;
         }
 
-        public ActivationState GetVoteStatus()
+        public EditOperationActivationState GetVoteStatus()
         {
             ICollection<VoteEntry> allVotes = VoteBox.Inheret(VoteBox.Votes, ChangeSubset.VoteBox.Votes);
             allVotes = VoteBox.Inheret(allVotes, ChangeSet.VoteBox.Votes);
             float voteRatio = VoteBox.ComputeVoteRatio(allVotes);
-            return voteRatio >= Document.VoteRatioThreshold ? ActivationState.Activated : ActivationState.Deactivated;
+            return voteRatio >= Document.VoteRatioThreshold ? EditOperationActivationState.Activated : EditOperationActivationState.Deactivated;
         }
 
         private T UndoPrior<T>(Hunk hunk) where T : EditOperation, new()

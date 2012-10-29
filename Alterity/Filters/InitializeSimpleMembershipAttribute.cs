@@ -25,11 +25,9 @@ namespace Alterity.Filters
         {
             public SimpleMembershipInitializer()
             {
-                Database.SetInitializer<UsersContext>(null);
-
                 try
                 {
-                    using (var context = new UsersContext())
+                    using (var context = new EntityMappingContext())
                     {
                         if (!context.Database.Exists())
                         {
@@ -38,7 +36,7 @@ namespace Alterity.Filters
                         }
                     }
 
-                    WebSecurity.InitializeDatabaseConnection("DefaultConnection", "UserProfile", "UserId", "UserName", autoCreateTables: true);
+                    WebSecurity.InitializeDatabaseConnection("EntityMappingContext", "Users", "Id", "UserName", autoCreateTables: true);
                 }
                 catch (Exception ex)
                 {

@@ -23,7 +23,7 @@ namespace Alterity.Controllers
         [JSRPCNet.ApiMethod]
         public String Test(int anInt, String aString)
         {
-            return "Hello world! " + anInt.ToString() + " " + aString;
+            return "Hello world! " + anInt.ToString(System.Globalization.CultureInfo.CurrentCulture) + " " + aString;
         }
     }
 }

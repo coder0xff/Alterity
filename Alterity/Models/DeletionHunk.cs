@@ -22,7 +22,7 @@ namespace Alterity.Models
 
         protected DeletionHunk() { }
 
-        Hunk[] ApplyTransformationResults(IntegerInterval[] intervals)
+        static Hunk[] ApplyTransformationResults(IntegerInterval[] intervals)
         {
             DeletionHunk[] results = intervals.Select(x => new DeletionHunk(x.Left, x.Length)).ToArray();
             for (int transformeeIndex = 1; transformeeIndex < results.Length; transformeeIndex++)
@@ -48,7 +48,7 @@ namespace Alterity.Models
             }
             else if (hunk is NoOperationHunk)
             {
-                throw new InvalidOperationException("NoOperationHunks should not be redone, undone, or subjoined.");
+                throw new InvalidOperationException("No-operation hunks should not be redone, undone, or subjoined.");
             }
             else
             {
@@ -72,7 +72,7 @@ namespace Alterity.Models
             }
             else if (hunk is NoOperationHunk)
             {
-                throw new InvalidOperationException("NoOperationHunks should not be redone, undone, or subjoined.");
+                throw new InvalidOperationException("No-operation hunks should not be redone, undone, or subjoined.");
             }
             else
             {
@@ -100,10 +100,10 @@ namespace Alterity.Models
 
         public override string ToString()
         {
-            return StartIndex.ToString() + ", " + Length.ToString();
+            return StartIndex.ToString(System.Globalization.CultureInfo.CurrentCulture) + ", " + Length.ToString(System.Globalization.CultureInfo.CurrentCulture);
         }
 
-        public new class ValueComparer : IComparer<DeletionHunk>
+        internal new class ValueComparer : IComparer<DeletionHunk>
         {
             public int Compare(DeletionHunk x, DeletionHunk y)
             {
@@ -116,16 +116,16 @@ namespace Alterity.Models
             }
         }
 
-        public new class IdComparer : IComparer<DeletionHunk>
-        {
-            public int Compare(DeletionHunk x, DeletionHunk y)
-            {
-                if (x == y) return 0;
-                if (x == null) return -1;
-                if (y == null) return 1;
-                return x.Id - y.Id;
-            }
-        }
+        //internal new class IdComparer : IComparer<DeletionHunk>
+        //{
+        //    public int Compare(DeletionHunk x, DeletionHunk y)
+        //    {
+        //        if (x == y) return 0;
+        //        if (x == null) return -1;
+        //        if (y == null) return 1;
+        //        return x.Id - y.Id;
+        //    }
+        //}
 
         public override bool MergeSubsequent(ref Hunk other, out Hunk result)
         {

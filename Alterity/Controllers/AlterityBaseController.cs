@@ -24,7 +24,7 @@ namespace Alterity.Controllers
 
     public class AlterityBaseController : Controller
     {
-        protected dynamic SessionState { get { return SessionDataWrapper.GetSessionData(System.Web.HttpContext.Current.Request, System.Web.HttpContext.Current.Response); } }
+        protected static dynamic SessionState { get { return SessionDataWrapper.GetSessionData(System.Web.HttpContext.Current.Request, System.Web.HttpContext.Current.Response); } }
         protected new UserClass User
         {
             get

@@ -13,7 +13,7 @@ namespace Alterity.Models.Async
         {
             lock (clientState)
             {
-                if (stateChange.ActivationState == EditOperation.ActivationState.Activated)
+                if (stateChange.ActivationState == EditOperationActivationState.Activated)
                     clientState.ActiveEditOperationIds.Add(stateChange.EditOperationId);
                 else
                     clientState.ActiveEditOperationIds.Remove(stateChange.EditOperationId);

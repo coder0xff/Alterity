@@ -21,8 +21,8 @@ namespace Alterity.Models
 
         public override bool MergeHunk(ref Hunk hunk)
         {
-            if (IsClosed) throw new ApplicationException("Cannot merged into a closed hunk!");
-            if (Hunks.Count != 1) throw new ApplicationException("Deletion hunks can only be merged if they have not been transformed!");
+            if (IsClosed) throw new InvalidOperationException("Cannot merge into a closed hunk!");
+            if (Hunks.Count != 1) throw new InvalidOperationException("Deletion hunks can only be merged if they have not been transformed!");
             Hunk current = (DeletionHunk)Hunks.First();
             Hunk result;
             if (current.MergeSubsequent(ref hunk, out result))

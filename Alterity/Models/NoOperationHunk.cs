@@ -109,16 +109,16 @@ namespace Alterity.Models
             }
         }
 
-        public new class IdComparer : IComparer<NoOperationHunk>
-        {
-            public int Compare(NoOperationHunk x, NoOperationHunk y)
-            {
-                if (x == y) return 0;
-                if (x == null) return -1;
-                if (y == null) return 1;
-                return x.Id - y.Id;
-            }
-        }
+        //public new class IdComparer : IComparer<NoOperationHunk>
+        //{
+        //    public int Compare(NoOperationHunk x, NoOperationHunk y)
+        //    {
+        //        if (x == y) return 0;
+        //        if (x == null) return -1;
+        //        if (y == null) return 1;
+        //        return x.Id - y.Id;
+        //    }
+        //}
 
         public override bool MergeSubsequent(ref Hunk other, out Hunk result)
         {

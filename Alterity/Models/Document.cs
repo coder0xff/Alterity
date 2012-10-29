@@ -11,9 +11,12 @@ namespace Alterity.Models
     public class Document
     {
         public int Id { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<ChangeSet> ChangeSets { get; set; }
         public User Owner { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<User> Administrators { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<User> Moderators { get; set; }
         public float? VoteRatioThreshold { get; set; }
         public bool Locked { get; set; }
@@ -34,26 +37,19 @@ namespace Alterity.Models
             return EntityMappingContext.Current.Documents.FirstOrDefault(_ => _.Id == id);
         }
 
-        public ICollection<EditOperation> GetEditOperations()
+        public IEnumerable<EditOperation> EditOperations
         {
-            List<EditOperation> results = new List<EditOperation>();
-            foreach (ChangeSet changeSet in ChangeSets)
+            get
             {
-                foreach (ChangeSubset changeSubset in changeSet.ChangeSubsets)
-                {
-                    foreach (EditOperation editOperation in changeSubset.EditOperations)
-                    {
-                        results.Add(editOperation);
-                    }
-                }
+                return EntityMappingContext.Current.EditOperations.Where(x => x.Document == this);
             }
-            return results;
         }
 
-        public static String GenerateDocumentText(ICollection<EditOperation> Edits)
+        internal static String GenerateDocumentText(ICollection<EditOperation> edits)
         {
+            if (edits == null) throw new ArgumentNullException("edits");
             StringBuilder result = new StringBuilder();
-            foreach (EditOperation edit in Edits)
+            foreach (EditOperation edit in edits)
                 edit.Apply(result);
             return result.ToString();
         }
@@ -131,7 +127,7 @@ namespace Alterity.Models
             } while (true);
         }
 
-        public static EditOperation TransformForTargetState(EditOperation transformee, List<int> sortedTargetState, Dictionary<int, EditOperation> transformedOperations, Dictionary<int, EditOperation> allOperations)
+        static EditOperation TransformForTargetState(EditOperation transformee, IEnumerable<int> sortedTargetState, Dictionary<int, EditOperation> transformedOperations, Dictionary<int, EditOperation> allOperations)
         {
             EditOperation result;
             if (!transformedOperations.TryGetValue(transformee.Id, out result))
@@ -156,7 +152,7 @@ namespace Alterity.Models
             return result;
         }
 
-        public static EditOperation TransformForTargetState(EditOperation transformee, List<int> sortedTargetState, Dictionary<int, EditOperation> transformedOperations, ICollection<EditOperation> allOperations)
+        static EditOperation TransformForTargetState(EditOperation transformee, IEnumerable<int> sortedTargetState, Dictionary<int, EditOperation> transformedOperations, ICollection<EditOperation> allOperations)
         {
             EditOperation result;
             if (!transformedOperations.TryGetValue(transformee.Id, out result))
@@ -181,9 +177,9 @@ namespace Alterity.Models
             return result;
         }
 
-        public static List<int> GetListOfActiveEditOperationIds(ICollection<EditOperation> editOperations)
+        public static IEnumerable<int> GetListOfActiveEditOperationIds(ICollection<EditOperation> editOperations)
         {
-            var result = new List<int>(editOperations.Where(_ => _.GetVoteStatus() == EditOperation.ActivationState.Activated).Select(_ => _.Id));
+            var result = new List<int>(editOperations.Where(_ => _.GetVoteStatus() == EditOperationActivationState.Activated).Select(_ => _.Id));
             result.Sort();
             return result;
         }
@@ -194,7 +190,7 @@ namespace Alterity.Models
         /// </summary>
         /// <param name="sortedOperations">The operations to process, sorted by Id</param>
         /// <returns></returns>
-        public static ICollection<EditOperation> ProcessState(ICollection<EditOperation> sortedOperations)
+        static ICollection<EditOperation> ProcessState(ICollection<EditOperation> sortedOperations)
         {
             int reserveCount = sortedOperations.Count;
             List<EditOperation> operationsToProcess = new List<EditOperation>(reserveCount);
@@ -203,7 +199,7 @@ namespace Alterity.Models
             Dictionary<int, EditOperation> transformedOperations = new Dictionary<int, EditOperation>(reserveCount);
             foreach (EditOperation operation in sortedOperations)
             {
-                if (operation.GetVoteStatus() == EditOperation.ActivationState.Activated)
+                if (operation.GetVoteStatus() == EditOperationActivationState.Activated)
                 {
                     operationsToProcess.Add(operation);
                     sortedTargetState.Add(operation.Id);
@@ -229,7 +225,7 @@ namespace Alterity.Models
 
         IEnumerable<EditOperation> GetCurrentActiveEdits()
         {
-            return EntityMappingContext.Current.EditOperations.Where(x => x.Document == this && x.GetVoteStatus() == EditOperation.ActivationState.Activated);
+            return EntityMappingContext.Current.EditOperations.Where(x => x.Document == this && x.GetVoteStatus() == EditOperationActivationState.Activated);
         }
 
         ChangeSubset GetUsersChangeSubset(User user)
@@ -245,9 +241,9 @@ namespace Alterity.Models
             return result;
         }
 
-        public void CloseAllLowerIndexedEdits(int EndIndex)
+        public void CloseAllLowerIndexedEdits(int endIndex)
         {
-            foreach (EditOperation editOperation in EntityMappingContext.Current.EditOperations.Where(x => x.Document == this && x.IsClosed == false && x.Hunks.Min(y => y.StartIndex) > EndIndex))
+            foreach (EditOperation editOperation in EntityMappingContext.Current.EditOperations.Where(x => x.Document == this && x.IsClosed == false && x.Hunks.Min(y => y.StartIndex) > endIndex))
                 editOperation.Close();
         }
 
@@ -275,7 +271,7 @@ namespace Alterity.Models
                 GetUsersChangeSubset(user).EditOperations.Add(operation);
                 operation.Hunks.Add(hunk);
             }
-            else throw new ApplicationException("Cannot create NoOperation operation");
+            else throw new InvalidOperationException("Cannot create No-Operation operation");
         }
     }
 }

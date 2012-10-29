@@ -13,6 +13,13 @@ using Alterity.Models;
 
 namespace Alterity.Controllers
 {
+    public enum AccountManagementMessageId
+    {
+        ChangePasswordSuccess,
+        SetPasswordSuccess,
+        RemoveLoginSuccess,
+    }
+
     [Authorize]
     [InitializeSimpleMembership]
     public class AccountController : Controller
@@ -21,7 +28,7 @@ namespace Alterity.Controllers
         // GET: /Account/Login
 
         [AllowAnonymous]
-        public ActionResult LogOn(string returnUrl)
+        public ActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
             return View();
@@ -33,7 +40,7 @@ namespace Alterity.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult LogOn(LogOnModel model, string returnUrl)
+        public ActionResult Login(LoginModel model, string returnUrl)
         {
             if (model == null) throw new ArgumentNullException("model");
             if (ModelState.IsValid && WebSecurity.Login(model.UserName, model.Password, persistCookie: model.RememberMe))
@@ -103,7 +110,7 @@ namespace Alterity.Controllers
         public ActionResult Disassociate(string provider, string providerUserId)
         {
             string ownerAccount = OAuthWebSecurity.GetUserName(provider, providerUserId);
-            ManageMessageId? message = null;
+            AccountManagementMessageId? message = null;
 
             // Only disassociate the account if the currently logged in user is the owner
             if (ownerAccount == User.Identity.Name)
@@ -116,7 +123,7 @@ namespace Alterity.Controllers
                     {
                         OAuthWebSecurity.DeleteAccount(provider, providerUserId);
                         scope.Complete();
-                        message = ManageMessageId.RemoveLoginSuccess;
+                        message = AccountManagementMessageId.RemoveLoginSuccess;
                     }
                 }
             }
@@ -127,12 +134,12 @@ namespace Alterity.Controllers
         //
         // GET: /Account/Manage
 
-        public ActionResult Manage(ManageMessageId? message)
+        public ActionResult Manage(AccountManagementMessageId? message)
         {
             ViewBag.StatusMessage =
-                message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
-                : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
-                : message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
+                message == AccountManagementMessageId.ChangePasswordSuccess ? "Your password has been changed."
+                : message == AccountManagementMessageId.SetPasswordSuccess ? "Your password has been set."
+                : message == AccountManagementMessageId.RemoveLoginSuccess ? "The external login was removed."
                 : "";
             ViewBag.HasLocalPassword = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
             ViewBag.ReturnUrl = Url.Action("Manage");
@@ -167,7 +174,7 @@ namespace Alterity.Controllers
 
                     if (changePasswordSucceeded)
                     {
-                        return RedirectToAction("Manage", new { Message = ManageMessageId.ChangePasswordSuccess });
+                        return RedirectToAction("Manage", new { Message = AccountManagementMessageId.ChangePasswordSuccess });
                     }
                     else
                     {
@@ -190,7 +197,7 @@ namespace Alterity.Controllers
                     try
                     {
                         WebSecurity.CreateAccount(User.Identity.Name, model.NewPassword);
-                        return RedirectToAction("Manage", new { Message = ManageMessageId.SetPasswordSuccess });
+                        return RedirectToAction("Manage", new { Message = AccountManagementMessageId.SetPasswordSuccess });
                     }
                     catch (Exception e)
                     {
@@ -209,7 +216,7 @@ namespace Alterity.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult ExternalLogOn(string provider, string returnUrl)
+        public ActionResult ExternalLogin(string provider, string returnUrl)
         {
             return new ExternalLoginResult(provider, Url.Action("ExternalLoginCallback", new { ReturnUrl = returnUrl }));
         }
@@ -218,7 +225,7 @@ namespace Alterity.Controllers
         // GET: /Account/ExternalLoginCallback
 
         [AllowAnonymous]
-        public ActionResult ExternalLogOnCallback(string returnUrl)
+        public ActionResult ExternalLoginCallback(string returnUrl)
         {
             AuthenticationResult result = OAuthWebSecurity.VerifyAuthentication(Url.Action("ExternalLoginCallback", new { ReturnUrl = returnUrl }));
             if (!result.IsSuccessful)
@@ -243,7 +250,7 @@ namespace Alterity.Controllers
                 string loginData = OAuthWebSecurity.SerializeProviderUserId(result.Provider, result.ProviderUserId);
                 ViewBag.ProviderDisplayName = OAuthWebSecurity.GetOAuthClientData(result.Provider).DisplayName;
                 ViewBag.ReturnUrl = returnUrl;
-                return View("ExternalLoginConfirmation", new RegisterExternalLogOnModel { UserName = result.UserName, ExternalLogOnData = loginData });
+                return View("ExternalLoginConfirmation", new RegisterExternalLoginModel { UserName = result.UserName, ExternalLoginData = loginData });
             }
         }
 
@@ -253,12 +260,12 @@ namespace Alterity.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult ExternalLogOnConfirmation(RegisterExternalLogOnModel model, string returnUrl)
+        public ActionResult ExternalLoginConfirmation(RegisterExternalLoginModel model, string returnUrl)
         {
             string provider = null;
             string providerUserId = null;
 
-            if (User.Identity.IsAuthenticated || !OAuthWebSecurity.TryDeserializeProviderUserId(model.ExternalLogOnData, out provider, out providerUserId))
+            if (User.Identity.IsAuthenticated || !OAuthWebSecurity.TryDeserializeProviderUserId(model.ExternalLoginData, out provider, out providerUserId))
             {
                 return RedirectToAction("Manage");
             }
@@ -266,14 +273,14 @@ namespace Alterity.Controllers
             if (ModelState.IsValid)
             {
                 // Insert a new user into the database
-                using (UsersContext db = new UsersContext())
+                using (EntityMappingContext db = new EntityMappingContext())
                 {
-                    UserProfile user = db.UserProfiles.FirstOrDefault(u => u.UserName.ToLower() == model.UserName.ToLower());
+                    User user = db.Users.FirstOrDefault(u => u.UserName.ToLower() == model.UserName.ToLower());
                     // Check if user already exists
                     if (user == null)
                     {
                         // Insert name into the profile table
-                        db.UserProfiles.Add(new UserProfile { UserName = model.UserName });
+                        db.Users.Add(new User { UserName = model.UserName });
                         db.SaveChanges();
 
                         OAuthWebSecurity.CreateOrUpdateAccount(provider, providerUserId, model.UserName);
@@ -314,12 +321,12 @@ namespace Alterity.Controllers
         public ActionResult RemoveExternalLogins()
         {
             ICollection<OAuthAccount> accounts = OAuthWebSecurity.GetAccountsFromUserName(User.Identity.Name);
-            List<ExternalLogOn> externalLogins = new List<ExternalLogOn>();
+            List<ExternalLogin> externalLogins = new List<ExternalLogin>();
             foreach (OAuthAccount account in accounts)
             {
                 AuthenticationClientData clientData = OAuthWebSecurity.GetOAuthClientData(account.Provider);
 
-                externalLogins.Add(new ExternalLogOn
+                externalLogins.Add(new ExternalLogin
                 {
                     Provider = account.Provider,
                     ProviderDisplayName = clientData.DisplayName,
@@ -342,13 +349,6 @@ namespace Alterity.Controllers
             {
                 return RedirectToAction("Index", "Home");
             }
-        }
-
-        public enum ManageMessageId
-        {
-            ChangePasswordSuccess,
-            SetPasswordSuccess,
-            RemoveLoginSuccess,
         }
 
         internal class ExternalLoginResult : ActionResult
