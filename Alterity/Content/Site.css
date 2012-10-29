@@ -589,15 +589,35 @@ tr.pager td {
 
 .document-link-list {
     background-color: #fff;
-    font-size: 1.5em;
     border: 1px;
     border-color: #333;
     border-style: solid;
 }
 
 .document-link {
+    display: block;
+    border: 1px;
+    border-color: #333;
+    border-style: dashed;
+    padding: .1em;
 }
 
+.document-link span {
+    display: inline-block; 
+    vertical-align: middle;
+    font-size: 1.5em;
+    text-decoration: underline;
+}
+
+.document-link img {
+    vertical-align: middle;
+    height: auto;
+    width: 4em;
+}
+
+.document-new-link {
+    background-color: #a6dbed
+}
 
 /********************
 *   Mobile Styles   *

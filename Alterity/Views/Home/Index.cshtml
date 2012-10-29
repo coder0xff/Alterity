@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Home";
+    ViewBag.Title = "Alterity:";
 }
 @section featured {
     <section class="featured">
@@ -9,11 +9,7 @@
                 <h2>@ViewBag.Message</h2>
             </hgroup>
             <p>
-                To learn more about ASP.NET MVC visit
-                <a href="http://asp.net/mvc" title="ASP.NET MVC Website">http://asp.net/mvc</a>.
-                The page features <mark>videos, tutorials, and samples</mark> to help you get the most from ASP.NET MVC.
-                If you have any questions about ASP.NET MVC visit
-                <a href="http://forums.asp.net/1146.aspx/1?MVC" title="ASP.NET MVC Forum">our forums</a>.
+                To learn more about Alterity, see the <a href="~About" title="About">About</a> page.
             </p>
         </div>
     </section>
@@ -21,16 +17,21 @@
 @if (!ViewBag.IsAnonymousUser)
 {
     <div>
-        Your documents:
-        <p>@Html.ActionLink("Create a new document", "Create", "Document")</p>
+        <h2>Your documents:</h2>
         <div class="document-link-list">
+            <a href="~/Document/Create" class="document-link document-new-link">
+                <img src="~/Images/document-new.svg" /><span>Create a new document</span>
+            </a>
             @foreach (Alterity.Models.Document document in ViewBag.UserDocuments)
             {
-                <p class="document-link">@Html.ActionLink(document.Title, "Edit", new { controller = "Document", id = document.Id })</p>
+                <a href="~/Document/Edit/@document.Id.ToString()" class="document-link">
+                    <img src="~/Images/document-generic.svg" /><span>@document.Title</span>
+                </a>
             }
         </div>
     </div>
 }
+<!--
 <h3>We suggest the following:</h3>
 <ol class="round">
     <li class="one">
@@ -56,3 +57,4 @@
         <a href="http://go.microsoft.com/fwlink/?LinkId=245157">Learn more…</a>
     </li>
 </ol>
+-->
