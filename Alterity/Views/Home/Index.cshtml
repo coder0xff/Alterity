@@ -14,23 +14,15 @@
         </div>
     </section>
 }
-@if (!ViewBag.IsAnonymousUser)
-{
-    <div>
+<div>
+    @if (!ViewBag.IsAnonymousUser)
+    {
         <h2>Your documents:</h2>
-        <div class="document-link-list">
-            <a href="~/Document/Create" class="document-link document-new-link">
-                <img src="~/Images/document-new.svg" /><span>Create a new document</span>
-            </a>
-            @foreach (Alterity.Models.Document document in ViewBag.UserDocuments)
-            {
-                <a href="~/Document/Edit/@document.Id.ToString()" class="document-link">
-                    <img src="~/Images/document-generic.svg" /><span>@document.Title</span>
-                </a>
-            }
-        </div>
-    </div>
-}
+        @AlterityHelpers.DocumentList(ViewBag.UserDocuments, true)
+    }
+    <h2>All documents:</h2>
+    @AlterityHelpers.DocumentList(ViewBag.AllDocuments, !ViewBag.IsAnonymousUser)
+</div>
 <!--
 <h3>We suggest the following:</h3>
 <ol class="round">

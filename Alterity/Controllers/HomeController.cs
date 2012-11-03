@@ -13,6 +13,8 @@ namespace Alterity.Controllers
             ViewBag.Message = "Facilitating the collective voice of The Internet.";
             DB(() =>
             {
+                ViewBag.AllDocuments = new List<Alterity.Models.Document>(Alterity.Models.EntityMappingContext.Current.Documents);
+
                 ViewBag.IsAnonymousUser = User.IsAnonymous;
 
                 if (!ViewBag.IsAnonymousUser)

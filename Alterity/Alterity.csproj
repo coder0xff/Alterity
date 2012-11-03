@@ -264,6 +264,7 @@
     <CodeAnalysisDictionary Include="CustomDictionary.xml" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="App_Code\AlterityHelpers.cshtml" />
     <None Include="Scripts\jquery-1.7.1.intellisense.js" />
     <Content Include="Images\document-generic.svg" />
     <Content Include="Images\document-new.svg" />
