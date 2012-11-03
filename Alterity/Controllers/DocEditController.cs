@@ -12,7 +12,7 @@ namespace Alterity.Controllers
     public class DocEditController : AlterityBaseApiController
     {
         [JSRPCNet.ApiMethod]
-        public void ReceiveHunks(int documentId, int clientTransmittedUpdateIndex, HunkDTO[] hunkDTOs)
+        public void ReceiveHunks(int documentId, int serverUpdateStamp, int clientUpdateStamp, HunkDTO[] hunkDTOs)
         {
             List<Hunk> hunks = new List<Hunk>(hunkDTOs.Select(_ => _.Convert()));
             foreach (Hunk hunk in hunks)

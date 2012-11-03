@@ -26,15 +26,15 @@ var unconfirmedTransmissions = [];
 //While TCP transactions are ordered, separate TCP transactions are not
 //so we store confirmations and incoming hunks here if they arrive out of order
 var outOfOrderReceivedTransmisionConfirmations = [];
-var lastReceivedServerTick = -1;
-var lastTransmittedUpdateIndex = -1;
+var serverUpdateStamp = -1;
+var clientUpdateStamp = -1;
 
     function flushTransmitQueue() {
         if (hunkTransmitQueue.length > 0) {
             console.log("transmitting hunks: " + JSON.stringify(hunkTransmitQueue));
-            lastTransmittedUpdateIndex++;
-            docEditApi.ReceiveHunks(documentId, lastTransmittedUpdateIndex, hunkTransmitQueue);
-            unconfirmedTransmissions.push({ updateIndex: lastTransmittedUpdateIndex, hunks: hunkTransmitQueue.slice(0) });
+            clientUpdateStamp++;
+            docEditApi.ReceiveHunks(documentId, clientUpdateStamp, hunkTransmitQueue);
+            unconfirmedTransmissions.push({ updateIndex: clientUpdateStamp, hunks: hunkTransmitQueue.slice(0) });
             hunkTransmitQueue.length = 0;
         }
     }
@@ -142,7 +142,7 @@ var lastTransmittedUpdateIndex = -1;
 
     function blockDeleted(index, length) {
         console.log("deleted at: " + index + " " + length);
-        var deletionHunk = new DeletionHunk(lastReceivedServerTick, index, length);
+        var deletionHunk = new DeletionHunk(serverUpdateStamp, index, length);
         if (hunkTransmitQueue.length > 0) {
             deletionHunk = <DeletionHunkModule.Alterity.DeletionHunk>hunkTransmitQueue[hunkTransmitQueue.length - 1].MergeSubsequent(deletionHunk)
         }
@@ -153,7 +153,7 @@ var lastTransmittedUpdateIndex = -1;
 
     function blockInserted(index, text) {
         console.log("inserted at: " + index + " " + text);
-        var insertionHunk = new InsertionHunk(lastReceivedServerTick, index, text);
+        var insertionHunk = new InsertionHunk(serverUpdateStamp, index, text);
         if (hunkTransmitQueue.length > 0) {
             insertionHunk = <InsertionHunkModule.Alterity.InsertionHunk>hunkTransmitQueue[hunkTransmitQueue.length - 1].MergeSubsequent(insertionHunk);
         }
