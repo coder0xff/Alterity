@@ -30,43 +30,11 @@ namespace Alterity.Controllers
         {
             get
             {
-                UserClass result = null;
-                if (SessionState.UserName == null)
-                {
-                    if (((Controller)this).User.Identity.IsAuthenticated)
-                    {
-                        string UserName = ((Controller)this).User.Identity.Name;
-                        SessionState.UserName = UserName;
-                        result = User.GetUserByUserName(UserName);
-                        if (result == null)
-                        {
-                            //SimpleMembershipProvider thinks we're logged in, but the account doesn't exist!
-                            //Logout and return a new anonymous user
-                            AccountController.InternalLogout();
-                            result = UserClass.CreateAnonymous(this.Request.UserHostAddress);
-                            SessionState.UserName = result.UserName;
-                        }
-                    }
-                    else
-                    {
-                        result = UserClass.CreateAnonymous(this.Request.UserHostAddress);
-                        SessionState.UserName = result.UserName;
-                    }
-                }
-                else
-                {
-                    string userName = SessionState.UserName;
-                    System.Diagnostics.Debug.Assert(!((Controller)this).User.Identity.IsAuthenticated || ((Controller)this).User.Identity.Name == userName);
-                    result = UserClass.GetUserByUserName(SessionState.UserName);
-                    if (result == null)
-                    {
-                        SessionState.UserName = null;
-                        return User;
-                    }
-                }
-                return result;
+                System.Security.Principal.IPrincipal userPrincipal = ((Controller)this).User;
+                return UserClass.GetUser(userPrincipal, SessionState, this.Request.UserHostAddress);
             }
         }
+
         protected void DB(Action action) { EntityMappingContext.Access(action); }
     }
 }

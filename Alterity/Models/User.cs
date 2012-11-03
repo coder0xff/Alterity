@@ -55,13 +55,54 @@ namespace Alterity.Models
                 EntityMappingContext.Current.Users.Remove(this);
             }
         }
-    }
 
-    public static class UserExtensionMethods
-    {
-        static User GetUser(this System.Security.Principal.IPrincipal user)
+        /// <summary>
+        /// Get a user by login details, or get an anonymous user by
+        /// session. If an existing anonymous user session doesn't exist,
+        /// it will be created.
+        /// </summary>
+        /// <param name="userPrincipal"></param>
+        /// <param name="sessionState"></param>
+        /// <param name="hostAddress"></param>
+        /// <returns></returns>
+        static internal User GetUser(System.Security.Principal.IPrincipal userPrincipal, dynamic sessionState, string hostAddress)
         {
-            return User.GetUserByUserName(user.Identity.Name);
+            User result = null;
+            if (sessionState.UserName == null)
+            {
+                if (userPrincipal.Identity.IsAuthenticated)
+                {
+                    string UserName = userPrincipal.Identity.Name;
+                    sessionState.UserName = UserName;
+                    result = User.GetUserByUserName(UserName);
+                    if (result == null)
+                    {
+                        //SimpleMembershipProvider thinks we're logged in, but the account doesn't exist!
+                        //Logout and return a new anonymous user
+                        Alterity.Controllers.AccountController.InternalLogout();
+                        result = User.CreateAnonymous(hostAddress);
+                        sessionState.UserName = result.UserName;
+                    }
+                }
+                else
+                {
+                    result = User.CreateAnonymous(hostAddress);
+                    sessionState.UserName = result.UserName;
+                }
+            }
+            else
+            {
+                string userName = sessionState.UserName;
+                System.Diagnostics.Debug.Assert(!userPrincipal.Identity.IsAuthenticated || userPrincipal.Identity.Name == userName);
+                result = User.GetUserByUserName(sessionState.UserName);
+                if (result == null)
+                {
+                    sessionState.UserName = null;
+                    return GetUser(userPrincipal, sessionState, hostAddress);
+                }
+            }
+            return result;
         }
     }
+
 }
