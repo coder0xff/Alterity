@@ -177,9 +177,10 @@
     <Compile Include="JSRPCNet\JSRPCNet.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\Async\ClientState.cs" />
-    <Compile Include="Models\Async\ClientStateMachine.cs" />
+    <Compile Include="Models\Async\ClientUpdate.cs" />
     <Compile Include="Models\Async\EditOperationActiveStateChange.cs" />
     <Compile Include="Models\Async\HunkDTO.cs" />
+    <Compile Include="Models\Async\HunkMergerThing.cs" />
     <Compile Include="Models\ChangeSet.cs" />
     <Compile Include="Models\ChangeSubset.cs" />
     <Compile Include="Models\CopyOperation.cs" />
