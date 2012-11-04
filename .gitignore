@@ -1,5 +1,6 @@
 Alterity/bin/*
 Alterity/obj/*
+Alterity/Scripts/DocEdit/*.js
 Alterity.Tests/bin/*
 Alterity.Tests/obj/*
 *.suo

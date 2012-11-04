@@ -268,6 +268,7 @@
     <None Include="Scripts\jquery-1.7.1.intellisense.js" />
     <Content Include="Images\document-generic.svg" />
     <Content Include="Images\document-new.svg" />
+    <Content Include="Scripts\jquery.selection.js" />
     <Content Include="Views\Document\Create.cshtml" />
     <TypeScriptCompile Include="Scripts\DocEdit\IntegerInterval.ts" />
     <TypeScriptCompile Include="Scripts\DocEdit\InsertionHunk.ts" />
@@ -278,7 +279,7 @@
       <DependentUpon>DeletionHunk.ts</DependentUpon>
     </Content>
     <TypeScriptCompile Include="Scripts\DocEdit\IHunk.ts" />
-    <Content Include="Scripts\DocEdit\Hunk.js">
+    <Content Include="Scripts\DocEdit\IHunk.js">
       <DependentUpon>IHunk.ts</DependentUpon>
     </Content>
     <Content Include="Scripts\DocEdit\InsertionHunk.js">
@@ -316,7 +317,6 @@
     <None Include="Scripts\jquery.validate-vsdoc.js" />
     <Content Include="Scripts\jquery-ui-1.8.20.js" />
     <Content Include="Scripts\jquery-ui-1.8.20.min.js" />
-    <Content Include="Scripts\DocEdit\jquery.selection.js" />
     <TypeScriptCompile Include="Scripts\jquery.d.ts" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
