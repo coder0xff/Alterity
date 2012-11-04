@@ -1,6 +1,8 @@
 Alterity/bin/*
 Alterity/obj/*
 Alterity/Scripts/DocEdit/*.js
+RedisClient/bin/*
+RedisClient/obj/*
 Alterity.Tests/bin/*
 Alterity.Tests/obj/*
 *.suo
