@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Redis
 {
-    public class Service : DynamicDataObject
+    public sealed class Service : DynamicDataObject
     {
         class ShardCollection
         {
@@ -15,7 +15,7 @@ namespace Redis
                 shards = shardLocations.Select(x => new ServiceStack.Redis.RedisClient(x)).ToArray();
             }
 
-            public ServiceStack.Redis.RedisNativeClient SelectShard(Int32 hashCode)
+            public ServiceStack.Redis.RedisClient SelectShard(Int32 hashCode)
             {
                 int shardIndex = (Int32)((Int64)hashCode + Int32.MinValue * shards.Length / ((Int64)Int32.MaxValue - (Int64)Int32.MinValue + 1));
                 return shards[shardIndex];
@@ -48,17 +48,17 @@ namespace Redis
         }
 
 
-        protected override RedisNativeClient GetDataStore(string memberAbsolutePath)
+        public override RedisClient GetDataStore(string memberAbsolutePath)
         {
             return shards.SelectShard(memberAbsolutePath.Split(new char[] { '.' })[0].GetHashCode());
         }
 
-        protected override string GetMemberAbsolutePath(string name, bool ignoreCase)
+        public override string GetMemberAbsolutePath(string name, bool ignoreCase)
         {
             return name;
         }
 
-        protected override Scope CreateScope(string memberName)
+        internal override Scope CreateScope(string memberName)
         {
             return new Scope(memberName, GetDataStore(memberName));
         }

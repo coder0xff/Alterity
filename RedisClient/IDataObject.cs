@@ -8,7 +8,7 @@ namespace Redis
 {
     interface IDataObject
     {
-        abstract ServiceStack.Redis.RedisClient GetDataStore(string memberAbsolutePath);
-        abstract string GetMemberAbsolutePath(string name, bool ignoreCase);
+        ServiceStack.Redis.RedisClient GetDataStore(string memberAbsolutePath);
+        string GetMemberAbsolutePath(string name, bool ignoreCase);
     }
 }

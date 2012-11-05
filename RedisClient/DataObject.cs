@@ -4,14 +4,14 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Redis
 {
-    internal abstract class DynamicDataObject : DynamicObject, IDataObject
+    public abstract class DynamicDataObject : DynamicObject, IDataObject
     {      
 
         protected DynamicDataObject()
         {
         }
 
-        protected abstract Scope CreateScope(string memberName);
+        internal abstract Scope CreateScope(string memberName);
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
@@ -46,7 +46,7 @@ namespace Redis
             return true;
         }
 
-        public abstract ServiceStack.Redis.RedisNativeClient GetDataStore(string memberAbsolutePath);
+        public abstract ServiceStack.Redis.RedisClient GetDataStore(string memberAbsolutePath);
 
         public abstract string GetMemberAbsolutePath(string name, bool ignoreCase);
     }

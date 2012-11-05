@@ -26,11 +26,11 @@ namespace Redis
         public int Add(object value)
         {
             int Count = 0;
-            Lock(this, Timeout.Infinite, () =>
+            Lock.On(this, System.Threading.Timeout.Infinite, () =>
             {
                 dataStore.RPush(absolutePath, SerializationProvider.Serialize(value));
                 Count = dataStore.LLen(absolutePath);
-            }
+            });
             return Count;
         }
 
