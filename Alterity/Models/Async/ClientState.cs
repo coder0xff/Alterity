@@ -2,12 +2,43 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Redis;
 
 namespace Alterity.Models.Async
 {
     public class ClientState
     {
-        public int ClientUpdateStamp { get; set; }
+        dynamic dataObject;
 
+        public static implicit operator ClientState(Redis.DynamicDataObject dataObject)
+        {
+            ClientState result = new ClientState();
+            result.dataObject = dataObject;
+            return result;
+        }
+
+        public int ClientUpdateIndex
+        {
+            get
+            {
+                return dataObject.clientUpdateIndex;
+            }
+            set
+            {
+                dataObject.clientUpdateIndex = value;
+            }
+        }
+
+        public int ServerUpdateIndex
+        {
+            get
+            {
+                return dataObject.ServerUpdateIndex;
+            }
+            set
+            {
+                dataObject.ServerUpdateIndex = value;
+            }
+        }
     }
 }

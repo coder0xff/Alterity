@@ -57,13 +57,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataObject.cs" />
+    <Compile Include="Pool.cs" />
+    <Compile Include="DynamicDataObject.cs" />
     <Compile Include="IDataObject.cs" />
+    <Compile Include="ILockableDataObject.cs" />
     <Compile Include="List.cs" />
     <Compile Include="Lock.cs" />
     <Compile Include="Scope.cs" />
     <Compile Include="SerializationProvider.cs" />
-    <Compile Include="Service.cs" />
+    <Compile Include="Client.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace Redis
 {
-    interface IDataObject
+    public interface IDataObject
     {
         ServiceStack.Redis.RedisClient GetDataStore(string memberAbsolutePath);
         string GetMemberAbsolutePath(string name, bool ignoreCase);
+        string GetAbsolutePath();
     }
 }

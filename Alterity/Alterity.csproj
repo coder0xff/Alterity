@@ -170,6 +170,7 @@
     <Compile Include="Controllers\DocumentController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\UserController.cs" />
+    <Compile Include="DataStore.cs" />
     <Compile Include="Filters\InitializeSimpleMembershipAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -177,7 +178,10 @@
     <Compile Include="JSRPCNet\JSRPCNet.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\Async\ClientState.cs" />
+    <Compile Include="Models\Async\ClientStateCollection.cs" />
     <Compile Include="Models\Async\ClientUpdate.cs" />
+    <Compile Include="Models\Async\DocumentEditState.cs" />
+    <Compile Include="Models\Async\DocumentEditStateCollection.cs" />
     <Compile Include="Models\Async\EditOperationActiveStateChange.cs" />
     <Compile Include="Models\Async\HunkDTO.cs" />
     <Compile Include="Models\Async\HunkMergerThing.cs" />
@@ -383,6 +387,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RedisClient\RedisClient.csproj">
+      <Project>{c5ad3591-d4a7-473e-bf2d-8d82ee29d0ee}</Project>
+      <Name>RedisClient</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

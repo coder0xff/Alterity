@@ -28,5 +28,7 @@ namespace Alterity.Controllers
                 return UserClass.GetUser(userPrincipal, SessionState, HttpContext.Current.Request.UserHostAddress);
             }
         }
+
+        protected void DB(Action action) { EntityMappingContext.Access(action); }
     }
 }

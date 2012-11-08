@@ -10,7 +10,10 @@ var DeletionHunk = DeletionHunkModule.Alterity.DeletionHunk;
 import NoOpHunkModule = module("NoOpHunk");
 
 var docEditApi = new JSRPCNet("/api/DocEdit");
-var documentId = 0;
+declare var documentId: number;
+if (documentId === undefined) {
+    assert(false, "documentId is missing")    
+}
 
 //the most recent document state corroborated by the server
 var sharedState: string;
@@ -33,7 +36,7 @@ var clientUpdateStamp = -1;
         if (hunkTransmitQueue.length > 0) {
             console.log("transmitting hunks: " + JSON.stringify(hunkTransmitQueue));
             clientUpdateStamp++;
-            docEditApi.ReceiveHunks(documentId, clientUpdateStamp, hunkTransmitQueue);
+            docEditApi.ReceiveHunks(documentId, serverUpdateStamp, clientUpdateStamp, hunkTransmitQueue);
             unconfirmedTransmissions.push({ updateIndex: clientUpdateStamp, hunks: hunkTransmitQueue.slice(0) });
             hunkTransmitQueue.length = 0;
         }
@@ -130,7 +133,7 @@ var clientUpdateStamp = -1;
 
     var transmitDataTimer = setInterval(function () {
         flushTransmitQueue();
-    }, 10000)
+    }, 1000)
 
     function getSelectionRange() {
         return (<any>$("#plainTextArea")).selection();

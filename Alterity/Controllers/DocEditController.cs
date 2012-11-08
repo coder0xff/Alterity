@@ -14,6 +14,18 @@ namespace Alterity.Controllers
         [JSRPCNet.ApiMethod]
         public void ReceiveHunks(int documentId, int serverUpdateStamp, int clientUpdateStamp, HunkDTO[] hunkDTOs)
         {
+            DB(() => {
+                Document document = EntityMappingContext.Current.Documents.First(x => x.Id == documentId);
+                using (dynamic DS = DataStore.Access())
+                {
+
+                    DocumentEditStateCollection documentEditStates = DS.DocumentEditStates;
+                    if (clientUpdateStamp == documentEditStates[document].ClientStates[User].ClientUpdateIndex + 1)
+                    {
+                        //got the index we expected!
+                    }
+                }
+            });
             List<Hunk> hunks = new List<Hunk>(hunkDTOs.Select(_ => _.Convert()));
             foreach (Hunk hunk in hunks)
                 System.Diagnostics.Debug.WriteLine(hunk.GetType().ToString() + " " + hunk.ToString());

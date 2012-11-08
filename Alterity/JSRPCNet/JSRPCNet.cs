@@ -156,6 +156,17 @@ namespace JSRPCNet
     {
     }
 
+    [Serializable]
+    public class DeserializationException : Exception
+    {
+        public DeserializationException() { }
+        public DeserializationException(string message) : base(message) { }
+        public DeserializationException(string message, Exception inner) : base(message, inner) { }
+        protected DeserializationException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context)
+            : base(info, context) { }
+    }
     public class ApiController : System.Web.Http.ApiController
     {
         static Dictionary<Type, ApiInfo> registeredAPIs = new Dictionary<Type, ApiInfo>();
@@ -180,7 +191,16 @@ namespace JSRPCNet
             for (int paramIndex = 0; paramIndex < methodInfo.ParameterTypes.Count; paramIndex++)
             {
                 if (methodInfo.ParameterTypes[paramIndex].IsPrimitive)
-                    parameterValues[paramIndex] = Convert.ChangeType(parameterValuesToken[paramIndex].ToString(), methodInfo.ParameterTypes[paramIndex]);
+                {
+                    try
+                    {
+                        parameterValues[paramIndex] = Convert.ChangeType(parameterValuesToken[paramIndex].ToString(), methodInfo.ParameterTypes[paramIndex]);
+                    }
+                    catch (System.FormatException)
+                    {
+                        throw new DeserializationException("Parameter " + paramIndex.ToString() + " could not be converted to type: \"" + methodInfo.ParameterTypes[paramIndex].ToString() + "\" from the JSON string \"" + parameterValuesToken[paramIndex].ToString());
+                    }
+                }
                 else if (methodInfo.ParameterTypes[paramIndex] == typeof(string))
                     parameterValues[paramIndex] = parameterValuesToken[paramIndex].ToString();
                 else
