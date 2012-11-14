@@ -7,7 +7,7 @@ namespace Alterity.Models.Async
 {
     public class ClientUpdate
     {
-        public virtual int Id { get; set; }
-        public virtual int Stamp { get; set; }
+        public int ClientUpdateStamp { get; set; }
+        public HunkDTO[] hunkDTOs { get; set; }
     }
 }

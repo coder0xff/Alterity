@@ -7,3 +7,6 @@ Alterity.Tests/bin/*
 Alterity.Tests/obj/*
 *.suo
 App_Data
+
+*.mdf
+*.ldf

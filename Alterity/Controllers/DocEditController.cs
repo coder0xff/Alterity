@@ -20,9 +20,18 @@ namespace Alterity.Controllers
                 {
 
                     DocumentEditStateCollection documentEditStates = DS.DocumentEditStates;
-                    if (clientUpdateStamp == documentEditStates[document].ClientStates[User].ClientUpdateIndex + 1)
+                    ClientState clientState = documentEditStates[document].ClientStates[User];
+                    if (clientUpdateStamp == clientState.ClientUpdateIndex + 1)
                     {
-                        //got the index we expected!
+                        // got the index we expected!
+                        // apply this update
+                        // and then get stored updates one at a time from the sorted store
+                        // removing them in the process using a transaction
+                        
+                    }
+                    else
+                    {
+                        //store it for subsequent application
                     }
                 }
             });
