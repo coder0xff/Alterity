@@ -114,6 +114,21 @@ namespace Doredis
             readAsyncResult = tcpClientStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
         }
 
+        internal void Send(params object[] arguments)
+        {
+            byte[][] encodedArguments = new byte[arguments.Length][];
+            for (int index = 0; index < arguments.Length; index++)
+            {
+                if (arguments.GetType() == typeof(byte[]))
+                    encodedArguments[index] = (byte[])arguments[index];
+                else if (arguments.GetType() == typeof(string))
+                    encodedArguments[index] = Encoding.UTF8.GetBytes((string)arguments[index]);
+                else
+                    encodedArguments[index] = SerializationProvider.Serialize(arguments[index]);
+            }
+            SendArguments(encodedArguments);
+        }
+
         public void SendArguments(byte[][] arguments)
         {
             var tempStream = new System.IO.MemoryStream();
