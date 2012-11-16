@@ -45,6 +45,18 @@ namespace Doredis
             : base(info, context) { }
     }
 
+    [Serializable]
+    public class RequestTimeoutException : Exception
+    {
+        public RequestTimeoutException() { }
+        public RequestTimeoutException(string message) : base(message) { }
+        public RequestTimeoutException(string message, Exception inner) : base(message, inner) { }
+        protected RequestTimeoutException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context)
+            : base(info, context) { }
+    }
+
     public class RedisReply
     {
         public RedisReply(bool isError, object data)
@@ -69,11 +81,11 @@ namespace Doredis
         const byte Utf8LineFeed = 0x0A;
 
         TcpClient tcpClient;
-        readonly bool Connected;
+        public readonly bool Connected;
         NetworkStream tcpClientStream;
         IAsyncResult readAsyncResult;
         ConcurrentQueue<byte[]> replyStreamBlockQueue = new ConcurrentQueue<byte[]>();
-        ManualResetEvent replySteamBlockReady = new ManualResetEvent(false);
+        ManualResetEvent replyStreamBlockReady = new ManualResetEvent(false);
         byte[] replyStreamBlock;
         int replyStreamBlockPosition;
 
@@ -153,21 +165,28 @@ namespace Doredis
                 byte[] block = new byte[readLength];
                 Buffer.BlockCopy(buffer, 0, block, 0, readLength);
                 replyStreamBlockQueue.Enqueue(block);
-                replySteamBlockReady.Set();
+                replyStreamBlockReady.Set();
             }
             BeginRead();
         }
 
-        void WaitForData()
+        public bool WaitForData(bool noTimeout = false)
         {
             while (replyStreamBlock == null || replyStreamBlockPosition >= replyStreamBlock.Length)
             {
-                replySteamBlockReady.Reset();
+                replyStreamBlockReady.Reset();
                 if (replyStreamBlockQueue.TryDequeue(out replyStreamBlock))
                     replyStreamBlockPosition = 0;
+
                 else
-                    replySteamBlockReady.WaitOne();
+                {
+                    if (noTimeout)
+                        replyStreamBlockReady.WaitOne();
+                    else if (!replyStreamBlockReady.WaitOne(1000))
+                        throw new RequestTimeoutException();
+                }
             }
+            return true;
         }
 
         byte ReadReplyByte()
@@ -254,20 +273,13 @@ namespace Doredis
             return result;
         }
 
-        byte[][] ReadReplyMultiBulk()
+        RedisReply[] ReadReplyMultiBulk()
         {
             int bulkCount = (int)ReadReplyInteger();
-            byte[][] result = new byte[bulkCount][];
+            RedisReply[] result = new RedisReply[bulkCount];
             for (int i = 0; i < bulkCount; i++)
             {
-                if (ReadReplyByte() == Utf8DollarSign)
-                {
-                    result[i] = ReadReplyBulk();
-                }
-                else
-                {
-                    throw new ReplyFormatException("Multi bulk replies expect bulks to be preceded by a dollar sign ($).");
-                }
+                result[i] = ReadReply();
             }
             return result;
         }
@@ -275,7 +287,7 @@ namespace Doredis
         public void Dispose()
         {
             tcpClient.Close();
-            replySteamBlockReady.Dispose();
+            replyStreamBlockReady.Dispose();
         }
     }
 }

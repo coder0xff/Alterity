@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Dynamic;
-namespace Redis
+namespace Doredis
 {
     internal class Scope : DynamicDataObject
     {
         readonly string absolutePath;
-        readonly ServiceStack.Redis.RedisClient dataStore;
+        readonly DataStoreShard dataStore;
 
-        internal Scope(string absolutePath, ServiceStack.Redis.RedisClient dataStore)
+        internal Scope(string absolutePath, DataStoreShard dataStore)
         {
             this.absolutePath = absolutePath;
             this.dataStore = dataStore;
         }
 
-        public override ServiceStack.Redis.RedisClient GetDataStore(string memberAbsolutePath)
+        public override DataStoreShard GetDataStore(string memberAbsolutePath)
         {
             return dataStore;
         }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using Redis;
+using Doredis;
 
 namespace Alterity.Models.Async
 {
@@ -10,7 +10,7 @@ namespace Alterity.Models.Async
     {
         dynamic dataObject;
 
-        public static implicit operator ClientState(Redis.DynamicDataObject dataObject)
+        public static implicit operator ClientState(Doredis.DynamicDataObject dataObject)
         {
             ClientState result = new ClientState();
             result.dataObject = dataObject;

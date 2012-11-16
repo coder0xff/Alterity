@@ -389,9 +389,9 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RedisClient\RedisClient.csproj">
-      <Project>{c5ad3591-d4a7-473e-bf2d-8d82ee29d0ee}</Project>
-      <Name>RedisClient</Name>
+    <ProjectReference Include="..\Doredis\Doredis.csproj">
+      <Project>{597af2ec-e238-4a8f-a554-9cab935728a6}</Project>
+      <Name>Doredis</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

@@ -2,7 +2,7 @@
 using System.Dynamic;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Redis
+namespace Doredis
 {
     public abstract class DynamicDataObject : DynamicObject, ILockableDataObject
     {      
@@ -31,7 +31,7 @@ namespace Redis
             {
                 object result;
                 string memberName = GetMemberAbsolutePath(name, false);
-                ServiceStack.Redis.RedisClient dataStore = GetDataStore(memberName);
+                DataStoreShard dataStore = GetDataStore(memberName);
                 if (dataStore.Exists(memberName) == 1)
                 {
                     switch (dataStore.GetEntryType(memberName))
@@ -55,12 +55,12 @@ namespace Redis
             set
             {
                 string memberName = GetMemberAbsolutePath(name, false);
-                ServiceStack.Redis.RedisClient dataStore = GetDataStore(memberName);
+                DataStoreShard dataStore = GetDataStore(memberName);
                 dataStore.Set(memberName, SerializationProvider.Serialize(value));
             }
         }
 
-        public abstract ServiceStack.Redis.RedisClient GetDataStore(string memberAbsolutePath);
+        public abstract DataStoreShard GetDataStore(string memberAbsolutePath);
 
         public abstract string GetMemberAbsolutePath(string name, bool ignoreCase);
 

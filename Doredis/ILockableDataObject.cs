@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Redis
+namespace Doredis
 {
     internal interface ILockableDataObject : ILockable, IDataObject
     {

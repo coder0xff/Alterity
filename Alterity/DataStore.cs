@@ -8,11 +8,11 @@ namespace Alterity
 {
     public class DataStore
     {
-        static Redis.Pool redisPool;
+        static Doredis.Pool redisPool;
 
         static DataStore()
         {
-            redisPool = new Redis.Pool("DataStore");
+            redisPool = new Doredis.Pool("DataStore");
         }
         
         public static dynamic Access()
@@ -23,9 +23,9 @@ namespace Alterity
 
     public class DS : DynamicObject, IDisposable
     {
-        readonly Redis.Client client;
-        readonly Redis.Pool pool;
-        public DS(Redis.Pool pool)
+        readonly Doredis.Client client;
+        readonly Doredis.Pool pool;
+        public DS(Doredis.Pool pool)
         {
             this.pool = pool;
             client = pool.Get();

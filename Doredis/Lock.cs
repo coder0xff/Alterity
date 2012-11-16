@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace Redis
+namespace Doredis
 {
     internal interface ILockable
     {
@@ -20,18 +20,18 @@ namespace Redis
 
         class ClientEntry : IDisposable
         {
-            public ServiceStack.Redis.RedisClient clientCopy;
-            public ServiceStack.Redis.RedisClient listenClient;
+            public DataStoreShard clientCopy;
+            public DataStoreShard listenClient;
             public ServiceStack.Redis.IRedisSubscription subscription;
             public List<ILockableDataObject> dataObjects = new List<ILockableDataObject>();
             /// <summary>
             /// used to make sure that this client entry doesn't react to its own signals
             /// </summary>
             public Guid guid = Guid.NewGuid();
-            public ClientEntry(ServiceStack.Redis.RedisClient client, Action signalHandler)
+            public ClientEntry(DataStoreShard client, Action signalHandler)
             {
-                this.clientCopy = new ServiceStack.Redis.RedisClient(client.Host); //need a new instance for KeepAliveAll
-                listenClient = new ServiceStack.Redis.RedisClient(client.Host); //need a new instance to listen on
+                this.clientCopy = new DataStoreShard(client.Host); //need a new instance for KeepAliveAll
+                listenClient = new DataStoreShard(client.Host); //need a new instance to listen on
                 subscription = listenClient.CreateSubscription();
                 subscription.OnMessage = (dontCare, clientEntryGuid) => { if (clientEntryGuid != guid.ToString()) signalHandler(); };
             }
@@ -218,7 +218,7 @@ namespace Redis
         }
 
         readonly ManualResetEvent signal;
-        readonly Dictionary<ServiceStack.Redis.RedisClient, ClientEntry> objectsPaths = new Dictionary<ServiceStack.Redis.RedisClient, ClientEntry>();
+        readonly Dictionary<DataStoreShard, ClientEntry> objectsPaths = new Dictionary<DataStoreShard, ClientEntry>();
         /// <summary>
         /// If the server that held the lock goes down, this'll keep all the other servers from waiting forever.
         /// </summary>
@@ -259,7 +259,7 @@ namespace Redis
             {
                 foreach (ILockableDataObject dataObject in dataObjects)
                 {
-                    ServiceStack.Redis.RedisClient dataStore = dataObject.GetDataStore(dataObject.GetAbsolutePath());
+                    DataStoreShard dataStore = dataObject.GetDataStore(dataObject.GetAbsolutePath());
                     if (!objectsPaths.ContainsKey(dataStore)) objectsPaths[dataStore] = new ClientEntry(dataStore, () => signal.Set());
                     objectsPaths[dataStore].Add(dataObject);
                 }

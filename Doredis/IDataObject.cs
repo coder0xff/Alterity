@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Redis
+namespace Doredis
 {
     public interface IDataObject
     {
-        ServiceStack.Redis.RedisClient GetDataStore(string memberAbsolutePath);
+        DataStoreShard GetDataStore(string memberAbsolutePath);
         string GetMemberAbsolutePath(string name, bool ignoreCase);
         string GetAbsolutePath();
     }

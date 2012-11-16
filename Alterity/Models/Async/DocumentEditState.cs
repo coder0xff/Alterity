@@ -9,7 +9,7 @@ namespace Alterity.Models.Async
     {
         dynamic dataObject;
 
-        public static implicit operator DocumentEditState(Redis.DynamicDataObject dataObject)
+        public static implicit operator DocumentEditState(Doredis.DynamicDataObject dataObject)
         {
             DocumentEditState result = new DocumentEditState();
             result.dataObject = dataObject;

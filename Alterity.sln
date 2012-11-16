@@ -5,8 +5,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alterity", "Alterity\Alteri
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alterity.Tests", "Alterity.Tests\Alterity.Tests.csproj", "{F22B4532-2E47-4972-A645-E61AADD55697}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedisClient", "RedisClient\RedisClient.csproj", "{C5AD3591-D4A7-473E-BF2D-8D82EE29D0EE}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Doredis", "Doredis\Doredis.csproj", "{597AF2EC-E238-4A8F-A554-9CAB935728A6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Doredis.Tests", "Doredis.Tests\Doredis.Tests.csproj", "{77101B4D-707C-47C4-9546-AFDB8CF91B81}"
@@ -25,10 +23,6 @@ Global
 		{F22B4532-2E47-4972-A645-E61AADD55697}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F22B4532-2E47-4972-A645-E61AADD55697}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F22B4532-2E47-4972-A645-E61AADD55697}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C5AD3591-D4A7-473E-BF2D-8D82EE29D0EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5AD3591-D4A7-473E-BF2D-8D82EE29D0EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C5AD3591-D4A7-473E-BF2D-8D82EE29D0EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C5AD3591-D4A7-473E-BF2D-8D82EE29D0EE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{597AF2EC-E238-4A8F-A554-9CAB935728A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{597AF2EC-E238-4A8F-A554-9CAB935728A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{597AF2EC-E238-4A8F-A554-9CAB935728A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
