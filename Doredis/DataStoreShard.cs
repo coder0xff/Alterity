@@ -13,7 +13,7 @@ namespace Doredis
         ConcurrentDictionary<Thread, RedisProtocolClient> perThreadClients = new ConcurrentDictionary<Thread, RedisProtocolClient>();
         Queue<RedisProtocolClient> availableClients = new Queue<RedisProtocolClient>();
         RedisProtocolClient subscribeListener;
-        ConcurrentDictionary<string /*channel name*/, HashSet<Action<string>>> subscriptions;
+        Dictionary<string, HashSet<Action<string>>> subscriptions = new Dictionary<string, HashSet<Action<string>>>;
         string host;
         int port;
 
@@ -98,26 +98,33 @@ namespace Doredis
         internal void Subscribe(string name, Action<string> handler)
         {
             bool sendSubscribeMessage = false;
-            subscriptions.GetOrAdd(name, (string dontCare) => {
-                HashSet<Action<string>> handlerList = new HashSet<Action<string>>();
-                handlerList.Add(handler);
-                sendSubscribeMessage = true;
-                return handlerList;
-            });
+            lock (subscriptions)
+            {
+                if (!subscriptions.ContainsKey(name))
+                {
+                    HashSet<Action<string>> handlerSet = new HashSet<Action<string>>();
+                    handlerSet.Add(handler);
+                    subscriptions[name] = handlerSet;
+                    sendSubscribeMessage = true;
+                }
+            }
             if (sendSubscribeMessage)
                 subscribeListener.Send("subscribe", name);
         }
 
         internal void Unsubscribe(string name, Action<string> handler)
         {
-            HashSet<Action<string>> handlers;
-            if (subscriptions.TryGetValue(name, out handlers))
+            lock (subscriptions)
             {
-                lock (handlers)
+                if (subscriptions.ContainsKey(name))
                 {
-                    handlers.Remove(handler);
-                    if (handlers.Count == 0)
+                    HashSet<Action<string>> handlerSet = subscriptions[name];
+                    handlerSet.Remove(handler);
+                    if (handlerSet.Count == 0)
+                    {
+                        subscriptions.Remove(name);
                         subscribeListener.Send("unsubscribe", name);
+                    }
                 }
             }
         }
