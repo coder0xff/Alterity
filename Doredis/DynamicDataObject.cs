@@ -4,9 +4,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Doredis
 {
-    public abstract class DynamicDataObject : DynamicObject, ILockableDataObject
+    internal abstract class DynamicDataObject : DynamicObject, ILockableDataObject
     {      
-
         protected DynamicDataObject()
         {
         }
@@ -31,19 +30,19 @@ namespace Doredis
             {
                 object result;
                 string memberName = GetMemberAbsolutePath(name, false);
-                DataStoreShard dataStore = GetDataStore(memberName);
-                if (dataStore.Exists(memberName) == 1)
+                IStructuredDataClient dataStore = GetDataStore(memberName);
+                if (dataStore.Exists(memberName))
                 {
-                    switch (dataStore.GetEntryType(memberName))
-                    {
-                        case ServiceStack.Redis.RedisKeyType.List:
-
-                            break;
-                        default:
+//                     switch (dataStore.GetEntryType(memberName))
+//                     {
+//                         case ServiceStack.Redis.RedisKeyType.List:
+// 
+//                             break;
+//                         default:
                             throw new NotImplementedException();
-                    }
+//                     }
                     //there's actually a data object for this
-                    result = SerializationProvider.Deserialize(dataStore.Get(memberName));
+//                    result = dataStore.Get(memberName);
                 }
                 else
                 {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Doredis
 {
-    public interface IDataObject
+    internal interface IDataObject
     {
         DataStoreShard GetDataStore(string memberAbsolutePath);
         string GetMemberAbsolutePath(string name, bool ignoreCase);

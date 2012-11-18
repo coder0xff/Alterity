@@ -57,7 +57,19 @@ namespace Doredis
             : base(info, context) { }
     }
 
-    public class RedisReply
+    [Serializable]
+    public class RequestFailedException : Exception
+    {
+        public RequestFailedException() { }
+        public RequestFailedException(string message) : base(message) { }
+        public RequestFailedException(string message, Exception inner) : base(message, inner) { }
+        protected RequestFailedException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context)
+            : base(info, context) { }
+    }
+
+    class RedisReply
     {
         public RedisReply(bool isError, object data)
         {
@@ -65,11 +77,56 @@ namespace Doredis
             Data = data;
         }
 
+        public bool IsOK { get { return IsError == false && Data.Equals("OK"); } }
+        public bool IsQueued { get { return IsError == false && Data.Equals("QUEUED"); } }
+
         public readonly bool IsError;
         public readonly object Data;
+
+        public T Expect<T>()
+        {
+            if (IsError) throw new RequestFailedException(Data.ToString());
+            try
+            {
+                Type expectedType = typeof(T);
+                if (expectedType == typeof(OkReply))
+                {
+                    if (!IsOK) throw new RequestFailedException("Server is expected to return OK but did not. Data: " + Data.ToString());
+                }
+                else if (expectedType == typeof(QueuedReply))
+                {
+                    if (!IsQueued) throw new RequestFailedException("Server is expected to return QUEUED but did not. Data: " + Data.ToString());
+                }
+                else if (expectedType == typeof(RedisReply))
+                {
+                    return (T)(Object)this;
+                }
+                else if (expectedType == typeof(bool))
+                {
+                    if (Data is string)
+                    {
+                        if ((string)Data != "0" && (string)Data != "1") throw new ReplyFormatException("Expected a string or integer containing a boolean zero or one");
+                        return (T)(Object)((string)Data == "1");
+                    }
+                    else if (Data is long)
+                    {
+                        long asLong = (long)Data;
+                        if (asLong != 0 && asLong != 1) throw new ReplyFormatException("Expected a string or integer containing a boolean zero or one");
+                        return (T)(Object)(asLong == 1);
+                    }
+                }
+                else if (expectedType.IsIntegral())
+                    return (T)(Object)System.Convert.ToInt64(Data);
+                return (T)Data;
+            }
+            catch (InvalidCastException)
+            {
+                throw new ReplyFormatException("The returned value of type\"" + Data.GetType().ToString() + "\" could not be cast to the type \"" + typeof(T).ToString() + "\"");
+            }
+        }
     }
 
-    public class RedisProtocolClient : IDisposable
+    class RedisProtocolClient : IStructuredDataClient, IDisposable
     {
         const string LineEnd = "\r\n";
         const byte Utf8Plus = 0x2B;
@@ -81,7 +138,7 @@ namespace Doredis
         const byte Utf8LineFeed = 0x0A;
 
         TcpClient tcpClient;
-        public readonly bool Connected;
+        internal readonly bool Connected;
         NetworkStream tcpClientStream;
         IAsyncResult readAsyncResult;
         ConcurrentQueue<byte[]> replyStreamBlockQueue = new ConcurrentQueue<byte[]>();
@@ -89,7 +146,7 @@ namespace Doredis
         byte[] replyStreamBlock;
         int replyStreamBlockPosition;
 
-        private RedisProtocolClient(string host, int port, int millisecondsTimeout)
+        RedisProtocolClient(string host, int port, int millisecondsTimeout)
         {
             tcpClient = new TcpClient();
             if (tcpClient.Connect(host, port, millisecondsTimeout))
@@ -100,7 +157,7 @@ namespace Doredis
             }
         }
 
-        public static RedisProtocolClient Create(string host, int port = 6379, int millisecondsTimeout = 1000)
+        internal static RedisProtocolClient Create(string host, int port = 6379, int millisecondsTimeout = 1000)
         {
             RedisProtocolClient result = new RedisProtocolClient(host, port, millisecondsTimeout);
             if (!result.Connected)
@@ -114,54 +171,106 @@ namespace Doredis
             readAsyncResult = tcpClientStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
         }
 
-        internal void Send(params object[] arguments)
+        static void EncodeRawArgumentsToStream(System.IO.Stream stream, byte[][] arguments)
         {
-            byte[][] encodedArguments = new byte[arguments.Length][];
+            if (arguments.Length == 0) return;
+            stream.WriteUtf8("*", arguments.Length.ToString(), LineEnd);
+            for (int argumentIndex = 0; argumentIndex < arguments.Length; argumentIndex++)
+            {
+                stream.WriteUtf8("$", arguments[argumentIndex].Length.ToString(), LineEnd);
+                stream.Write(arguments[argumentIndex], 0, arguments[argumentIndex].Length);
+                stream.WriteUtf8(LineEnd);
+            }
+        }
+
+        static byte[] EncodeRawArguments(byte[][] arguments)
+        {
+            var stream = new System.IO.MemoryStream();
+            EncodeRawArgumentsToStream(stream, arguments);
+            return stream.ToArray();
+        }
+
+        static byte[][] SerializeArguments(object[] arguments)
+        {
+            byte[][] serializedArguments = new byte[arguments.Length][];
             for (int index = 0; index < arguments.Length; index++)
             {
-                if (arguments.GetType() == typeof(byte[]))
-                    encodedArguments[index] = (byte[])arguments[index];
-                else if (arguments.GetType() == typeof(string))
-                    encodedArguments[index] = Encoding.UTF8.GetBytes((string)arguments[index]);
+                object argument = arguments[index];
+                Type argumentType = argument.GetType();
+                if (argumentType == typeof(byte[]))
+                    serializedArguments[index] = (byte[])argument;
+                else if (argumentType == typeof(string))
+                    serializedArguments[index] = Encoding.UTF8.GetBytes((string)argument);
+                else if (argumentType.IsIntegral())
+                    serializedArguments[index] = Encoding.UTF8.GetBytes(argument.ToString());
                 else
-                    encodedArguments[index] = SerializationProvider.Serialize(arguments[index]);
+                    serializedArguments[index] = SerializationProvider.Serialize(argument);
             }
-            SendArguments(encodedArguments);
+            return serializedArguments;
         }
 
-        public void SendArguments(byte[][] arguments)
+        static void EncodePackedObjectsToStream(System.IO.Stream stream, object[] arguments)
         {
-            var tempStream = new System.IO.MemoryStream();
-            if (arguments.Length == 0) return;
-            tempStream.WriteUtf8("*", arguments.Length.ToString(), LineEnd);
-            for (int argumentIndex = 0; argumentIndex < arguments.Length; argumentIndex++)
-            {
-                tempStream.WriteUtf8("$", arguments[argumentIndex].Length.ToString(), LineEnd);
-                tempStream.Write(arguments[argumentIndex], 0, arguments[argumentIndex].Length);
-                tempStream.WriteUtf8(LineEnd);
-            }
-            tempStream.Seek(0, System.IO.SeekOrigin.Begin);
-            byte[] buffer = tempStream.ToArray();
+            EncodeRawArgumentsToStream(stream, SerializeArguments(arguments));
+        }
+
+        static byte[] EncodePackedObjects(object[] arguments)
+        {
+            return EncodeRawArguments(SerializeArguments(arguments));
+        }
+
+        static byte[] EncodeObjects(params object[] arguments)
+        {
+            return EncodeObjects(arguments);
+        }
+
+        internal static void EncodeCommandWithPackedObjectsToStream(System.IO.Stream stream, string command, object[] arguments)
+        {
+            object[] commandAndArguments = new object[arguments.Length + 1];
+            commandAndArguments[0] = command;
+            arguments.CopyTo(commandAndArguments, 1);
+            EncodePackedObjectsToStream(stream, commandAndArguments);
+        }
+
+        internal static byte[] EncodeCommandWithPackedObjects(string command, object[] arguments)
+        {
+            object[] commandAndArguments = new object[arguments.Length + 1];
+            commandAndArguments[0] = command;
+            arguments.CopyTo(commandAndArguments, 1);
+            return EncodePackedObjects(commandAndArguments);
+        }
+
+        internal static void EncodeCommandWithObjectsToStream(System.IO.Stream stream, string command, params object[] arguments)
+        {
+            EncodeCommandWithPackedObjectsToStream(stream, command, arguments);
+        }
+
+        internal static byte[] EncodeCommandWithObjects(string command, params object[] arguments)
+        {
+            return EncodeCommandWithPackedObjects(command, arguments);
+        }
+
+        internal void SendPackedObjects(object[] arguments)
+        {
+            byte[] buffer = EncodeObjects(arguments).ToArray();
             tcpClientStream.WriteAsync(buffer, 0, buffer.Length);
         }
 
-        public void SendCommand(string command, byte[][] arguments)
+        void SendRaw(byte[][] arguments)
         {
-            if (command.Contains(LineEnd)) throw new RequestFormatException("commands may not contain carriage returns");
-            var tempStream = new System.IO.MemoryStream();
-            if (arguments.Length == 0) return;
-            tempStream.WriteUtf8("*", (arguments.Length + 1).ToString(), LineEnd);
-            tempStream.WriteUtf8("$", command.Length.ToString(), LineEnd, command, LineEnd);
-            for (int argumentIndex = 0; argumentIndex < arguments.Length; argumentIndex++)
-            {
-                tempStream.WriteUtf8("$", arguments[argumentIndex].Length.ToString(), LineEnd);
-                tempStream.Write(arguments[argumentIndex], 0, arguments[argumentIndex].Length);
-                tempStream.WriteUtf8(LineEnd);
-            }
-            tempStream.Seek(0, System.IO.SeekOrigin.Begin);
-            byte[] buffer = tempStream.ToArray();
-            tcpClientStream.WriteAsync(buffer, 0, buffer.Length);
+            SendRaw(EncodeRawArguments(arguments).ToArray());
         }
+
+        internal void SendRaw(byte[] data)
+        {
+            tcpClientStream.WriteAsync(data, 0, data.Length);
+        }
+
+        internal void SendCommandWithPackedObjects(string command, object[] arguments)
+        {
+            SendRaw(EncodeCommandWithPackedObjects(command, arguments));
+        }
+
 
         void ReadCallback(IAsyncResult result)
         {
@@ -185,7 +294,7 @@ namespace Doredis
             BeginRead();
         }
 
-        public bool WaitForData(bool noTimeout = false)
+        internal bool WaitForData(bool noTimeout = false)
         {
             while (replyStreamBlock == null || replyStreamBlockPosition >= replyStreamBlock.Length)
             {
@@ -227,7 +336,7 @@ namespace Doredis
             return result;
         }
 
-        public RedisReply ReadReply()
+        internal RedisReply ReadReply()
         {
             while (true)
             {
@@ -303,6 +412,22 @@ namespace Doredis
         {
             tcpClient.Close();
             replyStreamBlockReady.Dispose();
+        }
+
+        void IStructuredDataClient.SendRaw(byte[] data)
+        {
+            throw new NotImplementedException();
+        }
+
+        RedisReply IStructuredDataClient.ReadReply()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Command(string command, object[] arguments, Action<RedisReply> resultHandler)
+        {
+            SendCommandWithPackedObjects(command, arguments);
+            resultHandler(ReadReply());
         }
     }
 }

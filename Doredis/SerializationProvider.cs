@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Doredis
 {
-    internal class SerializationProvider
+    class SerializationProvider
     {
         private static BinaryFormatter formatter = new BinaryFormatter();
 

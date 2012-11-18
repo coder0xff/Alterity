@@ -2,7 +2,7 @@
 using System.Dynamic;
 namespace Doredis
 {
-    internal class Scope : DynamicDataObject
+    class Scope : DynamicDataObject
     {
         readonly string absolutePath;
         readonly DataStoreShard dataStore;
@@ -37,7 +37,7 @@ namespace Doredis
         {
             if (binder.ReturnType == typeof(Int32))
             {
-                dataStore.Set<Int32>(absolutePath, (Int32)value);
+                dataStore.Set(absolutePath, (Int32)value);
                 return true;
             }
             return base.TrySetMember(binder, value);

@@ -8,12 +8,13 @@ using System.Threading.Tasks;
 
 namespace Doredis
 {
-    class DataStoreShard : IDisposable
+    class DataStoreShard : IStructuredDataClient, IDisposable
     {
         ConcurrentDictionary<Thread, RedisProtocolClient> perThreadClients = new ConcurrentDictionary<Thread, RedisProtocolClient>();
         Queue<RedisProtocolClient> availableClients = new Queue<RedisProtocolClient>();
         RedisProtocolClient subscribeListener;
-        Dictionary<string, HashSet<Action<string>>> subscriptions = new Dictionary<string, HashSet<Action<string>>>;
+        Dictionary<string, HashSet<Action<string>>> subscriptions = new Dictionary<string, HashSet<Action<string>>>();
+        Queue<Action> pendingSubscriptionModifications = new Queue<Action>();
         string host;
         int port;
 
@@ -26,9 +27,38 @@ namespace Doredis
 
         void ListenerLoop()
         {
-            throw new NotImplementedException();
-            subscribeListener.WaitForData(true);
-            subscribeListener.ReadReply();
+            while (true)
+            {
+                lock (subscriptions)
+                {
+                    while (pendingSubscriptionModifications.Count > 0)
+                        pendingSubscriptionModifications.Dequeue()();
+                }
+                try
+                {
+                    subscribeListener.WaitForData(true);
+                    RedisReply[] reply = (RedisReply[])subscribeListener.ReadReply().Data;
+                    string replyType = reply[0].Expect<string>();
+                    if (replyType == "message")
+                    {
+                        string channelName = reply[1].Expect<string>();
+                        string message = reply[2].Expect<string>();
+                        lock (subscriptions)
+                        {
+                            HashSet<Action<string>> channelListeners;
+                            if (subscriptions.TryGetValue(channelName, out channelListeners))
+                            {
+                                foreach (Action<string> channelListener in channelListeners)
+                                    channelListener(message);
+                            }
+                        }
+                    }
+                }
+                catch (ReplyFormatException)
+                {
+
+                }
+            }
         }
 
         /// <summary>
@@ -37,7 +67,7 @@ namespace Doredis
         /// multi-threading problems.
         /// </summary>
         /// <returns></returns>
-        RedisProtocolClient GetThreadClient()
+        internal RedisProtocolClient GetThreadClient()
         {
             return perThreadClients.GetOrAdd(Thread.CurrentThread, (Thread thread) =>
             {
@@ -70,7 +100,7 @@ namespace Doredis
                     return result;
                 }
                 catch (Doredis.FailedToConnectException)
-                {                	
+                {
                     if (attempts == 4)
                         throw;
                 }
@@ -86,7 +116,7 @@ namespace Doredis
             }
         }
 
-        internal void Dispose()
+        public void Dispose()
         {
             subscribeListener.Dispose();
             foreach (var entry in perThreadClients)
@@ -95,38 +125,69 @@ namespace Doredis
                 availableClients.Dequeue().Dispose();
         }
 
-        internal void Subscribe(string name, Action<string> handler)
+        public void SendRaw(byte[] data)
         {
-            bool sendSubscribeMessage = false;
-            lock (subscriptions)
-            {
-                if (!subscriptions.ContainsKey(name))
-                {
-                    HashSet<Action<string>> handlerSet = new HashSet<Action<string>>();
-                    handlerSet.Add(handler);
-                    subscriptions[name] = handlerSet;
-                    sendSubscribeMessage = true;
-                }
-            }
-            if (sendSubscribeMessage)
-                subscribeListener.Send("subscribe", name);
+            GetThreadClient().SendRaw(data);
         }
 
-        internal void Unsubscribe(string name, Action<string> handler)
+        internal void Send(params object[] arguments)
+        {
+            GetThreadClient().SendPackedObjects(arguments);
+        }
+
+        public RedisReply ReadReply()
+        {
+            return GetThreadClient().ReadReply();
+        }
+
+        internal void Subscribe(string channelName, Action<string> handler)
         {
             lock (subscriptions)
             {
-                if (subscriptions.ContainsKey(name))
+                pendingSubscriptionModifications.Enqueue(() =>
                 {
-                    HashSet<Action<string>> handlerSet = subscriptions[name];
-                    handlerSet.Remove(handler);
-                    if (handlerSet.Count == 0)
+                    bool sendSubscribeCommand = false;
+                    if (!subscriptions.ContainsKey(channelName))
                     {
-                        subscriptions.Remove(name);
-                        subscribeListener.Send("unsubscribe", name);
+                        subscriptions[channelName] = new HashSet<Action<string>>();
+                        sendSubscribeCommand = true;
                     }
-                }
+                    HashSet<Action<string>> handlerSet = subscriptions[channelName];
+                    handlerSet.Add(handler);
+                    if (sendSubscribeCommand)
+                        subscribeListener.SendCommandWithPackedObjects("subscribe", new object[] { channelName });
+                });
             }
+        }
+
+        internal void Unsubscribe(string channelName, Action<string> handler)
+        {
+            lock (subscriptions)
+            {
+                pendingSubscriptionModifications.Enqueue(() =>
+                {
+                    if (subscriptions.ContainsKey(channelName))
+                    {
+                        HashSet<Action<string>> handlerSet = subscriptions[channelName];
+                        handlerSet.Remove(handler);
+                        if (handlerSet.Count == 0)
+                        {
+                            subscriptions.Remove(channelName);
+                            subscribeListener.SendCommandWithPackedObjects("unsubscribe", new object[] { channelName });
+                        }
+                    }
+                });
+            }
+        }
+
+        public void SendCommandWithPackedObjects(string command, object[] arguments)
+        {
+            GetThreadClient().SendCommandWithPackedObjects(command, arguments);
+        }
+
+        public void Command(string command, object[] arguments, Action<RedisReply> resultHandler)
+        {
+            GetThreadClient().Command(command, arguments, resultHandler);
         }
     }
 }

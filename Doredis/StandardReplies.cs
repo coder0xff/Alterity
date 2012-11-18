@@ -6,7 +6,17 @@ using System.Threading.Tasks;
 
 namespace Doredis
 {
-    interface ILockableDataObject : ILockable, IDataObject
+    class OkReply
     {
+    }
+
+    class QueuedReply
+    {
+
+    }
+
+    class SubscribedReply
+    {
+
     }
 }
