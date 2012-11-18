@@ -13,12 +13,12 @@ namespace Doredis
             this.dataStore = dataStore;
         }
 
-        public override DataStoreShard GetDataStore(string memberAbsolutePath)
+        internal override DataStoreShard GetDataStore(string memberAbsolutePath)
         {
             return dataStore;
         }
 
-        public override string GetMemberAbsolutePath(string name, bool ignoreCase)
+        internal override string GetMemberAbsolutePath(string name, bool ignoreCase)
         {
             return absolutePath + "." + (ignoreCase ? name.ToLowerInvariant() : name);
         }
@@ -28,7 +28,7 @@ namespace Doredis
             return new Scope(memberAbsolutePath , dataStore);
         }
 
-        public override string GetAbsolutePath()
+        internal override string GetAbsolutePath()
         {
             return absolutePath;
         }

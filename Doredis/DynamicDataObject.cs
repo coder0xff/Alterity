@@ -4,7 +4,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Doredis
 {
-    internal abstract class DynamicDataObject : DynamicObject, ILockableDataObject
+    public abstract class DynamicDataObject : DynamicObject, ILockableDataObject
     {      
         protected DynamicDataObject()
         {
@@ -59,11 +59,14 @@ namespace Doredis
             }
         }
 
-        public abstract DataStoreShard GetDataStore(string memberAbsolutePath);
+        internal abstract DataStoreShard GetDataStore(string memberAbsolutePath);
+        DataStoreShard IDataObject.GetDataStore(string memberAbsolutePath) { return GetDataStore(memberAbsolutePath); }
 
-        public abstract string GetMemberAbsolutePath(string name, bool ignoreCase);
+        internal abstract string GetMemberAbsolutePath(string name, bool ignoreCase);
+        string IDataObject.GetMemberAbsolutePath(string name, bool ignoreCase) { return GetMemberAbsolutePath(name, ignoreCase); }
 
-        public abstract string GetAbsolutePath();
+        internal abstract string GetAbsolutePath();
+        string IDataObject.GetAbsolutePath() { return GetAbsolutePath(); }
 
         // this is not meant to be directly atomic (they are indirectly)
         // it's just a way to keep track of objects that expect a lock

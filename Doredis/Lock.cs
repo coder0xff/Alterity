@@ -14,7 +14,7 @@ namespace Doredis
         Lock GetLock();
     }
 
-    public class Lock
+    public class Lock: IDisposable
     {
         static int keepAliveExpireTime = 10; //if the server that held the lock goes down, this'll keep all the other servers from waiting forever
 
@@ -388,5 +388,11 @@ namespace Doredis
         /// </summary>
         /// <returns></returns>
         public System.Threading.Thread GetRequiredThread() { return requiredThread; }
+
+        public void Dispose()
+        {
+            signal.Dispose();
+            keepAliveTimer.Dispose();
+        }
     }
 }

@@ -1,5 +1,0 @@
-C:\Users\Brent\Dropbox\Alterity\Doredis\obj\Debug\Doredis.csprojResolveAssemblyReference.cache
-C:\Users\Brent\Dropbox\Alterity\Doredis\bin\Debug\Doredis.dll
-C:\Users\Brent\Dropbox\Alterity\Doredis\bin\Debug\Doredis.pdb
-C:\Users\Brent\Dropbox\Alterity\Doredis\obj\Debug\Doredis.dll
-C:\Users\Brent\Dropbox\Alterity\Doredis\obj\Debug\Doredis.pdb
