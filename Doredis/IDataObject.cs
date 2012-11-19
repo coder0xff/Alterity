@@ -8,7 +8,7 @@ namespace Doredis
 {
     internal interface IDataObject
     {
-        DataStoreShard GetDataStore(string memberAbsolutePath);
+        DataStoreShard GetDataStoreShard(string memberAbsolutePath);
         string GetMemberAbsolutePath(string name, bool ignoreCase);
         string GetAbsolutePath();
     }

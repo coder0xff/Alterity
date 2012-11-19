@@ -15,13 +15,11 @@ namespace Doredis
         RedisProtocolClient subscribeListener;
         Dictionary<string, HashSet<Action<string>>> subscriptions = new Dictionary<string, HashSet<Action<string>>>();
         Queue<Action> pendingSubscriptionModifications = new Queue<Action>();
-        string host;
-        int port;
+        System.Net.HostEndPoint endPoint;
 
-        internal DataStoreShard(string host, int port)
+        internal DataStoreShard(System.Net.HostEndPoint endPoint)
         {
-            this.host = host;
-            this.port = port;
+            this.endPoint = endPoint;
             subscribeListener = Allocate();
         }
 
@@ -96,7 +94,7 @@ namespace Doredis
             {
                 try
                 {
-                    result = RedisProtocolClient.Create(host, port);
+                    result = RedisProtocolClient.Create(endPoint.Host, endPoint.Port);
                     return result;
                 }
                 catch (Doredis.FailedToConnectException)

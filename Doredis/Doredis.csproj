@@ -42,12 +42,14 @@
   <ItemGroup>
     <Compile Include="DataStore.cs" />
     <Compile Include="DynamicDataObject.cs" />
+    <Compile Include="HostEndPoint.cs" />
     <Compile Include="IStructuredDataClient.cs" />
     <Compile Include="IStructuredDataAsyncClient.cs" />
     <Compile Include="IDataObject.cs" />
     <Compile Include="ILockableDataObject.cs" />
     <Compile Include="Lock.cs" />
     <Compile Include="DataStoreShard.cs" />
+    <Compile Include="RedisReply.cs" />
     <Compile Include="StandardReplies.cs" />
     <Compile Include="Transaction.cs" />
     <Compile Include="Scope.cs" />

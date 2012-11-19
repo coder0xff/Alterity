@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
 using Alterity.Models;
+using Doredis;
 
 using UserClass = Alterity.Models.User;
 
@@ -30,5 +31,13 @@ namespace Alterity.Controllers
         }
 
         protected void DB(Action action) { EntityMappingContext.Access(action); }
+
+        protected dynamic DS
+        {
+            get
+            {
+                return DataStoreClient.Get();
+            }
+        }
     }
 }

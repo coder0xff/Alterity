@@ -38,7 +38,7 @@ namespace Doredis
 
         internal static bool Exists(this IStructuredDataClient self, string keyName)
         {
-            return self.Command<bool>("EXITS", keyName);
+            return self.Command<bool>("EXISTS", keyName);
         }
 
         internal static void Expire(this IStructuredDataClient self, string keyName, int durationInSeconds)

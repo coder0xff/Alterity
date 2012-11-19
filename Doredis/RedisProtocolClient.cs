@@ -69,63 +69,6 @@ namespace Doredis
             : base(info, context) { }
     }
 
-    class RedisReply
-    {
-        public RedisReply(bool isError, object data)
-        {
-            IsError = isError;
-            Data = data;
-        }
-
-        public bool IsOK { get { return IsError == false && Data.Equals("OK"); } }
-        public bool IsQueued { get { return IsError == false && Data.Equals("QUEUED"); } }
-
-        public readonly bool IsError;
-        public readonly object Data;
-
-        public T Expect<T>()
-        {
-            if (IsError) throw new RequestFailedException(Data.ToString());
-            try
-            {
-                Type expectedType = typeof(T);
-                if (expectedType == typeof(OkReply))
-                {
-                    if (!IsOK) throw new RequestFailedException("Server is expected to return OK but did not. Data: " + Data.ToString());
-                }
-                else if (expectedType == typeof(QueuedReply))
-                {
-                    if (!IsQueued) throw new RequestFailedException("Server is expected to return QUEUED but did not. Data: " + Data.ToString());
-                }
-                else if (expectedType == typeof(RedisReply))
-                {
-                    return (T)(Object)this;
-                }
-                else if (expectedType == typeof(bool))
-                {
-                    if (Data is string)
-                    {
-                        if ((string)Data != "0" && (string)Data != "1") throw new ReplyFormatException("Expected a string or integer containing a boolean zero or one");
-                        return (T)(Object)((string)Data == "1");
-                    }
-                    else if (Data is long)
-                    {
-                        long asLong = (long)Data;
-                        if (asLong != 0 && asLong != 1) throw new ReplyFormatException("Expected a string or integer containing a boolean zero or one");
-                        return (T)(Object)(asLong == 1);
-                    }
-                }
-                else if (expectedType.IsIntegral())
-                    return (T)(Object)System.Convert.ToInt64(Data);
-                return (T)Data;
-            }
-            catch (InvalidCastException)
-            {
-                throw new ReplyFormatException("The returned value of type\"" + Data.GetType().ToString() + "\" could not be cast to the type \"" + typeof(T).ToString() + "\"");
-            }
-        }
-    }
-
     class RedisProtocolClient : IStructuredDataClient, IDisposable
     {
         const string LineEnd = "\r\n";

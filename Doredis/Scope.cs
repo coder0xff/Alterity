@@ -1,11 +1,20 @@
 ﻿using System;
 using System.Dynamic;
+using System.Linq;
+
 namespace Doredis
 {
     class Scope : DynamicDataObject
     {
         readonly string absolutePath;
         readonly DataStoreShard dataStore;
+        static System.Reflection.MethodInfo genericGetMethod;
+
+        static Scope()
+        {
+            genericGetMethod = typeof(IStructuredDataClientExtensions).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic).
+                Where(x => x.Name == "Get" && x.IsGenericMethod).First();
+        }
 
         internal Scope(string absolutePath, DataStoreShard dataStore)
         {
@@ -13,7 +22,7 @@ namespace Doredis
             this.dataStore = dataStore;
         }
 
-        internal override DataStoreShard GetDataStore(string memberAbsolutePath)
+        internal override DataStoreShard GetDataStoreShard(string memberAbsolutePath)
         {
             return dataStore;
         }
@@ -46,12 +55,15 @@ namespace Doredis
         public override bool TryConvert(ConvertBinder binder, out object result)
         {
             result = null;
-            if (binder.ReturnType == typeof(Int32))
+            try
             {
-                result = dataStore.Get<Int32>(absolutePath);
+                result = genericGetMethod.MakeGenericMethod(binder.ReturnType).Invoke(null, new object[] { dataStore, absolutePath });
                 return true;
             }
-            return false;
+            catch (System.Exception)
+            {
+                return false;
+            }
         }
     }
 }

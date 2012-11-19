@@ -7,6 +7,7 @@ using Alterity.Models;
 
 
 using UserClass = Alterity.Models.User;
+using Doredis;
 
 namespace Alterity.Controllers
 {
@@ -36,5 +37,12 @@ namespace Alterity.Controllers
         }
 
         protected void DB(Action action) { EntityMappingContext.Access(action); }
+
+        protected dynamic DS {
+            get
+            {
+                return DataStoreClient.Get();
+            }
+        }
     }
 }

@@ -28,39 +28,20 @@ namespace Doredis
         {
             get
             {
-                object result;
                 string memberName = GetMemberAbsolutePath(name, false);
-                IStructuredDataClient dataStore = GetDataStore(memberName);
-                if (dataStore.Exists(memberName))
-                {
-//                     switch (dataStore.GetEntryType(memberName))
-//                     {
-//                         case ServiceStack.Redis.RedisKeyType.List:
-// 
-//                             break;
-//                         default:
-                            throw new NotImplementedException();
-//                     }
-                    //there's actually a data object for this
-//                    result = dataStore.Get(memberName);
-                }
-                else
-                {
-                    //treat it as another scope
-                    result = CreateScope(memberName);
-                }
-                return result;
+                IStructuredDataClient dataStore = GetDataStoreShard(memberName);
+                return CreateScope(memberName);
             }
             set
             {
                 string memberName = GetMemberAbsolutePath(name, false);
-                DataStoreShard dataStore = GetDataStore(memberName);
-                dataStore.Set(memberName, SerializationProvider.Serialize(value));
+                DataStoreShard dataStore = GetDataStoreShard(memberName);
+                dataStore.Set(memberName, value);
             }
         }
 
-        internal abstract DataStoreShard GetDataStore(string memberAbsolutePath);
-        DataStoreShard IDataObject.GetDataStore(string memberAbsolutePath) { return GetDataStore(memberAbsolutePath); }
+        internal abstract DataStoreShard GetDataStoreShard(string memberAbsolutePath);
+        DataStoreShard IDataObject.GetDataStoreShard(string memberAbsolutePath) { return GetDataStoreShard(memberAbsolutePath); }
 
         internal abstract string GetMemberAbsolutePath(string name, bool ignoreCase);
         string IDataObject.GetMemberAbsolutePath(string name, bool ignoreCase) { return GetMemberAbsolutePath(name, ignoreCase); }

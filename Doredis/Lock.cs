@@ -248,7 +248,7 @@ namespace Doredis
             {
                 foreach (ILockableDataObject dataObject in dataObjects)
                 {
-                    DataStoreShard dataStore = dataObject.GetDataStore(dataObject.GetAbsolutePath());
+                    DataStoreShard dataStore = dataObject.GetDataStoreShard(dataObject.GetAbsolutePath());
                     if (!objectsPaths.ContainsKey(dataStore)) objectsPaths[dataStore] = new ClientEntry(dataStore, (string dontCare) => signal.Set());
                     objectsPaths[dataStore].Add(dataObject);
                 }
