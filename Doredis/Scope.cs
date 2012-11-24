@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Doredis
 {
-    class Scope : DynamicDataObject
+    class Scope : DynamicObject, ILockableDataObject
     {
         readonly string absolutePath;
         readonly DataStoreShard dataStore;
@@ -22,34 +22,42 @@ namespace Doredis
             this.dataStore = dataStore;
         }
 
-        internal override DataStoreShard GetDataStoreShard(string memberAbsolutePath)
+        Scope CreateScope(string memberAbsolutePath)
+        {
+            return new Scope(memberAbsolutePath, dataStore);
+        }
+
+        DataStoreShard IPathObject.GetDataStoreShard(string memberAbsolutePath)
         {
             return dataStore;
         }
 
-        internal override string GetMemberAbsolutePath(string name, bool ignoreCase)
+        string IPathObject.GetMemberAbsolutePath(string name, bool ignoreCase)
         {
             return absolutePath + "." + (ignoreCase ? name.ToLowerInvariant() : name);
         }
 
-        internal override Scope CreateScope(string memberAbsolutePath)
-        {
-            return new Scope(memberAbsolutePath , dataStore);
-        }
-
-        internal override string GetAbsolutePath()
+        string IPathObject.GetAbsolutePath()
         {
             return absolutePath;
         }
 
+        public override bool TryGetMember(GetMemberBinder binder, out object result)
+        {
+            if (this.TryGetStaticallyTypedMember(binder, out result))
+                return true;
+
+            result = ((IPathObject)this).CreateMember(binder.Name, binder.IgnoreCase);
+            return true;
+        }
+
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            if (binder.ReturnType == typeof(Int32))
-            {
-                dataStore.Set(absolutePath, (Int32)value);
+            if (this.TrySetStaticallyTypedMember(binder, value))
                 return true;
-            }
-            return base.TrySetMember(binder, value);
+
+            ((IPathObject)this).AssignMember(binder.Name, binder.IgnoreCase, value);
+            return true;
         }
 
         public override bool TryConvert(ConvertBinder binder, out object result)
@@ -64,6 +72,31 @@ namespace Doredis
             {
                 return false;
             }
+        }
+
+        // this class is not meant to be directly atomic (they are indirectly)
+        // it's just a way to keep track of objects that are locking this class
+        // to be consistent through their use (ie. enumerators)
+        volatile Lock lockObject;
+
+        void ILockable.SetLock(Lock lockObject)
+        {
+            this.lockObject = lockObject;
+        }
+
+        void ILockable.ClearLock()
+        {
+            this.lockObject = null;
+        }
+
+        Lock ILockable.GetLock()
+        {
+            return lockObject;
+        }
+
+        public long Increment()
+        {
+            return dataStore.Increment(absolutePath);
         }
     }
 }

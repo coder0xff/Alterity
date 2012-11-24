@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Doredis
 {
@@ -16,6 +18,7 @@ namespace Doredis
         Dictionary<string, HashSet<Action<string>>> subscriptions = new Dictionary<string, HashSet<Action<string>>>();
         Queue<Action> pendingSubscriptionModifications = new Queue<Action>();
         System.Net.HostEndPoint endPoint;
+        HashSet<string> cachedScriptSHA1s = new HashSet<string>();
 
         internal DataStoreShard(System.Net.HostEndPoint endPoint)
         {
@@ -181,6 +184,82 @@ namespace Doredis
         public void SendCommandWithPackedObjects(string command, object[] arguments)
         {
             GetThreadClient().SendCommandWithPackedObjects(command, arguments);
+        }
+
+        T Command<T>(string command, object[] arguments)
+        {
+            T result = default(T);
+            Command(command, arguments, _ => result = _.Expect<T>());
+            return result;
+        }
+
+        public DelegateType CreateScript<DelegateType>(string scriptText)
+        {
+            string scriptSha1 = scriptText.Utf8Sha1Hash();
+            lock (cachedScriptSHA1s)
+            {
+                if (!cachedScriptSHA1s.Contains(scriptSha1))
+                    cachedScriptSHA1s.Add(this.Command<string>("script", "load", scriptText));
+            }
+
+            MethodInfo delegateInfo = DelegateInfo<DelegateType>();
+            ParameterInfo[] parameterInfos = delegateInfo.GetParameters();
+            int keyCount = parameterInfos.Count(_ => _.ParameterType == typeof(IDataObject));
+            Type returnType = delegateInfo.ReturnType;
+            if (returnType == typeof(void))
+            {
+                MethodInfo Command_Method = GetType().GetMethod("Command", new Type[] { typeof(string), typeof(object[]), typeof(Action<RedisReply>) });
+                Action<RedisReply> nullReplyExpector = (RedisReply dontCare) => { };
+                List<ParameterExpression> incomingParameters = new List<ParameterExpression>();
+                Expression evalshaParameterPackExpression = ParameterPackExpression(scriptSha1, parameterInfos, incomingParameters);
+                Expression<DelegateType> lambda = Expression.Lambda<DelegateType>(
+                    Expression.Call(Expression.Constant(this, typeof(DataStoreShard)), Command_Method, Expression.Constant("evalsha"), evalshaParameterPackExpression, Expression.Constant(nullReplyExpector)),
+                    incomingParameters);
+                return lambda.Compile();
+            }
+            else
+            {
+                MethodInfo Command_Method = GetType().GetMethod("Command", BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(returnType);
+                List<ParameterExpression> incomingParameters = new List<ParameterExpression>();
+                Expression evalshaParameterPackExpression = ParameterPackExpression(scriptSha1, parameterInfos, incomingParameters);
+                Expression<DelegateType> lambda = Expression.Lambda<DelegateType>(
+                    Expression.Call(Expression.Constant(this, typeof(DataStoreShard)), Command_Method, Expression.Constant("evalsha"), evalshaParameterPackExpression),
+                    incomingParameters);
+                return lambda.Compile();
+            }
+        }
+
+        private static MethodInfo DelegateInfo<DelegateType>()
+        {
+            return typeof(DelegateType).GetMethod("Invoke");
+        }
+
+        private static Expression ParameterPackExpression(string scriptSha1, ParameterInfo[] parameterInfos, List<ParameterExpression> incomingParameters)
+        {
+            Expression parameterPackExpression;
+            MethodInfo IPathObject_GetAbsolutePath_Method = typeof(IPathObject).GetMethod("GetAbsolutePath");
+            List<Expression> keyParameters = new List<Expression>();
+            List<Expression> passThroughParameters = new List<Expression>();
+            foreach (System.Reflection.ParameterInfo parameterInfo in parameterInfos)
+            {
+                ParameterExpression incomingParameter = Expression.Parameter(parameterInfo.ParameterType);
+                incomingParameters.Add(incomingParameter);
+                if (parameterInfo.ParameterType == typeof(IDataObject))
+                {
+                    keyParameters.Add(Expression.Convert(Expression.Call(Expression.Convert(incomingParameter, typeof(IPathObject)), IPathObject_GetAbsolutePath_Method), typeof(Object)));
+                }
+                else
+                {
+                    passThroughParameters.Add(Expression.Convert(incomingParameter, typeof(Object)));
+                }
+            }
+            List<Expression> allOutgoingParameters = new List<Expression>();
+            allOutgoingParameters.Add(Expression.Constant(scriptSha1, typeof(Object)));
+            allOutgoingParameters.Add(Expression.Constant(keyParameters.Count, typeof(Object)));
+            allOutgoingParameters.AddRange(keyParameters);
+            allOutgoingParameters.AddRange(passThroughParameters);
+            parameterPackExpression = Expression.NewArrayInit(typeof(Object), allOutgoingParameters.ToArray());
+            return parameterPackExpression;
         }
 
         public void Command(string command, object[] arguments, Action<RedisReply> resultHandler)

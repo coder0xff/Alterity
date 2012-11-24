@@ -64,8 +64,10 @@ namespace Doredis
                 }
                 else if (expectedType.IsIntegral())
                 {
+                    if (Data == null)
+                        return default(T);
                     if (Data.GetType().IsIntegral())
-                        return (T)(Object)System.Convert.ToInt64(Data);
+                        return (T)(Object)System.Convert.ChangeType(Data, typeof(T));
                     else if (Data is byte[])
                     {
                         //redis stores integers as strings!

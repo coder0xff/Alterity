@@ -1,4 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Doredis
 {
@@ -16,6 +19,14 @@ namespace Doredis
                 "^" + Regex.Escape(wildcard).Replace(@"\*", ".*").Replace(@"\?", ".") + "$",
                 RegexOptions.IgnoreCase | RegexOptions.Singleline
             ).IsMatch(str);
+        }
+
+        public static string Utf8Sha1Hash(this string str)
+        {
+            SHA1 hash = SHA1CryptoServiceProvider.Create();
+            byte[] plainTextBytes = Encoding.UTF8.GetBytes(str);
+            byte[] hashBytes = hash.ComputeHash(plainTextBytes);
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         }
     }
 }

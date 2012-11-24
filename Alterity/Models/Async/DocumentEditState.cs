@@ -9,7 +9,7 @@ namespace Alterity.Models.Async
     {
         dynamic dataObject;
 
-        public static implicit operator DocumentEditState(Doredis.DynamicDataObject dataObject)
+        public static implicit operator DocumentEditState(System.Dynamic.DynamicObject dataObject)
         {
             DocumentEditState result = new DocumentEditState();
             result.dataObject = dataObject;
@@ -23,5 +23,7 @@ namespace Alterity.Models.Async
                 return dataObject.ClientStates;
             }
         }
+
+        
     }
 }

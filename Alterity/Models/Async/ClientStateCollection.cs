@@ -9,7 +9,7 @@ namespace Alterity.Models.Async
     {
         dynamic dataObject;
 
-        public static implicit operator ClientStateCollection(Doredis.DynamicDataObject dataObject)
+        public static implicit operator ClientStateCollection(System.Dynamic.DynamicObject dataObject)
         {
             ClientStateCollection result = new ClientStateCollection();
             result.dataObject = dataObject;

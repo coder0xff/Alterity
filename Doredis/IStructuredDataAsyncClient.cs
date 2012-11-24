@@ -42,6 +42,7 @@ namespace Doredis
         {
             self.Command("PUBLISH", new object[] { channelName, message }, resultHandler);
         }
+
         public static void Set(this IStructuredDataAsyncClient self, string keyName, object value, Action<RedisReply> resultHandler = null)
         {
             self.Command("SET", new object[] { keyName, value }, resultHandler);

@@ -335,6 +335,7 @@ namespace Doredis
         byte[] ReadReplyBulk()
         {
             int byteCount = (int)ReadReplyInteger();
+            if (byteCount == -1) return null;
             byte[] result = ReadReplyBytes(byteCount);
             ReadReplyTextLine();
             return result;

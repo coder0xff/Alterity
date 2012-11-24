@@ -10,10 +10,10 @@ namespace Alterity.Models.Async
 {
     public class HunkMergerThing
     {
-        public virtual Document Document { get; set; }
-        public virtual List<ClientState> ClientStates { get; set; }
-        internal void ReceiveHunks(User user, int clientUpdateStamp, int serverUpdateStamp, Hunk[] hunks)
+        internal void ReceiveHunks(Document document, User user, int clientUpdateStamp, int serverUpdateStamp, Hunk[] hunks)
         {
+            DocumentEditStateCollection documentEditStates = DataStoreClient.Get();
+            DocumentEditState documentEditState = documentEditStates[document];
 
         }
     }

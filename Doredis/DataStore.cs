@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Dynamic;
 
 namespace Doredis
 {
-    public class DataStore : DynamicDataObject
+    public class DataStore : DynamicObject, IPathObject
     {
         class ShardCollection
         {
@@ -31,24 +32,41 @@ namespace Doredis
             shards = new ShardCollection(shardLocations);
         }
 
-        internal override DataStoreShard GetDataStoreShard(string memberAbsolutePath)
+        DataStoreShard IPathObject.GetDataStoreShard(string memberAbsolutePath)
         {
             return shards.SelectShard(memberAbsolutePath.Split(new char[] { '.' })[0].GetHashCode());
         }
 
-        internal override string GetMemberAbsolutePath(string name, bool ignoreCase)
+        string IPathObject.GetMemberAbsolutePath(string name, bool ignoreCase)
         {
-            return name;
+            return ignoreCase ? name.ToLowerInvariant() : name;
         }
 
-        internal override Scope CreateScope(string memberName)
+        public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            return new Scope(memberName, GetDataStoreShard(memberName));
+            result = ((IPathObject)this).CreateMember(binder.Name, binder.IgnoreCase);
+            return true;
         }
 
-        internal override string GetAbsolutePath()
+        public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            throw new InvalidOperationException();
+            ((IPathObject)this).AssignMember(binder.Name, binder.IgnoreCase, value);
+            return true;
+       }
+
+        Scope CreateScope(string memberName)
+        {
+            return new Scope(memberName, ((IPathObject)this).GetDataStoreShard(memberName));
+        }
+
+        string IPathObject.GetAbsolutePath()
+        {
+            throw new InvalidOperationException("The top level data store object cannot be assigned to.");
+        }
+
+        public void CreateScriptTest()
+        {
+            throw new NotImplementedException();
         }
     }
 }

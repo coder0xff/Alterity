@@ -393,6 +393,10 @@
       <Project>{597af2ec-e238-4a8f-a554-9cab935728a6}</Project>
       <Name>Doredis</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FastDelegate\FastDelegate.csproj">
+      <Project>{df14bfd1-226c-4975-b8e9-0ef0a9b1de37}</Project>
+      <Name>FastDelegate</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

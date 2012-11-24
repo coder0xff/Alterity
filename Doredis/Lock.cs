@@ -80,9 +80,10 @@ namespace Doredis
                 {
                     for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
                     {
-                        ILockableDataObject dataObject = dataObjects[dataObjectIndex];
+                        int dataObjectIndexCopy = dataObjectIndex;
+                        ILockableDataObject dataObject = dataObjects[dataObjectIndexCopy];
                         string lockCountPath = GetLockCountPath(dataObject);
-                        trans.Decrement(lockCountPath, _ => result[dataObjectIndex] = _.Expect<long>() == 0);
+                        trans.Decrement(lockCountPath, _ => result[dataObjectIndexCopy] = _.Expect<long>() == 0);
                     }
                 });
 
@@ -151,9 +152,10 @@ namespace Doredis
                         }
                         else
                         {
-                            trans.Get(atomicLockPath, r => successes[dataObjectIndex] = isNewLock[dataObjectIndex] = r.Expect<long>() == 0);
+                            int dataObjectIndexCopy = dataObjectIndex;
+                            trans.Get(atomicLockPath, r => successes[dataObjectIndexCopy] = isNewLock[dataObjectIndexCopy] = r.Expect<long>() == 0);
                             trans.Set(atomicLockPath, 1, r => r.Expect<OkReply>());
-                            trans.Expire(atomicLockPath, Lock.keepAliveExpireTime, r => r.Expect<OkReply>());
+                            trans.Expire(atomicLockPath, Lock.keepAliveExpireTime, r => { if (r.Expect<long>() != 1) throw new RequestFailedException(); });
                         }
                     }
                 });
@@ -208,10 +210,7 @@ namespace Doredis
 
         readonly ManualResetEvent signal;
         readonly Dictionary<DataStoreShard, ClientEntry> objectsPaths = new Dictionary<DataStoreShard, ClientEntry>();
-        /// <summary>
-        /// If the server that held the lock goes down, this'll keep all the other servers from waiting forever.
-        /// </summary>
-        readonly Timer deadlockBreakingTimer;
+
         readonly Thread requiredThread;
         bool isWaiting;
         Object syncRoot;
@@ -219,23 +218,27 @@ namespace Doredis
         bool succeeded;
         Timer keepAliveTimer;
 
-        internal static bool On(IDataObject dataObject, Action action)
+        public static bool On(object dataObject, Action action)
         {
             return On(dataObject, Timeout.Infinite, action);
         }
 
-        internal static bool On(IDataObject dataObject, int timeoutMilliseconds, Action action)
+        public static bool On(object dataObject, int timeoutMilliseconds, Action action)
         {
-            return On(new IDataObject[] { dataObject }, timeoutMilliseconds, action);
+            return On(new object[] { dataObject }, timeoutMilliseconds, action);
         }
 
-        internal static bool On(IDataObject[] dataObjects, int timeoutMilliseconds, Action action)
+        public static bool On(object[] dataObjects, int timeoutMilliseconds, Action action)
         {
             return (new Lock(dataObjects, timeoutMilliseconds, action)).succeeded;
         }
 
-        Lock(IDataObject[] dataObjects, int timeoutMilliseconds, Action action)
+        Lock(object[] dataObjects, int timeoutMilliseconds, Action action)
         {
+            foreach (object dataObject in dataObjects)
+                if (!(dataObject is IPathObject))
+                    throw new ArgumentException("All the objects must be dynamic objects created by Doredis");
+
             requiredThread = System.Threading.Thread.CurrentThread;
             succeeded = false;
             hasLock = false;
@@ -243,7 +246,6 @@ namespace Doredis
             syncRoot = 0; //just a boxed dummy value
             signal = new ManualResetEvent(true);
             Timer timeoutTimer = new Timer(_ => Fail(), null, timeoutMilliseconds, Timeout.Infinite);
-            deadlockBreakingTimer = new Timer(_ => signal.Set(), null, keepAliveExpireTime * 1000, keepAliveExpireTime * 1000);
             try
             {
                 foreach (ILockableDataObject dataObject in dataObjects)
@@ -262,11 +264,9 @@ namespace Doredis
                             signal.Reset();
                             if (isWaiting)
                             {
-                                deadlockBreakingTimer.Change(keepAliveExpireTime * 1000, keepAliveExpireTime * 1000);
                                 hasLock = TryAttainLock();
                                 if (hasLock)
                                 {
-                                    deadlockBreakingTimer.Dispose();
                                     isWaiting = false;
                                 }
                             }
@@ -294,7 +294,9 @@ namespace Doredis
                             }
                         }
                     }
-                    signal.WaitOne();
+                    //if the server that held the lock goes down, this'll prevent all the others from waiting forever
+                    //eventually, the lock will expire
+                    signal.WaitOne(keepAliveExpireTime * 1000);
                 }
             }
             finally
@@ -305,7 +307,6 @@ namespace Doredis
                 }
                 timeoutTimer.Dispose();
                 signal.Dispose();
-                deadlockBreakingTimer.Dispose();
             }
         }
 
