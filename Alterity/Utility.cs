@@ -1,26 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
 using System.ComponentModel;
-using System.Reflection;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Web.Mvc;
 using System.Web.Mvc.Html;
-
-public static class Utility
-{
-    public static Int32 CombineHashCodes(params Object[] objects)
-    {
-        int result = 17;
-        foreach (Object item in objects)
-        {
-            result = result * 31 + item.GetHashCode();
-        }
-        return result;
-    }
-}
-
 
 namespace Alterity.Extensions
 {

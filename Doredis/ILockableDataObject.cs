@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Doredis
 {
-    interface ILockableDataObject : ILockable, IPathObject
+    interface ILockableDataObject : ILockable, IDataObject
     {
     }
 }

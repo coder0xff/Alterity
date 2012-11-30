@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace Doredis
 {
-    internal static class IPathObjectExtensions
+    internal static class IDataObjectExtensions
     {
-        internal static object CreateMember(this IPathObject self, string name, bool ignoreCase)
+        internal static object CreateMember(this IDataObject self, string name, bool ignoreCase)
         {
             string memberAbsolutePath = self.GetMemberAbsolutePath(name, ignoreCase);
             DataStoreShard dataStore = self.GetDataStoreShard(memberAbsolutePath);
             return new Scope(memberAbsolutePath, dataStore);
         }
 
-        internal static void AssignMember(this IPathObject self, string name, bool ignoreCase, object value)
+        internal static void AssignMember(this IDataObject self, string name, bool ignoreCase, object value)
         {
             string memberAbsolutePath = self.GetMemberAbsolutePath(name, false);
             DataStoreShard dataStore = self.GetDataStoreShard(memberAbsolutePath);

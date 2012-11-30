@@ -54,10 +54,13 @@ namespace Doredis
         {
             List<byte[]> compiledCommands;
             List<Action<RedisReply>> resultDispatchers;
-            public TransactionAsyncClient(List<byte[]> compiledCommands, List<Action<RedisReply>> resultDispatchers)
+            IStructuredDataClient client;
+
+            public TransactionAsyncClient(IStructuredDataClient client, List<byte[]> compiledCommands, List<Action<RedisReply>> resultDispatchers)
             {
                 this.compiledCommands = compiledCommands;
                 this.resultDispatchers = resultDispatchers;
+                this.client = client;
             }
 
             public void SendCommandWithPackedObjects(string command, object[] arguments)
@@ -83,6 +86,16 @@ namespace Doredis
             {
                 compiledCommands = null;
             }
+
+            public DelegateType CreateScript<DelegateType>(string scriptText)
+            {
+                return client.CreateScript<DelegateType>(scriptText);
+            }
+
+            public System.Net.HostEndPoint EndPoint
+            {
+                get { return client.EndPoint; }
+            }
         }
 
         List<byte[]> compiledCommands = new List<byte[]>();
@@ -94,7 +107,7 @@ namespace Doredis
         internal Transaction(IStructuredDataClient client, Action<ITransactionClient> transactionBuilder)
         {
             this.client = client;
-            using (TransactionAsyncClient builder = new TransactionAsyncClient(compiledCommands, resultDispatchers))
+            using (TransactionAsyncClient builder = new TransactionAsyncClient(client, compiledCommands, resultDispatchers))
             {
                 transactionBuilder(builder);
             }

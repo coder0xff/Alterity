@@ -27,17 +27,17 @@ namespace Doredis
             return new Scope(memberAbsolutePath, dataStore);
         }
 
-        DataStoreShard IPathObject.GetDataStoreShard(string memberAbsolutePath)
+        DataStoreShard IDataObject.GetDataStoreShard(string memberAbsolutePath)
         {
             return dataStore;
         }
 
-        string IPathObject.GetMemberAbsolutePath(string name, bool ignoreCase)
+        string IDataObject.GetMemberAbsolutePath(string name, bool ignoreCase)
         {
             return absolutePath + "." + (ignoreCase ? name.ToLowerInvariant() : name);
         }
 
-        string IPathObject.GetAbsolutePath()
+        string IDataObject.GetAbsolutePath()
         {
             return absolutePath;
         }
@@ -47,7 +47,7 @@ namespace Doredis
             if (this.TryGetStaticallyTypedMember(binder, out result))
                 return true;
 
-            result = ((IPathObject)this).CreateMember(binder.Name, binder.IgnoreCase);
+            result = ((IDataObject)this).CreateMember(binder.Name, binder.IgnoreCase);
             return true;
         }
 
@@ -56,7 +56,7 @@ namespace Doredis
             if (this.TrySetStaticallyTypedMember(binder, value))
                 return true;
 
-            ((IPathObject)this).AssignMember(binder.Name, binder.IgnoreCase, value);
+            ((IDataObject)this).AssignMember(binder.Name, binder.IgnoreCase, value);
             return true;
         }
 
@@ -97,6 +97,12 @@ namespace Doredis
         public long Increment()
         {
             return dataStore.Increment(absolutePath);
+        }
+
+
+        System.Net.HostEndPoint IDataObject.EndPoint
+        {
+            get { return ((IDataObject)this).GetDataStoreShard("").EndPoint; }
         }
     }
 }

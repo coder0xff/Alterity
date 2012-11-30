@@ -22,5 +22,32 @@
             }
             return new HostEndPoint(hostName, port);
         }
+
+        public static bool operator ==(HostEndPoint lhs, HostEndPoint rhs)
+        {
+            return lhs.Host == rhs.Host && lhs.Port == rhs.Port;
+        }
+
+        public static bool operator !=(HostEndPoint lhs, HostEndPoint rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if ((Object)this == obj) return true;
+            if (obj is HostEndPoint)
+            {
+                HostEndPoint other = (HostEndPoint)obj;
+                if (other == null) return false;
+                return this == other;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Utility.CombineHashCodes(Host, Port);
+        }
     }
 }

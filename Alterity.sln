@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Doredis.Tests", "Doredis.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastDelegate", "FastDelegate\FastDelegate.csproj", "{DF14BFD1-226C-4975-B8E9-0EF0A9B1DE37}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "Utility\Utility.csproj", "{2FBC94C6-EFE1-4B09-8E17-E6C9E5957D15}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{DF14BFD1-226C-4975-B8E9-0EF0A9B1DE37}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF14BFD1-226C-4975-B8E9-0EF0A9B1DE37}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF14BFD1-226C-4975-B8E9-0EF0A9B1DE37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FBC94C6-EFE1-4B09-8E17-E6C9E5957D15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FBC94C6-EFE1-4B09-8E17-E6C9E5957D15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FBC94C6-EFE1-4B09-8E17-E6C9E5957D15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FBC94C6-EFE1-4B09-8E17-E6C9E5957D15}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

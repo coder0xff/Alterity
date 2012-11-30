@@ -10,6 +10,7 @@ namespace Doredis
     {
         void SendRaw(byte[] data);
         RedisReply ReadReply();
+        DelegateType CreateScriptWithReturn<DelegateType>(string scriptText);
     }
 
     static class IStructuredDataClientExtensions

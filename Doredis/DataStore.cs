@@ -7,7 +7,7 @@ using System.Dynamic;
 
 namespace Doredis
 {
-    public class DataStore : DynamicObject, IPathObject
+    public class DataStore : DynamicObject, IDataObject
     {
         class ShardCollection
         {
@@ -32,34 +32,34 @@ namespace Doredis
             shards = new ShardCollection(shardLocations);
         }
 
-        DataStoreShard IPathObject.GetDataStoreShard(string memberAbsolutePath)
+        DataStoreShard IDataObject.GetDataStoreShard(string memberAbsolutePath)
         {
             return shards.SelectShard(memberAbsolutePath.Split(new char[] { '.' })[0].GetHashCode());
         }
 
-        string IPathObject.GetMemberAbsolutePath(string name, bool ignoreCase)
+        string IDataObject.GetMemberAbsolutePath(string name, bool ignoreCase)
         {
             return ignoreCase ? name.ToLowerInvariant() : name;
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            result = ((IPathObject)this).CreateMember(binder.Name, binder.IgnoreCase);
+            result = ((IDataObject)this).CreateMember(binder.Name, binder.IgnoreCase);
             return true;
         }
 
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            ((IPathObject)this).AssignMember(binder.Name, binder.IgnoreCase, value);
+            ((IDataObject)this).AssignMember(binder.Name, binder.IgnoreCase, value);
             return true;
        }
 
         Scope CreateScope(string memberName)
         {
-            return new Scope(memberName, ((IPathObject)this).GetDataStoreShard(memberName));
+            return new Scope(memberName, ((IDataObject)this).GetDataStoreShard(memberName));
         }
 
-        string IPathObject.GetAbsolutePath()
+        string IDataObject.GetAbsolutePath()
         {
             throw new InvalidOperationException("The top level data store object cannot be assigned to.");
         }
@@ -67,6 +67,14 @@ namespace Doredis
         public void CreateScriptTest()
         {
             throw new NotImplementedException();
+        }
+
+        System.Net.HostEndPoint IDataObject.EndPoint
+        {
+            get
+            {
+                throw new InvalidOperationException("The top level data store object does not have an endpoint.");
+            }
         }
     }
 }

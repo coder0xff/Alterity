@@ -236,7 +236,7 @@ namespace Doredis
         Lock(object[] dataObjects, int timeoutMilliseconds, Action action)
         {
             foreach (object dataObject in dataObjects)
-                if (!(dataObject is IPathObject))
+                if (!(dataObject is IDataObject))
                     throw new ArgumentException("All the objects must be dynamic objects created by Doredis");
 
             requiredThread = System.Threading.Thread.CurrentThread;

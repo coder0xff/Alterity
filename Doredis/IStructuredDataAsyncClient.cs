@@ -9,6 +9,8 @@ namespace Doredis
     internal interface IStructuredDataAsyncClient
     {
         void Command(string command, object[] arguments, Action<RedisReply> resultHandler = null);
+        DelegateType CreateScript<DelegateType>(string scriptText);
+        System.Net.HostEndPoint EndPoint { get; }
     }
 
     static class IStructuredDataCommandSenderExtensions
