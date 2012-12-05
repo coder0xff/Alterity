@@ -69,7 +69,7 @@ namespace Doredis
                 resultDispatchers.Add(null);
             }
 
-            public void Command(string command, object[] arguments, Action<RedisReply> resultHandler = null)
+            public void CommandWithPackedParameters(string command, object[] arguments, Action<RedisReply> resultHandler = null)
             {
                 if (compiledCommands == null)
                     throw new CompletedOrCancelledTransactionException("TransactionBuilder");
@@ -85,11 +85,6 @@ namespace Doredis
             public void Dispose()
             {
                 compiledCommands = null;
-            }
-
-            public DelegateType CreateScript<DelegateType>(string scriptText)
-            {
-                return client.CreateScript<DelegateType>(scriptText);
             }
 
             public System.Net.HostEndPoint EndPoint

@@ -10,16 +10,27 @@ namespace Doredis
     {
         void SendRaw(byte[] data);
         RedisReply ReadReply();
-        DelegateType CreateScriptWithReturn<DelegateType>(string scriptText);
     }
 
     static class IStructuredDataClientExtensions
     {
-        internal static T Command<T>(this IStructuredDataClient self, string command, params object[] arguments)
+        internal static T Command<T>(this IStructuredDataClient self, string command, params object[] parameters)
         {
             T result = default(T);
-            self.Command(command, arguments, _ => result = _.Expect<T>());
+            self.CommandWithPackedParameters(command, parameters, _ => result = _.Expect<T>());
             return result;
+        }
+
+        internal static Object CommandWithPackedParameters(this IStructuredDataClient self, Type expectedType, string command, object[] parameters)
+        {
+            Object result = null;
+            self.CommandWithPackedParameters(command, parameters, _ => result = _.Expect(expectedType));
+            return result;
+        }
+
+        internal static Object Command(this IStructuredDataClient self, Type expectedType, string command, params object[] parameters)
+        {
+            return CommandWithPackedParameters(self, expectedType, command, parameters);
         }
 
         internal static long Decrement(this IStructuredDataClient self, string keyName)
@@ -34,7 +45,7 @@ namespace Doredis
 
         internal static RedisReply[] Exec(this IStructuredDataClient self)
         {
-            return self.Command<RedisReply[]>("EXEC");
+            return self.Command<RedisReply[]>("exec");
         }
 
         internal static bool Exists(this IStructuredDataClient self, string keyName)
@@ -92,7 +103,7 @@ namespace Doredis
         internal static void Watch(this IStructuredDataClient self, string[] keyNames)
         {
             if (keyNames.Length > 0)
-                self.Command("WATCH", keyNames, _ => _.Expect<OkReply>());
+                self.CommandWithPackedParameters("WATCH", keyNames, _ => _.Expect<OkReply>());
         }
 
     }

@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alterity.Tests", "Alterity.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Doredis", "Doredis\Doredis.csproj", "{597AF2EC-E238-4A8F-A554-9CAB935728A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Doredis.Tests", "Doredis.Tests\Doredis.Tests.csproj", "{77101B4D-707C-47C4-9546-AFDB8CF91B81}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastDelegate", "FastDelegate\FastDelegate.csproj", "{DF14BFD1-226C-4975-B8E9-0EF0A9B1DE37}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "Utility\Utility.csproj", "{2FBC94C6-EFE1-4B09-8E17-E6C9E5957D15}"
@@ -31,10 +29,6 @@ Global
 		{597AF2EC-E238-4A8F-A554-9CAB935728A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{597AF2EC-E238-4A8F-A554-9CAB935728A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{597AF2EC-E238-4A8F-A554-9CAB935728A6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{77101B4D-707C-47C4-9546-AFDB8CF91B81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{77101B4D-707C-47C4-9546-AFDB8CF91B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{77101B4D-707C-47C4-9546-AFDB8CF91B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{77101B4D-707C-47C4-9546-AFDB8CF91B81}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DF14BFD1-226C-4975-B8E9-0EF0A9B1DE37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DF14BFD1-226C-4975-B8E9-0EF0A9B1DE37}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF14BFD1-226C-4975-B8E9-0EF0A9B1DE37}.Release|Any CPU.ActiveCfg = Release|Any CPU

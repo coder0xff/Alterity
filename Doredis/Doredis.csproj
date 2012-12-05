@@ -31,6 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -43,7 +44,6 @@
     <Compile Include="DataStore.cs" />
     <Compile Include="HostEndPoint.cs" />
     <Compile Include="IDataObject.cs" />
-    <Compile Include="IDataObjectExtensions.cs" />
     <Compile Include="IStructuredDataClient.cs" />
     <Compile Include="IStructuredDataAsyncClient.cs" />
     <Compile Include="ILockableDataObject.cs" />
@@ -53,6 +53,7 @@
     <Compile Include="DynamicObjectExtensions.cs" />
     <Compile Include="Script.cs" />
     <Compile Include="StandardReplies.cs" />
+    <Compile Include="Tests.cs" />
     <Compile Include="Transaction.cs" />
     <Compile Include="Scope.cs" />
     <Compile Include="SerializationProvider.cs" />

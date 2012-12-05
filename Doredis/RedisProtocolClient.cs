@@ -71,18 +71,6 @@ namespace Doredis
             : base(info, context) { }
     }
 
-    [Serializable]
-    public class KeysDoNotResideAtEndpointException : Exception
-    {
-        public KeysDoNotResideAtEndpointException() { }
-        public KeysDoNotResideAtEndpointException(string message) : base(message) { }
-        public KeysDoNotResideAtEndpointException(string message, Exception inner) : base(message, inner) { }
-        protected KeysDoNotResideAtEndpointException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
-    }
-
     class RedisProtocolClient : IStructuredDataClient, IDisposable
     {
         const string LineEnd = "\r\n";
@@ -389,7 +377,7 @@ namespace Doredis
             throw new NotImplementedException();
         }
 
-        public void Command(string command, object[] arguments, Action<RedisReply> resultHandler)
+        public void CommandWithPackedParameters(string command, object[] arguments, Action<RedisReply> resultHandler)
         {
             SendCommandWithPackedObjects(command, arguments);
             resultHandler(ReadReply());
@@ -411,7 +399,7 @@ namespace Doredis
             if (keys.Length > 0)
             {
                 string absolutePath = keys[0].GetAbsolutePath();
-                if (keys[0].EndPoint != targetEndPoint) throw new KeysDoNotResideAtEndpointException("The first key, \"" + absolutePath + "\" does not reside on the target end point.");
+                if (keys[0].EndPoint != targetEndPoint) throw new KeysDoNotHaveIdenticalRootScope("The first key, \"" + absolutePath + "\" does not reside on the target end point.");
                 int firstPeriodIndex = absolutePath.IndexOf('.');
                 string rootScope = firstPeriodIndex == -1 ? absolutePath : absolutePath.Substring(0, firstPeriodIndex);
                 foreach (IDataObject key in keys)
@@ -419,7 +407,7 @@ namespace Doredis
                     absolutePath = key.GetAbsolutePath();
                     firstPeriodIndex = absolutePath.IndexOf('.');
                     string compareRootScope = firstPeriodIndex == -1 ? absolutePath : absolutePath.Substring(0, firstPeriodIndex);
-                    if (compareRootScope != rootScope) throw new KeysDoNotResideAtEndpointException("The key \"" + absolutePath + "\" does not have the same root scope as the first key, which has the root scope \"" + rootScope + "\"");
+                    if (compareRootScope != rootScope) throw new KeysDoNotHaveIdenticalRootScope("The key \"" + absolutePath + "\" does not have the same root scope as the first key, which has the root scope \"" + rootScope + "\"");
                 }
             }
             return throughAllOutgoinParametersArray;
@@ -461,21 +449,6 @@ namespace Doredis
             allOutgoingParameters.AddRange(passThroughParameters);
             parameterPackExpression = Expression.NewArrayInit(typeof(Object), allOutgoingParameters.ToArray());
             return ParameterValidateAndPassThroughExpression(ref targetEndPoint, parameterPackExpression, IDataObjectParameters);
-        }
-
-        public DelegateType CreateScript<DelegateType>(string scriptText)
-        {
-            string scriptSha1 = scriptText.Utf8Sha1Hash();
-            this.Command<string>("script", "load", scriptText);
-            return GenerateScriptLambda<DelegateType>(scriptSha1);
-        }
-
-        public DelegateType CreateScriptWithReturn<DelegateType>(string scriptText)
-        {
-            string scriptSha1 = scriptText.Utf8Sha1Hash();
-            this.Command<string>("script", "load", scriptText);
-
-            return GenerateScriptLambdaWithReturn<DelegateType>(scriptSha1);
         }
 
         internal DelegateType GenerateScriptLambda<DelegateType>(string scriptSha1)

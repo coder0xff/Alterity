@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Doredis.Tests
+namespace Doredis
 {
     [TestClass]
-    public class DataStoreTest
+    public class Tests
     {
         [TestMethod]
         public void DynamicObjectTest()
@@ -59,6 +59,17 @@ namespace Doredis.Tests
             }
             int finalValue = ds.A;
             Assert.AreEqual(threadCount * 1000 * 2, finalValue);
+        }
+   
+        [TestMethod]
+        public void ScriptingTest()
+        {
+            Doredis.DataStore ds = new Doredis.DataStore(new System.Net.HostEndPoint[] { new System.Net.HostEndPoint("localhost", 6379) });
+            Func<IDataObject, int, int> script = ds.CreateScript<Func<IDataObject, int, int>>("return redis.call('get', KEYS[1]) + ARGV[1]");
+            dynamic dds = ds;
+            dds.A = 3;
+            int result = script(dds.A, 5);
+            Assert.AreEqual(8, result);
         }
     }
 }

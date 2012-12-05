@@ -18,8 +18,6 @@ namespace Doredis
         Dictionary<string, HashSet<Action<string>>> subscriptions = new Dictionary<string, HashSet<Action<string>>>();
         Queue<Action> pendingSubscriptionModifications = new Queue<Action>();
         System.Net.HostEndPoint endPoint;
-        HashSet<string> cachedScriptSHA1s = new HashSet<string>();
-
         internal DataStoreShard(System.Net.HostEndPoint endPoint)
         {
             this.endPoint = endPoint;
@@ -189,43 +187,13 @@ namespace Doredis
         T Command<T>(string command, object[] arguments)
         {
             T result = default(T);
-            Command(command, arguments, _ => result = _.Expect<T>());
+            CommandWithPackedParameters(command, arguments, _ => result = _.Expect<T>());
             return result;
         }
 
-        public DelegateType CreateScript<DelegateType>(string scriptText)
+        public void CommandWithPackedParameters(string command, object[] arguments, Action<RedisReply> resultHandler)
         {
-            string scriptSha1 = scriptText.Utf8Sha1Hash();
-            lock (cachedScriptSHA1s)
-            {
-                if (!cachedScriptSHA1s.Contains(scriptSha1))
-                    cachedScriptSHA1s.Add(this.Command<string>("script", "load", scriptText));
-            }
-
-            return GetThreadClient().GenerateScriptLambda<DelegateType>(scriptText);
-        }
-
-
-        public DelegateType CreateScriptWithReturn<DelegateType>(string scriptText)
-        {
-            string scriptSha1 = scriptText.Utf8Sha1Hash();
-            lock (cachedScriptSHA1s)
-            {
-                if (!cachedScriptSHA1s.Contains(scriptSha1))
-                    cachedScriptSHA1s.Add(this.Command<string>("script", "load", scriptText));
-            }
-
-            return GetThreadClient().GenerateScriptLambda<DelegateType>(scriptText);
-        }
-
-        private static MethodInfo DelegateInfo<DelegateType>()
-        {
-            return typeof(DelegateType).GetMethod("Invoke");
-        }
-
-        public void Command(string command, object[] arguments, Action<RedisReply> resultHandler)
-        {
-            GetThreadClient().Command(command, arguments, resultHandler);
+            GetThreadClient().CommandWithPackedParameters(command, arguments, resultHandler);
         }
 
 

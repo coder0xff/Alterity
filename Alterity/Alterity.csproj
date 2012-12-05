@@ -397,6 +397,10 @@
       <Project>{df14bfd1-226c-4975-b8e9-0ef0a9b1de37}</Project>
       <Name>FastDelegate</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Utility\Utility.csproj">
+      <Project>{2fbc94c6-efe1-4b09-8e17-e6c9e5957d15}</Project>
+      <Name>Utility</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
