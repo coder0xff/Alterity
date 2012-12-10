@@ -7,22 +7,22 @@ using System.Threading;
 
 namespace Doredis
 {
-    interface ILockable
-    {
-        void SetLock(Lock lockObject);
-        void ClearLock();
-        Lock GetLock();
-    }
-
     public class Lock: IDisposable
     {
-        static int keepAliveExpireTime = 10; //if the server that held the lock goes down, this'll keep all the other servers from waiting forever
+        const int keepAliveExpireTime = 10; //if the server that held the lock goes down, this'll keep all the other servers from waiting forever
+        readonly static string CreateLockScript = "if redis.call('get', KEYS[1]) == false then redis.call('set', KEYS[1], 0); redis.call('expire', KEYS[1], " + keepAliveExpireTime.ToString() + "); return 1; else return 0; end";
+        readonly static string CreateLockScriptSha1 = CreateLockScript.Utf8Sha1Hash();
+        readonly static string DecrementAndDestroyScript = "if redis.call('get', KEYS[1]) == '1' then redis.call('del', KEYS[1]); return 1; else redis.call('decr', KEYS[1]); return 0; end";
+        readonly static string DecrementAndDestroyScriptSha1 = DecrementAndDestroyScript.Utf8Sha1Hash();
 
         class ClientEntry : IDisposable
         {
+            [ThreadStatic]
+            static HashSet<string> lockedPaths;
+
             DataStoreShard shard;
             Action<string> signalHandler;
-            public List<ILockableDataObject> dataObjects = new List<ILockableDataObject>();
+            public List<IDataObject> dataObjects = new List<IDataObject>();
             /// <summary>
             /// used to make sure that this client entry doesn't react to its own signals
             /// </summary>
@@ -33,20 +33,15 @@ namespace Doredis
                 this.signalHandler = signalHandler;
             }
 
-            public void Add(ILockableDataObject dataObject)
+            public void Add(IDataObject dataObject)
             {
                 shard.Subscribe(dataObject.GetAbsolutePath(), signalHandler);
                 dataObjects.Add(dataObject);
             }
 
-            string GetLockPath(ILockableDataObject dataObject)
+            string GetLockPath(IDataObject dataObject)
             {
                 return dataObject.GetAbsolutePath() + ".__lock__";
-            }
-
-            string GetLockCountPath(ILockableDataObject dataObject)
-            {
-                return dataObject.GetAbsolutePath() + ".__lock_count__";
             }
 
             bool[] AllIndicesTrue()
@@ -57,23 +52,71 @@ namespace Doredis
                 return result;
             }
 
-            void IncrementLockCounts(bool[] forceToOneIndices)
+            bool ThreadHasLockedIDataObject(IDataObject dataObject)
+            {
+                if (lockedPaths == null) lockedPaths = new HashSet<string>();
+                return lockedPaths.Contains(dataObject.GetAbsolutePath());
+            }
+
+            void SetThreadHasLockedIDataObject(IDataObject dataObject)
+            {
+                if (lockedPaths == null) lockedPaths = new HashSet<string>();
+                lockedPaths.Add(dataObject.GetAbsolutePath());
+            }
+
+            void ClearThreadHasLockedIDataObject(IDataObject dataObject)
+            {
+                if (lockedPaths == null) lockedPaths = new HashSet<string>();
+                lockedPaths.Remove(dataObject.GetAbsolutePath());
+            }
+
+            public bool TryCreateLocks(out bool[] createdLocks)
+            {
+                bool success = true;
+                createdLocks = new bool[dataObjects.Count];
+
+                bool[] createdLocksProxy = createdLocks;
+                shard.Transaction(trans =>
+                {
+                    for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
+                    {
+                        IDataObject dataObject = dataObjects[dataObjectIndex];
+                        string atomicLockPath = GetLockPath(dataObject);
+
+                        if (!ThreadHasLockedIDataObject(dataObject))
+                        {
+                            int dataObjectIndexCopy = dataObjectIndex;
+                            trans.ExecuteScript(CreateLockScriptSha1, new string[] { GetLockPath(dataObject) }, r => success &= createdLocksProxy[dataObjectIndexCopy] = r.Expect<bool>());
+                        }
+                    }
+                });
+
+                for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
+                    if (createdLocks[dataObjectIndex]) SetThreadHasLockedIDataObject(dataObjects[dataObjectIndex]);
+
+                if (!success) return false;
+
+                foreach (IDataObject dataObject in dataObjects)
+                    shard.Unsubscribe(dataObject.GetAbsolutePath(), signalHandler);
+
+                IncrementLockCounts();
+                return true;
+            }
+
+            void IncrementLockCounts()
             {
                 shard.Transaction(trans =>
                 {
                     for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
                     {
-                        ILockableDataObject dataObject = dataObjects[dataObjectIndex];
-                        string lockCountPath = GetLockCountPath(dataObject);
-                        if (forceToOneIndices[dataObjectIndex])
-                            trans.Set(lockCountPath, 1, r => r.Expect<OkReply>());
-                        else
-                            trans.Increment(lockCountPath, r => r.Expect<long>());
+                        IDataObject dataObject = dataObjects[dataObjectIndex];
+                        string lockPath = GetLockPath(dataObject);
+                            trans.Increment(lockPath, r => r.Expect<long>());
                     }                    
                 });
             }
 
-            bool[] DecrementLockCounts()
+            bool[] DecrementAndDestroyLocks()
             {
                 bool[] result = new bool[dataObjects.Count];
                 shard.Transaction(trans =>
@@ -81,16 +124,19 @@ namespace Doredis
                     for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
                     {
                         int dataObjectIndexCopy = dataObjectIndex;
-                        ILockableDataObject dataObject = dataObjects[dataObjectIndexCopy];
-                        string lockCountPath = GetLockCountPath(dataObject);
-                        trans.Decrement(lockCountPath, _ => result[dataObjectIndexCopy] = _.Expect<long>() == 0);
+                        IDataObject dataObject = dataObjects[dataObjectIndexCopy];
+                        string lockPath = GetLockPath(dataObject);
+                        trans.ExecuteScript(DecrementAndDestroyScriptSha1, new string[] { lockPath }, _ => result[dataObjectIndexCopy] = _.Expect<bool>());
                     }
                 });
+
+                for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
+                    if (result[dataObjectIndex]) ClearThreadHasLockedIDataObject(dataObjects[dataObjectIndex]);
 
                 return result;
             }
 
-            public void ClearLocks(bool[] markedIndices)
+            public void DestroyLocks(bool[] markedIndices)
             {
                 shard.Transaction(trans =>
                 {
@@ -98,12 +144,15 @@ namespace Doredis
                     {
                         if (markedIndices[dataObjectIndex])
                         {
-                            ILockableDataObject dataObject = dataObjects[dataObjectIndex];
+                            IDataObject dataObject = dataObjects[dataObjectIndex];
                             string atomicLockPath = GetLockPath(dataObject);
-                            trans.Set(atomicLockPath, 0, r => r.Expect<OkReply>());
+                            trans.Delete(atomicLockPath, r => r.Expect<OkReply>());
                         }
                     }
                 });
+
+                for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
+                    ClearThreadHasLockedIDataObject(dataObjects[dataObjectIndex]);
             }
 
             public void SignalUnlocks(bool[] markedIndices)
@@ -114,73 +163,11 @@ namespace Doredis
                     {
                         if (markedIndices[dataObjectIndex])
                         {
-                            ILockableDataObject dataObject = dataObjects[dataObjectIndex];
+                            IDataObject dataObject = dataObjects[dataObjectIndex];
                             trans.Publish(dataObject.GetAbsolutePath(), guid.ToString(), r => r.Expect<int>());
                         }
                     }
                 });
-            }
-
-            public bool TryLockAll(out bool[] neededUnlocks)
-            {
-                bool[] successes = new bool[dataObjects.Count];
-                // make sure we reset the count on new locks, in case a lock was abandoned
-                bool[] isNewLock = new bool[dataObjects.Count];
-                bool canceled = false;
-
-                shard.Transaction(trans =>
-                {
-                    for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
-                    {
-                        ILockableDataObject dataObject = dataObjects[dataObjectIndex];
-                        string atomicLockPath = GetLockPath(dataObject);
-
-                        Lock priorLock = dataObject.GetLock();
-                        if (priorLock != null)
-                        {
-                            if (priorLock.requiredThread == System.Threading.Thread.CurrentThread)
-                            {
-                                // it's already locked on this thread, so automatic success
-                                successes[dataObjectIndex] = true;
-                            }
-                            else
-                            {
-                                // this object is already locally locked, and not by us
-                                // so don't even bother talking to the server
-                                throw trans.Cancel();
-                            }
-                        }
-                        else
-                        {
-                            int dataObjectIndexCopy = dataObjectIndex;
-                            trans.Get(atomicLockPath, r => successes[dataObjectIndexCopy] = isNewLock[dataObjectIndexCopy] = r.Expect<long>() == 0);
-                            trans.Set(atomicLockPath, 1, r => r.Expect<OkReply>());
-                            trans.Expire(atomicLockPath, Lock.keepAliveExpireTime, r => { if (r.Expect<long>() != 1) throw new RequestFailedException(); });
-                        }
-                    }
-                });
-                neededUnlocks = new bool[dataObjects.Count];
-                if (canceled) return false;
-
-                if (!successes.All(_ => _))
-                {
-                    //we didn't succeed overall, but we still have to unlock any that did
-                    neededUnlocks = isNewLock;
-                    ClearLocks(isNewLock);
-                    SignalUnlocks(isNewLock);
-                    return false;
-                }
-                else
-                {
-                    // success
-                    neededUnlocks = new bool[dataObjects.Count];
-                    foreach (ILockableDataObject dataObject in dataObjects)
-                    {
-                        shard.Unsubscribe(dataObject.GetAbsolutePath(), signalHandler);
-                    }
-                    IncrementLockCounts(isNewLock);
-                    return true;
-                }
             }
 
             public void KeepAliveAll()
@@ -197,9 +184,7 @@ namespace Doredis
 
             public bool[] UnlockAll()
             {
-                bool[] trulyUnlocked = DecrementLockCounts();
-                ClearLocks(trulyUnlocked);
-                return trulyUnlocked;
+                return DecrementAndDestroyLocks();
             }
 
             public void Dispose()
@@ -235,78 +220,87 @@ namespace Doredis
 
         Lock(object[] dataObjects, int timeoutMilliseconds, Action action)
         {
-            foreach (object dataObject in dataObjects)
-                if (!(dataObject is IDataObject))
-                    throw new ArgumentException("All the objects must be dynamic objects created by Doredis");
-
             requiredThread = System.Threading.Thread.CurrentThread;
-            succeeded = false;
-            hasLock = false;
-            isWaiting = true;
-            syncRoot = 0; //just a boxed dummy value
-            signal = new ManualResetEvent(true);
-            Timer timeoutTimer = new Timer(_ => Fail(), null, timeoutMilliseconds, Timeout.Infinite);
-            try
+            syncRoot = 0;
+
+            if (dataObjects.Length == 0)
             {
-                foreach (ILockableDataObject dataObject in dataObjects)
+                succeeded = true;
+                hasLock = true;
+                isWaiting = false;
+            }
+            else
+            {
+                ((IDataObject)dataObjects[0]).GetDataStore().UploadScript(CreateLockScript, CreateLockScriptSha1);
+                ((IDataObject)dataObjects[0]).GetDataStore().UploadScript(DecrementAndDestroyScript, DecrementAndDestroyScriptSha1);
+
+                foreach (object dataObject in dataObjects)
+                    if (!(dataObject is IDataObject))
+                        throw new ArgumentException("All the objects must be IDataObjects created by Doredis");
+
+                succeeded = false;
+                hasLock = false;
+                isWaiting = true;
+                signal = new ManualResetEvent(true);
+                Timer timeoutTimer = new Timer(_ => Fail(), null, timeoutMilliseconds, Timeout.Infinite);
+                try
                 {
-                    DataStoreShard dataStore = dataObject.GetDataStoreShard(dataObject.GetAbsolutePath());
-                    if (!objectsPaths.ContainsKey(dataStore)) objectsPaths[dataStore] = new ClientEntry(dataStore, (string dontCare) => signal.Set());
-                    objectsPaths[dataStore].Add(dataObject);
-                }
-                syncRoot = 0;
-                while (true)
-                {
-                    try
+                    foreach (IDataObject dataObject in dataObjects)
                     {
-                        lock (syncRoot)
-                        {
-                            signal.Reset();
-                            if (isWaiting)
-                            {
-                                hasLock = TryAttainLock();
-                                if (hasLock)
-                                {
-                                    isWaiting = false;
-                                }
-                            }
-                            else
-                                break;
-                        }
-                        if (hasLock)
-                        {
-                            foreach (ILockableDataObject dataObject in dataObjects)
-                                dataObject.SetLock(this);
-                            succeeded = true;
-                            action();
-                            foreach (ILockableDataObject dataObject in dataObjects)
-                                dataObject.ClearLock();
-                        }
+                        DataStoreShard dataStore = dataObject.GetDataStoreShard(dataObject.GetAbsolutePath());
+                        if (!objectsPaths.ContainsKey(dataStore)) objectsPaths[dataStore] = new ClientEntry(dataStore, (string dontCare) => signal.Set());
+                        objectsPaths[dataStore].Add(dataObject);
                     }
-                    finally
+                    while (true)
                     {
-                        lock (syncRoot)
+                        try
                         {
+                            lock (syncRoot)
+                            {
+                                signal.Reset();
+                                if (isWaiting)
+                                {
+                                    hasLock = TryLock();
+                                    if (hasLock)
+                                    {
+                                        isWaiting = false;
+                                    }
+                                }
+                                else
+                                    break;
+                            }
                             if (hasLock)
                             {
-                                hasLock = false;
-                                FreeLock();
+                                succeeded = true;
+                                action();
+                                break;
                             }
                         }
+                        finally
+                        {
+                            lock (syncRoot)
+                            {
+                                if (hasLock)
+                                {
+                                    hasLock = false;
+                                    FreeLock();
+                                }
+                            }
+                        }
+                        //if the server that held the lock goes down, this'll prevent all the others from waiting forever
+                        //eventually, the lock will expire
+                        signal.WaitOne(keepAliveExpireTime * 1000);
                     }
-                    //if the server that held the lock goes down, this'll prevent all the others from waiting forever
-                    //eventually, the lock will expire
-                    signal.WaitOne(keepAliveExpireTime * 1000);
                 }
-            }
-            finally
-            {
-                foreach (var entry in objectsPaths)
+                finally
                 {
-                    entry.Value.Dispose();
+                    foreach (var entry in objectsPaths)
+                    {
+                        entry.Value.Dispose();
+                    }
+                    timeoutTimer.Dispose();
+                    signal.Dispose();
                 }
-                timeoutTimer.Dispose();
-                signal.Dispose();
             }
         }
 
@@ -320,7 +314,7 @@ namespace Doredis
             }
         }
 
-        void PreserverLock()
+        void KeepAlive()
         {
             lock (syncRoot)
             {
@@ -334,20 +328,15 @@ namespace Doredis
             }
         }
 
-        bool TryAttainLock()
+        bool TryLock()
         {
             ClientEntry[] clients = objectsPaths.Values.ToArray();
-            bool[] clientSuccessFlags = new bool[objectsPaths.Count];
             for (int tryLockClientIndex = 0; tryLockClientIndex < clients.Length; tryLockClientIndex++)
             {
                 bool[] newLockWasCreatedByUnsuccessfulClient;
-                if (clients[tryLockClientIndex].TryLockAll(out newLockWasCreatedByUnsuccessfulClient))
+                if (!clients[tryLockClientIndex].TryCreateLocks(out newLockWasCreatedByUnsuccessfulClient))
                 {
-                    clientSuccessFlags[tryLockClientIndex] = true;
-                }
-                else
-                {
-                    clients[tryLockClientIndex].ClearLocks(newLockWasCreatedByUnsuccessfulClient);
+                    clients[tryLockClientIndex].DestroyLocks(newLockWasCreatedByUnsuccessfulClient);
                     bool[][] newLockWasCreatedBySuccessfulClient = new bool[tryLockClientIndex][];
                     //these happen in two steps, so that they're all unlocked before signaling occurs
                     for (int rollbackSuccessfulClientsIndex = tryLockClientIndex - 1; rollbackSuccessfulClientsIndex >= 0; rollbackSuccessfulClientsIndex--)
@@ -365,8 +354,8 @@ namespace Doredis
             }
             keepAliveTimer = new Timer(_ =>
             {
-                PreserverLock();
-            }, null, keepAliveExpireTime * 1000 / 2, Timeout.Infinite);
+                KeepAlive();
+            }, null, keepAliveExpireTime * 1000 / 2, keepAliveExpireTime * 1000 / 2);
 
             return true;
         }

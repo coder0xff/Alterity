@@ -29,5 +29,10 @@ namespace Doredis
             DataStoreShard dataStore = self.GetDataStoreShard(memberAbsolutePath);
             dataStore.Set(memberAbsolutePath, value);
         }
+
+        internal static DataStore GetDataStore(this IDataObject self)
+        {
+            return self.GetDataStoreShard("").Owner;
+        }
     }
 }

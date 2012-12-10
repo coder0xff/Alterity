@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Doredis
 {
-    class Scope : DynamicObject, ILockableDataObject
+    class Scope : DynamicObject, IDataObject
     {
         readonly string absolutePath;
         readonly DataStoreShard dataStore;
@@ -74,31 +74,10 @@ namespace Doredis
             }
         }
 
-        // this class is not meant to be directly atomic (they are indirectly)
-        // it's just a way to keep track of objects that are locking this class
-        // to be consistent through their use (ie. enumerators)
-        volatile Lock lockObject;
-
-        void ILockable.SetLock(Lock lockObject)
-        {
-            this.lockObject = lockObject;
-        }
-
-        void ILockable.ClearLock()
-        {
-            this.lockObject = null;
-        }
-
-        Lock ILockable.GetLock()
-        {
-            return lockObject;
-        }
-
         public long Increment()
         {
             return dataStore.Increment(absolutePath);
         }
-
 
         System.Net.HostEndPoint IDataObject.EndPoint
         {

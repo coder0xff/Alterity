@@ -21,6 +21,13 @@ namespace Doredis
             return result;
         }
 
+        internal static T CommandWithPackedParameters<T>(this IStructuredDataClient self, string command, object[] parameters)
+        {
+            T result = default(T);
+            self.CommandWithPackedParameters(command, parameters, _ => result = _.Expect<T>());
+            return result;
+        }
+
         internal static Object CommandWithPackedParameters(this IStructuredDataClient self, Type expectedType, string command, object[] parameters)
         {
             Object result = null;
@@ -106,5 +113,14 @@ namespace Doredis
                 self.CommandWithPackedParameters("WATCH", keyNames, _ => _.Expect<OkReply>());
         }
 
+        internal static T ExecuteScript<T>(this IStructuredDataClient self, string scriptSha1, IDataObject[] keys, Object[] arguments)
+        {
+            List<object> parameters = new List<object>();
+            parameters.Add(scriptSha1);
+            parameters.Add(keys.Length);
+            parameters.AddRange(keys);
+            parameters.AddRange(arguments);
+            return self.CommandWithPackedParameters<T>("EVALSHA", parameters.ToArray());
+        }
     }
 }

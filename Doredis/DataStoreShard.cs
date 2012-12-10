@@ -18,8 +18,11 @@ namespace Doredis
         Dictionary<string, HashSet<Action<string>>> subscriptions = new Dictionary<string, HashSet<Action<string>>>();
         Queue<Action> pendingSubscriptionModifications = new Queue<Action>();
         System.Net.HostEndPoint endPoint;
-        internal DataStoreShard(System.Net.HostEndPoint endPoint)
+        DataStore owner;
+
+        internal DataStoreShard(DataStore owner, System.Net.HostEndPoint endPoint)
         {
+            this.owner = owner;
             this.endPoint = endPoint;
             subscribeListener = Allocate();
         }
@@ -196,10 +199,16 @@ namespace Doredis
             GetThreadClient().CommandWithPackedParameters(command, arguments, resultHandler);
         }
 
+        public void UploadScript(string scriptSource, string sha1 = null)
+        {
+            owner.UploadScript(scriptSource, sha1);
+        }
 
         public System.Net.HostEndPoint EndPoint
         {
             get { return endPoint; }
         }
+
+        public DataStore Owner { get { return owner; } }
     }
 }

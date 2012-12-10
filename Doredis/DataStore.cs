@@ -14,9 +14,9 @@ namespace Doredis
         {
             DataStoreShard[] shards;
 
-            internal ShardCollection(System.Net.HostEndPoint[] shardLocations)
+            internal ShardCollection(DataStore owner, System.Net.HostEndPoint[] shardLocations)
             {
-                shards = shardLocations.Select(x => new DataStoreShard(x)).ToArray();
+                shards = shardLocations.Select(x => new DataStoreShard(owner, x)).ToArray();
             }
 
             internal DataStoreShard SelectShard(Int32 hashCode)
@@ -99,14 +99,16 @@ namespace Doredis
 
         }
 
-        ConcurrentDictionary<ScriptIdentifier, ScriptBindingInformation> scriptCache;
+        ConcurrentSet<string> uploadedScriptHashes;
+        ConcurrentDictionary<ScriptIdentifier, ScriptBindingInformation> boundScripts;
 
         static System.Reflection.MethodInfo executeScriptCallMethodInfo = typeof(DataStore).GetMethod("ExecuteScriptCall", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
         public DataStore(System.Net.HostEndPoint[] shardLocations)
         {
-            shards = new ShardCollection(shardLocations);
-            scriptCache = new ConcurrentDictionary<ScriptIdentifier, ScriptBindingInformation>();
+            shards = new ShardCollection(this, shardLocations);
+            uploadedScriptHashes = new ConcurrentSet<string>();
+            boundScripts = new ConcurrentDictionary<ScriptIdentifier, ScriptBindingInformation>();
         }
 
         DataStoreShard IDataObject.GetDataStoreShard(string memberAbsolutePath)
@@ -185,18 +187,27 @@ namespace Doredis
             }
         }
 
+        internal void UploadScript(string scriptSource, string sha1 = null)
+        {
+            if (sha1 == null) sha1 = scriptSource.Utf8Sha1Hash();
+            if (uploadedScriptHashes.TryAdd(sha1))
+            {
+                foreach (DataStoreShard shard in shards)
+                    shard.Command<string>("SCRIPT", "LOAD", scriptSource);
+            }
+        }
+
         ScriptBindingInformation CreateScriptBinding(ScriptIdentifier scriptIdentifier)
         {
             ScriptBindingInformation scriptBindingInformation = new ScriptBindingInformation(scriptIdentifier.DelegateType, scriptIdentifier.ScriptSource);
-            foreach (DataStoreShard shard in shards)
-                shard.Command<string>("SCRIPT", "LOAD", scriptIdentifier.ScriptSource);
+            UploadScript(scriptIdentifier.ScriptSource, scriptBindingInformation.Sha1);
             return scriptBindingInformation;
         }
 
-        internal DelegateType CreateScript<DelegateType>(string scriptSource)
+        internal DelegateType CreateScriptLambda<DelegateType>(string scriptSource)
         {
             ScriptIdentifier scriptIdentifier = new ScriptIdentifier(scriptSource, typeof(DelegateType));
-            ScriptBindingInformation scriptBindingInformation = scriptCache.GetOrAdd(scriptIdentifier, _ => { return CreateScriptBinding(_);});
+            ScriptBindingInformation scriptBindingInformation = boundScripts.GetOrAdd(scriptIdentifier, _ => { return CreateScriptBinding(_);});
             System.Linq.Expressions.ParameterExpression[] parameterExpressions = 
                 scriptBindingInformation.ParameterTypes.Select(_ => System.Linq.Expressions.Expression.Parameter(_)).ToArray();
             System.Linq.Expressions.Expression expression = System.Linq.Expressions.Expression.Call(

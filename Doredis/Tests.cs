@@ -43,6 +43,7 @@ namespace Doredis
                         ds.A = value;
                         int check = ds.A;
                         Assert.AreEqual(value, check);
+                        System.Diagnostics.Debug.WriteLine("iteration " + count.ToString() + " on thread " + System.Threading.Thread.CurrentThread.ManagedThreadId.ToString());
                     }));
             };
             int threadCount = 1;
@@ -65,10 +66,22 @@ namespace Doredis
         public void ScriptingTest()
         {
             Doredis.DataStore ds = new Doredis.DataStore(new System.Net.HostEndPoint[] { new System.Net.HostEndPoint("localhost", 6379) });
-            Func<IDataObject, int, int> script = ds.CreateScript<Func<IDataObject, int, int>>("return redis.call('get', KEYS[1]) + ARGV[1]");
+            Func<IDataObject, int, int> script = ds.CreateScriptLambda<Func<IDataObject, int, int>>("return redis.call('get', KEYS[1]) + ARGV[1]");
             dynamic dds = ds;
             dds.A = 3;
             int result = script(dds.A, 5);
+            Assert.AreEqual(8, result);
+        }
+
+        [TestMethod]
+        public void ScriptingTest2()
+        {
+            Doredis.DataStore ds = new Doredis.DataStore(new System.Net.HostEndPoint[] { new System.Net.HostEndPoint("localhost", 6379) });
+            Action<IDataObject, int, Action<RedisReply>> script = ds.CreateScriptLambda<Action<IDataObject, int, Action<RedisReply>>>("return redis.call('get', KEYS[1]) + ARGV[1]");
+            dynamic dds = ds;
+            dds.A = 3;
+            int result = 0;
+            script(dds.A, 5, (Action<RedisReply>)(_ => result = _.Expect<int>()));
             Assert.AreEqual(8, result);
         }
     }
