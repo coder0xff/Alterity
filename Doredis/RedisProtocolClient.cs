@@ -93,7 +93,7 @@ namespace Doredis
         NetworkStream tcpClientStream;
         IAsyncResult readAsyncResult;
         ConcurrentQueue<byte[]> replyStreamBlockQueue = new ConcurrentQueue<byte[]>();
-        ManualResetEvent replyStreamBlockReady = new ManualResetEvent(false);
+        internal ManualResetEvent replyStreamBlockReady = new ManualResetEvent(false);
         byte[] replyStreamBlock;
         int replyStreamBlockPosition;
 
@@ -245,6 +245,11 @@ namespace Doredis
             BeginRead();
         }
 
+        internal bool DataIsReady()
+        {
+            return !(replyStreamBlock == null || replyStreamBlockPosition >= replyStreamBlock.Length) || replyStreamBlockQueue.Count > 0;
+        }
+
         internal bool WaitForData(bool noTimeout = false)
         {
             while (replyStreamBlock == null || replyStreamBlockPosition >= replyStreamBlock.Length)
@@ -258,7 +263,10 @@ namespace Doredis
                     if (noTimeout)
                         replyStreamBlockReady.WaitOne();
                     else if (!replyStreamBlockReady.WaitOne(1000))
-                        throw new RequestTimeoutException();
+                    {
+                        if (replyStreamBlockQueue.Count == 0)
+                            throw new RequestTimeoutException();
+                    }
                 }
             }
             return true;

@@ -14,9 +14,11 @@ namespace Doredis
     {
         ConcurrentDictionary<Thread, RedisProtocolClient> perThreadClients = new ConcurrentDictionary<Thread, RedisProtocolClient>();
         Queue<RedisProtocolClient> availableClients = new Queue<RedisProtocolClient>();
-        RedisProtocolClient subscribeListener;
+        RedisProtocolClient subscribeListenerClient;
+        Thread subscribeListenerThread;
         Dictionary<string, HashSet<Action<string>>> subscriptions = new Dictionary<string, HashSet<Action<string>>>();
         Queue<Action> pendingSubscriptionModifications = new Queue<Action>();
+        ManualResetEvent pendingSubscriptionModificationsAdded = new ManualResetEvent(false);
         System.Net.HostEndPoint endPoint;
         DataStore owner;
 
@@ -24,34 +26,41 @@ namespace Doredis
         {
             this.owner = owner;
             this.endPoint = endPoint;
-            subscribeListener = Allocate();
+            subscribeListenerClient = Allocate();
+            subscribeListenerThread = new Thread(() => ListenerLoop());
+            subscribeListenerThread.Start();
         }
 
         void ListenerLoop()
         {
             while (true)
             {
+                if (pendingSubscriptionModifications.Count == 0 || !subscribeListenerClient.DataIsReady())
+                    WaitHandle.WaitAny(new WaitHandle[] { pendingSubscriptionModificationsAdded, subscribeListenerClient.replyStreamBlockReady}, 1000);
                 lock (subscriptions)
                 {
                     while (pendingSubscriptionModifications.Count > 0)
                         pendingSubscriptionModifications.Dequeue()();
+                    pendingSubscriptionModificationsAdded.Reset();
                 }
                 try
                 {
-                    subscribeListener.WaitForData(true);
-                    RedisReply[] reply = (RedisReply[])subscribeListener.ReadReply().Data;
-                    string replyType = reply[0].Expect<string>();
-                    if (replyType == "message")
+                    if (subscribeListenerClient.DataIsReady())
                     {
-                        string channelName = reply[1].Expect<string>();
-                        string message = reply[2].Expect<string>();
-                        lock (subscriptions)
+                        RedisReply[] reply = (RedisReply[])subscribeListenerClient.ReadReply().Data;
+                        string replyType = reply[0].Expect<string>();
+                        if (replyType == "message")
                         {
-                            HashSet<Action<string>> channelListeners;
-                            if (subscriptions.TryGetValue(channelName, out channelListeners))
+                            string channelName = reply[1].Expect<string>();
+                            string message = reply[2].Expect<string>();
+                            lock (subscriptions)
                             {
-                                foreach (Action<string> channelListener in channelListeners)
-                                    channelListener(message);
+                                HashSet<Action<string>> channelListeners;
+                                if (subscriptions.TryGetValue(channelName, out channelListeners))
+                                {
+                                    foreach (Action<string> channelListener in channelListeners)
+                                        channelListener(message);
+                                }
                             }
                         }
                     }
@@ -120,7 +129,7 @@ namespace Doredis
 
         public void Dispose()
         {
-            subscribeListener.Dispose();
+            subscribeListenerClient.Dispose();
             foreach (var entry in perThreadClients)
                 entry.Key.Join();
             while (availableClients.Count > 0)
@@ -157,8 +166,9 @@ namespace Doredis
                     HashSet<Action<string>> handlerSet = subscriptions[channelName];
                     handlerSet.Add(handler);
                     if (sendSubscribeCommand)
-                        subscribeListener.SendCommandWithPackedObjects("subscribe", new object[] { channelName });
+                        subscribeListenerClient.SendCommandWithPackedObjects("subscribe", new object[] { channelName });
                 });
+                pendingSubscriptionModificationsAdded.Set();
             }
         }
 
@@ -175,10 +185,11 @@ namespace Doredis
                         if (handlerSet.Count == 0)
                         {
                             subscriptions.Remove(channelName);
-                            subscribeListener.SendCommandWithPackedObjects("unsubscribe", new object[] { channelName });
+                            subscribeListenerClient.SendCommandWithPackedObjects("unsubscribe", new object[] { channelName });
                         }
                     }
                 });
+                pendingSubscriptionModificationsAdded.Set();
             }
         }
 

@@ -194,7 +194,7 @@ namespace Doredis
         }
 
         readonly ManualResetEvent signal;
-        readonly Dictionary<DataStoreShard, ClientEntry> objectsPaths = new Dictionary<DataStoreShard, ClientEntry>();
+        readonly Dictionary<DataStoreShard, ClientEntry> clientEntries = new Dictionary<DataStoreShard, ClientEntry>();
 
         readonly Thread requiredThread;
         bool isWaiting;
@@ -248,8 +248,9 @@ namespace Doredis
                     foreach (IDataObject dataObject in dataObjects)
                     {
                         DataStoreShard dataStore = dataObject.GetDataStoreShard(dataObject.GetAbsolutePath());
-                        if (!objectsPaths.ContainsKey(dataStore)) objectsPaths[dataStore] = new ClientEntry(dataStore, (string dontCare) => signal.Set());
-                        objectsPaths[dataStore].Add(dataObject);
+                        Action<string> signalHandler = (string dontCare) => { signal.Set(); };
+                        if (!clientEntries.ContainsKey(dataStore)) clientEntries[dataStore] = new ClientEntry(dataStore, signalHandler);
+                        clientEntries[dataStore].Add(dataObject);
                     }
                     while (true)
                     {
@@ -294,7 +295,7 @@ namespace Doredis
                 }
                 finally
                 {
-                    foreach (var entry in objectsPaths)
+                    foreach (var entry in clientEntries)
                     {
                         entry.Value.Dispose();
                     }
@@ -320,7 +321,7 @@ namespace Doredis
             {
                 if (hasLock)
                 {
-                    foreach (var entry in objectsPaths)
+                    foreach (var entry in clientEntries)
                     {
                         entry.Value.KeepAliveAll();
                     }
@@ -330,7 +331,7 @@ namespace Doredis
 
         bool TryLock()
         {
-            ClientEntry[] clients = objectsPaths.Values.ToArray();
+            ClientEntry[] clients = clientEntries.Values.ToArray();
             for (int tryLockClientIndex = 0; tryLockClientIndex < clients.Length; tryLockClientIndex++)
             {
                 bool[] newLockWasCreatedByUnsuccessfulClient;
@@ -365,15 +366,20 @@ namespace Doredis
             lock (syncRoot)
             {
                 keepAliveTimer.Dispose();
-                foreach (var entry in objectsPaths)
+                Dictionary<ClientEntry, bool[]> pathsToSignal = new Dictionary<ClientEntry, bool[]>();
+                foreach (var entry in clientEntries)
                 {
-                    entry.Value.UnlockAll();
+                    pathsToSignal[entry.Value] = entry.Value.UnlockAll();
+                }
+                foreach (var entry in clientEntries)
+                {
+                    entry.Value.SignalUnlocks(pathsToSignal[entry.Value]);
                 }
             }
         }
 
         /// <summary>
-        /// Usefull for operations that depend on a lock to ensure they are
+        /// Useful for operations that depend on a lock to ensure they are
         /// running in the correct thread.
         /// </summary>
         /// <returns></returns>

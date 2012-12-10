@@ -43,10 +43,9 @@ namespace Doredis
                         ds.A = value;
                         int check = ds.A;
                         Assert.AreEqual(value, check);
-                        System.Diagnostics.Debug.WriteLine("iteration " + count.ToString() + " on thread " + System.Threading.Thread.CurrentThread.ManagedThreadId.ToString());
                     }));
             };
-            int threadCount = 1;
+            int threadCount = 10;
             System.Threading.Thread[] workerThreads = new System.Threading.Thread[10];
             for (int threadIndex = 0; threadIndex < threadCount; threadIndex++)
             {
