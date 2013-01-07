@@ -1,0 +1,166 @@
+A directed acyclic multi-graph is constructed. A vertex represents a lock request (locking one or more resources (keys)). An arrow represents the ownership of exactly one resource being transferred from one vertex to another. The graph is oriented downward over time.
+
+KEYS is the array of keys (as strings) to lock
+Guid is a unique ID (as a string) for the requesting process
+
+initialization:
+Delete ".lockKeys"
+
+ACTIVATE_LOCK (takes LOCK_TO_ACTIVATE, the guid of the lock which is being activated, as a local variable) :
+	redis.call('del', '.lockProcPreceding_' .. LOCK_TO_ACTIVATE)
+	redis.call('sunionstore', '.lockKeys', '.lockKeys', '.lockProcKeys_' .. LOCK_TO_ACTIVATE)
+	redis.call('setex', '.lockKeepAlive_' .. LOCK_TO_ACTIVATE, '10', '')
+
+Requesting a lock:
+	guid = ARGV[1]
+	Delete('.lockProcSubsequent_' + guid)
+	Delete('.lockProcPreceding_' + guid)
+	Delete('.lockProcKeys_' + guid)
+	for each (keyName in KEYS) do
+		if ![.lockKeys].Contains(keyName) then
+			Delete('.lockKeyLeaf_' + keyName)
+		end
+		if Exists('.lockKeyLeaf_' + guid)then
+			precedingProcGuid = ['.lockKeyLeaf_' + keyName]
+			['.lockProcPreceding_' + guid].Add(precedingProcGuid)
+			['.lockProcSubsequent_' + precedingProcGuid].Add(guid)
+		end
+		['.lockProcKeys_' + guid].Add(keyName)
+		['.lockKeyLeaf_' + keyName] = guid;
+	end
+	if ['.lockProcPreceding_' + guid].Count == 0 then
+		local LOCK_TO_ACTIVATE = guid
+		ACTIVATE_LOCK
+		return '' //indicates to caller that the lock was acquired immediately
+	else
+		return false //indicates to caller that a signal will be sent when the lock is acquired
+	end
+	
+Requesting a lock (lua):
+	local guid = ARGV[1]
+	redis.call('DEL', '.lockProcSubsequent_' .. guid, '.lockProcPreceding_' .. guid, '.lockProcKeys_' .. guid)
+	for index, keyName in ipairs(KEYS) do
+		if redis.call('SISMEMBER', '.lockKeys', keyName) == 0 then
+			redis.call('DEL', 'lockKeyLeaf_' .. keyName)
+		end
+		if redis.call('EXISTS', '.lockKeyLeaf_' .. guid) == 1 then
+			local precedingProcGuid = redis.call('get', '.lockKeyLeaf_' .. keyName)
+			redis.call('SADD', '.lockProcPreceding_' .. guid, precedingProcGuid)
+			redis.call('SADD', '.lockProcSubsequent_' .. precedingProcGuid, guid)
+		end
+		redis.call('SADD', '.lockProcKeys_' .. guid, keyName)
+		redis.call('SET', '.lockKeyLeaf_' .. keyName, guid)
+	end
+	if redis.call('SCARD', '.lockProcPreceding_' .. guid) == 0
+		local LOCK_TO_ACTIVATE = guid
+		ACTIVATE_LOCK
+		return ''
+	else
+		return false
+	end
+
+Keep alive (client):
+	Expire(".lockKeepAlive_" + guid, 10);
+
+Check for acquire with abandoned:
+	local guid = ARGV[1]
+	local failedProcCount = 0
+	for index, precedingProcGuid in pairs(redis.call('smembers', 'lockProcSubsequent_' .. guid)) do
+	******************** .lockKeepAlive WONT EXIST TILL THE PRECEDING HAS ALREADY STARTED - THIS IS WRONG!!! ********************
+		if redis.call('EXISTS', '.lockKeepAlive_' .. guid) == 0 then
+			failedProcCount = failedProcCount + 1
+		end
+	end
+	if failedProcCount == redis.call('scard', '.lockProcPreceding_' + guid) then
+		local LOCK_TO_ACTIVATE = guid
+		ACTIVATE_LOCK
+		local ABANDONED_KEYS = ''
+		for index, abandonedKey in pairs(redic.call('sinter', '.lockKeys', '.lockProcKeys_' .. guid)) do
+			ABANDONED_KEYS = ABANDONED_KEYS .. abandonedKey .. ' '
+		end	
+		return ABANDONED_KEYS
+	else
+		return false
+	end
+	
+Abort lock (wait timeout expired):
+	local guid = ARGV[1]
+	if ['.lockProcPreceding_' + guid].Count == 0 then
+		return 0
+	else
+		for each (subsequentProcGuid in ['.lockProcSubsequent_' + guid]) do
+			for each (precedingProcGuid in ['.lockProcPreceding_' + guid]) do
+				['.lockProcSubsequent_' + precedingProcGuid].Add(subsequentProcGuid)
+				['.lockProcPreceding_' + subsequentProcGuid].Add(precedingProcGuid)
+			end
+		end
+		for each (precedingProcGuid in ['.lockProcPreceding_' + guid]) do
+			['.lockProcSubsequent_' + precedingProcGuid].Remove(guid)
+		end
+		for each (subsequentProcGuid in ['.lockProcSubsequent_' + guid]) do
+			['.lockProcPreceding_' + subsequentProcGuid].Remove(guid)
+			if ['.lockProcPreceding_' + subsequentProcGuid].Count == 0 then
+				local LOCK_TO_ACTIVATE = subsequentProcGuid
+				ACTIVATE_LOCK
+				Publish('.lockProcSignal_' + subsequentProcGuid, '')
+			end
+		end
+		Delete('.lockProcPreceding_' + guid)
+		Delete('.lockProcSubsequent_' + guid)
+		return 1
+	end
+	
+Abort lock (lua):
+	local guid = ARGV[1]
+	if redis.call('SCARD', '.lockProcPreceding_' .. guid) == 0 then
+		return 0
+	else
+		for index0, subsequentProcGuid in pairs(redis.call('SMEMBERS', '.lockProcSubsequent_' .. guid)) do
+			for index1, precedingProcGuid in pairs(redis.call('SMEMBERS', '.lockProcPreceding_' .. guid)) do
+				redis.call('SADD', '.lockProcSubsequent_' .. precedingProcGuid, subsequentProcGuid)
+				redis.call('SADD', '.lockProcPreceding_' .. subsequentProcGuid, precedingProcGuid)
+			end
+		end
+		for index, precedingProcGuid in pairs(redis.call('SMEMBERS', '.lockProcPreceding_' .. guid)) do
+			redis.call('SREM', '.lockProcSubsequent_' .. precedingProcGuid, guid)
+		end
+		for index, subsequentProcGuid in pairs(redis.call('SMEMBERS', '.lockProcSubsequent_' .. guid)) do
+			redis.call('SREM', '.lockProcPreceding_' .. subsequentProcGuid, guid)
+			if redis.call('SCARD', '.lockProcPreceding_' .. subsequentProcGuid) == 0 then
+				local LOCK_TO_ACTIVATE = subsequentProcGuid
+				ACTIVATE_LOCK
+				redis.call('publish', '.lockProcSignal_' .. subsequentProcGuid, '')
+			end
+		end
+		redis.call('DEL', '.lockProcPreceding_' + guid, '.lockProcSubsequent_' + guid)
+		return 1
+	end
+
+Freeing a lock:
+	guid = ARGV[1]
+	Delete('.lockKeepAlive_' + guid)
+	['.lockKeys'] = ['.lockKeys'] Diff ['.lockProcKeys_' + guid]
+	for each (subsequentProcGuid in ['.lockProcSubsequent_' + guid]) do
+		['.lockProcPreceding_' + subsequentProcGuid].Remove(guid)
+		if ['.lockProcPreceding_' + subsequentProcGuid].Count == 0 then
+			local LOCK_TO_ACTIVATE = subsequentProcGuid
+			ACTIVATE_LOCK
+			redis.call('publish', '.lockProcSignal_' .. subsequentProcGuid, '')
+		end
+	end
+	Delete('.lockProcKeys_' + guid)
+	Delete('.lockProcSubsequent_' + guid)
+	
+Freeing a lock (lua):
+	local guid = ARGV[1]
+	redis.call('del', '.lockKeepAlive_' .. guid)
+	redis.call('sdiffstore', '.lockKeys', '.lockKeys', '.lockProcKeys_' .. guid)
+	for index, subsequentProcGuid in pairs(redis.call('smembers', '.lockProcSubsequent_' .. guid)) do
+		redis.call('srem', '.lockProcPreceding_' .. subsequentProcGuid, guid)
+		if redis.call('scard', '.lockProcPreceding_' .. subsequentProcGuid) == 0 then
+			local LOCK_TO_ACTIVATE = subsequentProcGuid
+			ACTIVATE_LOCK
+			redis.call('publish', '.lockProcSignal_' .. subsequentProcGuid, '')
+		end
+	end
+	redis.call('del', '.lockProcKeys_' .. guid, '.lockProcSubsequent_' .. guid)

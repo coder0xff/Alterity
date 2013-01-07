@@ -1,394 +1,266 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Globalization;
+using System.Runtime.Serialization;
 using System.Threading;
 
 namespace Doredis
 {
-    public class Lock: IDisposable
+    public class Lock : IDisposable
     {
-        const int keepAliveExpireTime = 10; //if the server that held the lock goes down, this'll keep all the other servers from waiting forever
-        readonly static string CreateLockScript = "if redis.call('get', KEYS[1]) == false then redis.call('set', KEYS[1], 0); redis.call('expire', KEYS[1], " + keepAliveExpireTime.ToString() + "); return 1; else return 0; end";
-        readonly static string CreateLockScriptSha1 = CreateLockScript.Utf8Sha1Hash();
-        readonly static string DecrementAndDestroyScript = "if redis.call('get', KEYS[1]) == '1' then redis.call('del', KEYS[1]); return 1; else redis.call('decr', KEYS[1]); return 0; end";
-        readonly static string DecrementAndDestroyScriptSha1 = DecrementAndDestroyScript.Utf8Sha1Hash();
+        private const int KeepAliveExpireTime = 10;
+        //if the server that held the lock goes down, this'll keep all the other servers from waiting forever
 
-        class ClientEntry : IDisposable
+        private static readonly string AcquireLock = @"
+	        redis.call('del', '.lockProcPreceding_' .. LOCK_TO_SIGNAL)
+	        redis.call('sunionstore', '.lockKeys', '.lockKeys', '.lockProcKeys_' .. LOCK_TO_SIGNAL)
+	        redis.call('setex', '.lockKeepAlive_' .. LOCK_TO_SIGNAL, '" + KeepAliveExpireTime.ToString(CultureInfo.InvariantCulture) + @"', ''))
+	        redis.call('publish', '.lockProcSignal_' .. LOCK_TO_SIGNAL, ABANDONED_KEYS)
+        ";
+
+        private static readonly string CheckForAquireWithAbandoned = @"
+	        local guid = ARGV[1]
+	        local failedProcCount = 0
+	        for index, precedingProcGuid in pairs(redis.call('smembers', 'lockProcSubsequent_' .. guid)) do
+		        if redis.call('EXISTS', '.lockKeepAlive_' .. guid) == 0 then
+			        failedProcCount = failedProcCount + 1
+		        end
+	        end
+	        if failedProcCount == redis.call('scard', '.lockProcPreceding_' + guid) then
+		        local LOCK_TO_SIGNAL = guid
+		        local ABANDONED_KEYS = ''
+		        for index, abandonedKey in pairs(redic.call('sinter', '.lockKeys', '.lockProcKeys_' .. guid)) do
+			        ABANDONED_KEYS = ABANDONED_KEYS .. abandonedKey .. ' '
+		        end" +
+		        AcquireLock +
+	        @"end
+        ";
+
+        private const string FreeLockScript = @"
+	        local guid = ARGV[1]
+	        redis.call('del', '.lockKeepAlive_' .. guid)
+	        redis.call('sdiffstore', '.lockKeys', '.lockKeys', '.lockProcKeys_' .. guid)
+	        for index, subsequentProcGuid in pairs(redis.call('smembers', '.lockProcSubsequent_' .. guid)) do
+		        redis.call('srem', '.lockProcPreceding_' .. subsequentProcGuid, guid)
+		        if redis.call('scard', '.lockProcPreceding_' .. subsequentProcGuid) == 0 then
+			        local LOCK_TO_SIGNAL = subsequentProcGuid
+			        local ABANDONED_KEYS = ''
+			        SIGNAL_LOCK()
+		        end
+	        end
+	        redis.call('del', '.lockProcKeys_' .. guid, '.lockProcSubsequent_' .. guid)
+        ";
+
+        private static readonly String RequestLockScript = @"
+	        local guid = ARGV[1]
+	        redis.call('DEL', '.lockProcSubsequent_' .. guid, '.lockProcPreceding_' .. guid, '.lockProcKeys_' .. guid)
+	        for index, keyName in ipairs(KEYS) do
+		        if redis.call('SISMEMBER', '.lockKeys', keyName) == 0 then
+			        redis.call('DEL', 'lockKeyLeaf_' .. keyName)
+		        end
+		        if redis.call('EXISTS', '.lockKeyLeaf_' .. guid) == 1 then
+			        local precedingProcGuid = redis.call('get', '.lockKeyLeaf_' .. keyName)
+			        redis.call('SADD', '.lockProcPreceding_' .. guid, precedingProcGuid)
+			        redis.call('SADD', '.lockProcSubsequent_' .. precedingProcGuid, guid)
+		        end
+		        redis.call('SADD', '.lockProcKeys_' .. guid, keyName)
+		        redis.call('SET', '.lockKeyLeaf_' .. keyName, guid)
+	        end
+	        if redis.call('SCARD', '.lockProcPreceding_' .. guid) == 0
+		        local LOCK_TO_SIGNAL = guid
+		        local ABANDONED_KEYS = ''" +
+                AcquireLock +
+            @"end
+        ";
+
+        private static readonly String AbortLockScript = @"
+	        local guid = ARGV[1]
+	        if redis.call('SCARD', '.lockProcPreceding_' .. guid) == 0 then
+		        return 0
+	        else
+		        for index0, subsequentProcGuid in pairs(redis.call('SMEMBERS', '.lockProcSubsequent_' .. guid)) do
+			        for index1, precedingProcGuid in pairs(redis.call('SMEMBERS', '.lockProcPreceding_' .. guid)) do
+				        redis.call('SADD', '.lockProcSubsequent_' .. precedingProcGuid, subsequentProcGuid)
+				        redis.call('SADD', '.lockProcPreceding_' .. subsequentProcGuid, precedingProcGuid)
+			        end
+		        end
+		        for index, precedingProcGuid in pairs(redis.call('SMEMBERS', '.lockProcPreceding_' .. guid)) do
+			        redis.call('SREM', '.lockProcSubsequent_' .. precedingProcGuid, guid)
+		        end
+		        for index, subsequentProcGuid in pairs(redis.call('SMEMBERS', '.lockProcSubsequent_' .. guid)) do
+			        redis.call('SREM', '.lockProcPreceding_' .. subsequentProcGuid, guid)
+			        if redis.call('SCARD', '.lockProcPreceding_' .. subsequentProcGuid) == 0 then
+				        local LOCK_TO_ACTIVATE = subsequentProcGuid
+				        ACTIVATE_LOCK
+				        redis.call('publish', '.lockProcSignal_' .. subsequentProcGuid, '')
+			        end
+		        end
+		        redis.call('DEL', '.lockProcPreceding_' + guid, '.lockProcSubsequent_' + guid)
+		        return 1
+	        end
+        ";
+
+        private static readonly String CheckForAcquireWithAbandonedScriptSha1 = CheckForAquireWithAbandoned.Utf8Sha1Hash();
+
+        private static readonly String FreeLockScriptSha1 = FreeLockScript.Utf8Sha1Hash();
+
+        private static readonly String RequestLockScriptSha1 = RequestLockScript.Utf8Sha1Hash();
+
+        private static readonly String AbortLockScriptSha1 = AbortLockScript.Utf8Sha1Hash();
+
+        private readonly String _guid;
+        private readonly DataStoreShard _lockConductor;
+        private readonly ManualResetEventSlim _signal;
+        private String[] _abandonedKeys;
+        private DateTime _lastKeepAliveTime;
+        private int _waiting;
+        private bool _success;
+        private readonly Action<string> _signaledHandler;
+
+        public Lock(IList<object> dataObjects, int millisecondsTimeout)
         {
-            [ThreadStatic]
-            static HashSet<string> lockedPaths;
-
-            DataStoreShard shard;
-            Action<string> signalHandler;
-            public List<IDataObject> dataObjects = new List<IDataObject>();
-            /// <summary>
-            /// used to make sure that this client entry doesn't react to its own signals
-            /// </summary>
-            public Guid guid = Guid.NewGuid();
-            public ClientEntry(DataStoreShard shard, Action<string> signalHandler)
+            var objects = new IDataObject[dataObjects.Count];
+            for (int index = 0; index < dataObjects.Count; index++)
             {
-                this.shard = shard;
-                this.signalHandler = signalHandler;
+                var o = dataObjects[index] as IDataObject;
+                if (o != null)
+                    objects[index] = o;
+                else
+                    throw new NonDataObjectException();
             }
+            DataStore dataStore = objects[0].GetDataStore();
+            _lockConductor = dataStore.LockConductorShard();
+            for (int index = 1; index < dataObjects.Count; index++)
+                if (objects[index].GetDataStore() != dataStore)
+                    throw new DifferentDataStoresException();
 
-            public void Add(IDataObject dataObject)
-            {
-                shard.Subscribe(dataObject.GetAbsolutePath(), signalHandler);
-                dataObjects.Add(dataObject);
-            }
-
-            string GetLockPath(IDataObject dataObject)
-            {
-                return dataObject.GetAbsolutePath() + ".__lock__";
-            }
-
-            bool[] AllIndicesTrue()
-            {
-                bool[] result = new bool[dataObjects.Count];
-                for (int index = 0; index < dataObjects.Count; index++)
-                    result[index] = true;
-                return result;
-            }
-
-            bool ThreadHasLockedIDataObject(IDataObject dataObject)
-            {
-                if (lockedPaths == null) lockedPaths = new HashSet<string>();
-                return lockedPaths.Contains(dataObject.GetAbsolutePath());
-            }
-
-            void SetThreadHasLockedIDataObject(IDataObject dataObject)
-            {
-                if (lockedPaths == null) lockedPaths = new HashSet<string>();
-                lockedPaths.Add(dataObject.GetAbsolutePath());
-            }
-
-            void ClearThreadHasLockedIDataObject(IDataObject dataObject)
-            {
-                if (lockedPaths == null) lockedPaths = new HashSet<string>();
-                lockedPaths.Remove(dataObject.GetAbsolutePath());
-            }
-
-            public bool TryCreateLocks(out bool[] createdLocks)
-            {
-                bool success = true;
-                createdLocks = new bool[dataObjects.Count];
-
-                bool[] createdLocksProxy = createdLocks;
-                shard.Transaction(trans =>
+            _guid = Guid.NewGuid().ToString();            
+            _waiting = 1;
+            _success = false;
+            _signal = new ManualResetEventSlim(false);
+            _abandonedKeys = new string[0];
+            _signaledHandler = s =>
                 {
-                    for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
+                    if (Interlocked.CompareExchange(ref _waiting, 0, 1) == 1)
                     {
-                        IDataObject dataObject = dataObjects[dataObjectIndex];
-                        string atomicLockPath = GetLockPath(dataObject);
-
-                        if (!ThreadHasLockedIDataObject(dataObject))
-                        {
-                            int dataObjectIndexCopy = dataObjectIndex;
-                            trans.ExecuteScript(CreateLockScriptSha1, new string[] { GetLockPath(dataObject) }, r => success &= createdLocksProxy[dataObjectIndexCopy] = r.Expect<bool>());
-                        }
+                        _abandonedKeys = s.Split(new[] {' '});
+                        _success = true;
+                        _signal.Set();
                     }
-                });
-
-                for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
-                    if (createdLocks[dataObjectIndex]) SetThreadHasLockedIDataObject(dataObjects[dataObjectIndex]);
-
-                if (!success) return false;
-
-                foreach (IDataObject dataObject in dataObjects)
-                    shard.Unsubscribe(dataObject.GetAbsolutePath(), signalHandler);
-
-                IncrementLockCounts();
-                return true;
-            }
-
-            void IncrementLockCounts()
+                };
+            _lockConductor.Subscribe(".lockProcSignal_" + _guid, _signaledHandler);
+            _lockConductor.UploadScript(RequestLockScript, RequestLockScriptSha1);
+            var lockRequestReply = _lockConductor.ExecuteScript<RedisReply>(scriptSha1, objects, new object[] {_guid});
+            if (!lockRequestReply.IsNill && lockRequestReply.Data is String)
             {
-                shard.Transaction(trans =>
+                //lock acquired immediately
+                _abandonedKeys = (lockRequestReply.Data as String).Split(new[] {' '});
+                _signal.Set();
+            }
+            _signal.WaitOne(millisecondsTimeout);
+            lock (_guid)
+            {
+                if (_success)
                 {
-                    for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
-                    {
-                        IDataObject dataObject = dataObjects[dataObjectIndex];
-                        string lockPath = GetLockPath(dataObject);
-                            trans.Increment(lockPath, r => r.Expect<long>());
-                    }                    
-                });
-            }
-
-            bool[] DecrementAndDestroyLocks()
-            {
-                bool[] result = new bool[dataObjects.Count];
-                shard.Transaction(trans =>
-                {
-                    for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
-                    {
-                        int dataObjectIndexCopy = dataObjectIndex;
-                        IDataObject dataObject = dataObjects[dataObjectIndexCopy];
-                        string lockPath = GetLockPath(dataObject);
-                        trans.ExecuteScript(DecrementAndDestroyScriptSha1, new string[] { lockPath }, _ => result[dataObjectIndexCopy] = _.Expect<bool>());
-                    }
-                });
-
-                for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
-                    if (result[dataObjectIndex]) ClearThreadHasLockedIDataObject(dataObjects[dataObjectIndex]);
-
-                return result;
-            }
-
-            public void DestroyLocks(bool[] markedIndices)
-            {
-                shard.Transaction(trans =>
-                {
-                    for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
-                    {
-                        if (markedIndices[dataObjectIndex])
-                        {
-                            IDataObject dataObject = dataObjects[dataObjectIndex];
-                            string atomicLockPath = GetLockPath(dataObject);
-                            trans.Delete(atomicLockPath, r => r.Expect<OkReply>());
-                        }
-                    }
-                });
-
-                for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
-                    ClearThreadHasLockedIDataObject(dataObjects[dataObjectIndex]);
-            }
-
-            public void SignalUnlocks(bool[] markedIndices)
-            {
-                shard.Transaction(trans => 
-                {
-                    for (int dataObjectIndex = 0; dataObjectIndex < dataObjects.Count; dataObjectIndex++)
-                    {
-                        if (markedIndices[dataObjectIndex])
-                        {
-                            IDataObject dataObject = dataObjects[dataObjectIndex];
-                            trans.Publish(dataObject.GetAbsolutePath(), guid.ToString(), r => r.Expect<int>());
-                        }
-                    }
-                });
-            }
-
-            public void KeepAliveAll()
-            {
-                shard.Transaction(trans =>
-                {
-                    for (int objectPathIndex = 0; objectPathIndex < dataObjects.Count; objectPathIndex++)
-                    {
-                        string objectPath = GetLockPath(dataObjects[objectPathIndex]);
-                        trans.Expire(objectPath, Lock.keepAliveExpireTime);
-                    }
-                });
-            }
-
-            public bool[] UnlockAll()
-            {
-                return DecrementAndDestroyLocks();
-            }
-
-            public void Dispose()
-            {
-                dataObjects.Clear();
-            }
-        }
-
-        readonly ManualResetEvent signal;
-        readonly Dictionary<DataStoreShard, ClientEntry> clientEntries = new Dictionary<DataStoreShard, ClientEntry>();
-
-        readonly Thread requiredThread;
-        bool isWaiting;
-        Object syncRoot;
-        bool hasLock;
-        bool succeeded;
-        Timer keepAliveTimer;
-
-        public static bool On(object dataObject, Action action)
-        {
-            return On(dataObject, Timeout.Infinite, action);
-        }
-
-        public static bool On(object dataObject, int timeoutMilliseconds, Action action)
-        {
-            return On(new object[] { dataObject }, timeoutMilliseconds, action);
-        }
-
-        public static bool On(object[] dataObjects, int timeoutMilliseconds, Action action)
-        {
-            return (new Lock(dataObjects, timeoutMilliseconds, action)).succeeded;
-        }
-
-        Lock(object[] dataObjects, int timeoutMilliseconds, Action action)
-        {
-            requiredThread = System.Threading.Thread.CurrentThread;
-            syncRoot = 0;
-
-            if (dataObjects.Length == 0)
-            {
-                succeeded = true;
-                hasLock = true;
-                isWaiting = false;
-            }
-            else
-            {
-                ((IDataObject)dataObjects[0]).GetDataStore().UploadScript(CreateLockScript, CreateLockScriptSha1);
-                ((IDataObject)dataObjects[0]).GetDataStore().UploadScript(DecrementAndDestroyScript, DecrementAndDestroyScriptSha1);
-
-                foreach (object dataObject in dataObjects)
-                    if (!(dataObject is IDataObject))
-                        throw new ArgumentException("All the objects must be IDataObjects created by Doredis");
-
-                succeeded = false;
-                hasLock = false;
-                isWaiting = true;
-                signal = new ManualResetEvent(true);
-                Timer timeoutTimer = new Timer(_ => Fail(), null, timeoutMilliseconds, Timeout.Infinite);
-                try
-                {
-                    foreach (IDataObject dataObject in dataObjects)
-                    {
-                        DataStoreShard dataStore = dataObject.GetDataStoreShard(dataObject.GetAbsolutePath());
-                        Action<string> signalHandler = (string dontCare) => { signal.Set(); };
-                        if (!clientEntries.ContainsKey(dataStore)) clientEntries[dataStore] = new ClientEntry(dataStore, signalHandler);
-                        clientEntries[dataStore].Add(dataObject);
-                    }
-                    while (true)
-                    {
-                        try
-                        {
-                            lock (syncRoot)
-                            {
-                                signal.Reset();
-                                if (isWaiting)
-                                {
-                                    hasLock = TryLock();
-                                    if (hasLock)
-                                    {
-                                        isWaiting = false;
-                                    }
-                                }
-                                else
-                                    break;
-                            }
-                            if (hasLock)
-                            {
-                                succeeded = true;
-                                action();
-                                break;
-                            }
-                        }
-                        finally
-                        {
-                            lock (syncRoot)
-                            {
-                                if (hasLock)
-                                {
-                                    hasLock = false;
-                                    FreeLock();
-                                }
-                            }
-                        }
-                        //if the server that held the lock goes down, this'll prevent all the others from waiting forever
-                        //eventually, the lock will expire
-                        signal.WaitOne(keepAliveExpireTime * 1000);
-                    }
+                    _lockConductor.Unsubscribe(".lockProcSignal_" + _guid, _signaledHandler);
                 }
-                finally
+                else
                 {
-                    foreach (var entry in clientEntries)
-                    {
-                        entry.Value.Dispose();
-                    }
-                    timeoutTimer.Dispose();
-                    signal.Dispose();
+                    _lockConductor.UploadScript(AbortLockScript, AbortLockScriptSha1);
+                    _lockConductor.ExecuteScript<RedisReply>()
                 }
             }
+            _lastKeepAliveTime = DateTime.Now;
+            if (_abandonedKeys.Length != 0)
+                throw new AbandonedLockException(_abandonedKeys);
+            if (!_success)
+                throw new TimeoutException("The requested keys were not locked within the specified timeout duration.");
         }
-
-        void Fail()
-        {
-            lock (syncRoot)
-            {
-                if (!isWaiting) return;
-                isWaiting = false;
-                signal.Set();
-            }
-        }
-
-        void KeepAlive()
-        {
-            lock (syncRoot)
-            {
-                if (hasLock)
-                {
-                    foreach (var entry in clientEntries)
-                    {
-                        entry.Value.KeepAliveAll();
-                    }
-                }
-            }
-        }
-
-        bool TryLock()
-        {
-            ClientEntry[] clients = clientEntries.Values.ToArray();
-            for (int tryLockClientIndex = 0; tryLockClientIndex < clients.Length; tryLockClientIndex++)
-            {
-                bool[] newLockWasCreatedByUnsuccessfulClient;
-                if (!clients[tryLockClientIndex].TryCreateLocks(out newLockWasCreatedByUnsuccessfulClient))
-                {
-                    clients[tryLockClientIndex].DestroyLocks(newLockWasCreatedByUnsuccessfulClient);
-                    bool[][] newLockWasCreatedBySuccessfulClient = new bool[tryLockClientIndex][];
-                    //these happen in two steps, so that they're all unlocked before signaling occurs
-                    for (int rollbackSuccessfulClientsIndex = tryLockClientIndex - 1; rollbackSuccessfulClientsIndex >= 0; rollbackSuccessfulClientsIndex--)
-                    {
-                        newLockWasCreatedBySuccessfulClient[rollbackSuccessfulClientsIndex] = clients[rollbackSuccessfulClientsIndex].UnlockAll();
-                    }
-
-                    clients[tryLockClientIndex].SignalUnlocks(newLockWasCreatedByUnsuccessfulClient);
-                    for (int signalSuccessfulClientUnlocksIndex = tryLockClientIndex - 1; signalSuccessfulClientUnlocksIndex >= 0; signalSuccessfulClientUnlocksIndex--)
-                    {
-                        clients[signalSuccessfulClientUnlocksIndex].SignalUnlocks(newLockWasCreatedBySuccessfulClient[signalSuccessfulClientUnlocksIndex]);
-                    }
-                    return false;
-                }
-            }
-            keepAliveTimer = new Timer(_ =>
-            {
-                KeepAlive();
-            }, null, keepAliveExpireTime * 1000 / 2, keepAliveExpireTime * 1000 / 2);
-
-            return true;
-        }
-
-        void FreeLock()
-        {
-            lock (syncRoot)
-            {
-                keepAliveTimer.Dispose();
-                Dictionary<ClientEntry, bool[]> pathsToSignal = new Dictionary<ClientEntry, bool[]>();
-                foreach (var entry in clientEntries)
-                {
-                    pathsToSignal[entry.Value] = entry.Value.UnlockAll();
-                }
-                foreach (var entry in clientEntries)
-                {
-                    entry.Value.SignalUnlocks(pathsToSignal[entry.Value]);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Useful for operations that depend on a lock to ensure they are
-        /// running in the correct thread.
-        /// </summary>
-        /// <returns></returns>
-        public System.Threading.Thread GetRequiredThread() { return requiredThread; }
 
         public void Dispose()
         {
-            signal.Dispose();
-            keepAliveTimer.Dispose();
+            if (_success)
+            _lockConductor.UploadScript(FreeLockScript, scriptSha1);
+            _lockConductor.ExecuteScript<RedisReply>(FreeLockScriptSha1, new IDataObject[0], new object[] {guid});
+            _signal.Dispose();
+        }
+
+        public void KeepAlive()
+        {
+            if (!((DateTime.Now - _lastKeepAliveTime).TotalSeconds > KeepAliveExpireTime/2)) return;
+            _lockConductor.UploadScript(CheckForAquireWithAbandoned, CheckForAcquireWithAbandonedScriptSha1);
+            _lockConductor.ExecuteScript<RedisReply>(CheckForAcquireWithAbandonedScriptSha1, new IDataObject[0], new object[] {guid});
+            _lastKeepAliveTime = DateTime.Now;
+        }
+    }
+
+    [Serializable]
+    public class AbandonedLockException : Exception
+    {
+        //
+        // For guidelines regarding the creation of new exception types, see
+        //    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
+        // and
+        //    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
+        //
+
+        public AbandonedLockException(String[] abandonedKeys)
+        {
+            AbandonedKeys = abandonedKeys;
+        }
+
+        protected AbandonedLockException(
+            SerializationInfo info,
+            StreamingContext context) : base(info, context)
+        {
+        }
+
+        public string[] AbandonedKeys { get; private set; }
+    }
+
+    [Serializable]
+    public class NonDataObjectException : Exception
+    {
+        //
+        // For guidelines regarding the creation of new exception types, see
+        //    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
+        // and
+        //    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
+        //
+
+        public NonDataObjectException()
+        {
+        }
+
+        protected NonDataObjectException(
+            SerializationInfo info,
+            StreamingContext context) : base(info, context)
+        {
+        }
+    }
+
+    [Serializable]
+    public class DifferentDataStoresException : Exception
+    {
+        //
+        // For guidelines regarding the creation of new exception types, see
+        //    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
+        // and
+        //    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
+        //
+
+        public DifferentDataStoresException() : this("All data objects must be from the same DataStore")
+        {
+        }
+
+        private DifferentDataStoresException(string message) : base(message)
+        {
+        }
+
+        protected DifferentDataStoresException(
+            SerializationInfo info,
+            StreamingContext context) : base(info, context)
+        {
         }
     }
 }
