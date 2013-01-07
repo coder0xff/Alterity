@@ -1,14 +1,18 @@
-﻿namespace System.Net
+﻿// ReSharper disable CheckNamespace
+
+namespace System.Net
+// ReSharper restore CheckNamespace
 {
     public struct HostEndPoint
     {
-        public string Host { get; private set; }
-        public int Port { get; private set; }
         public HostEndPoint(string host, int port) : this()
         {
-            this.Host = host;
-            this.Port = port;
+            Host = host;
+            Port = port;
         }
+
+        public string Host { get; private set; }
+        public int Port { get; private set; }
 
         public static HostEndPoint Parse(string location, int defaultPort)
         {
@@ -35,11 +39,10 @@
 
         public override bool Equals(object obj)
         {
-            if ((Object)this == obj) return true;
+            if ((Object) this == obj) return true;
             if (obj is HostEndPoint)
             {
-                HostEndPoint other = (HostEndPoint)obj;
-                if (other == null) return false;
+                var other = (HostEndPoint) obj;
                 return this == other;
             }
             return false;

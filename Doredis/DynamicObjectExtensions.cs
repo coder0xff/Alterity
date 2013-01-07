@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FastDelegate;
 using System.Reflection;
 using System.Dynamic;
@@ -23,17 +20,17 @@ namespace Doredis
 
         class MethodWrapper : IObjectWrapper
         {
-            MethodInfo method;
-            Type lambdaType;
+            readonly MethodInfo _method;
+            readonly Type _lambdaType;
             public MethodWrapper(MethodInfo method)
             {
-                lambdaType = method.LambdaType();
-                this.method = method;
+                _lambdaType = method.LambdaType();
+                _method = method;
             }
 
             public bool TryGet(object target, out object result)
             {
-                result = method.CreateDelegate(lambdaType, target);
+                result = _method.CreateDelegate(_lambdaType, target);
                 return true;
             }
 
@@ -45,60 +42,60 @@ namespace Doredis
 
         class PropertyWrapper : IObjectWrapper
         {
-            PropertyInfo property;
+            readonly PropertyInfo _property;
 
             public PropertyWrapper(PropertyInfo property)
             {
-                this.property = property;
+                _property = property;
             }
 
             public bool TryGet(object target, out Object result)
             {
                 result = null;
-                if (!property.CanRead) return false;
-                result = property.GetValue(target);
+                if (!_property.CanRead) return false;
+                result = _property.GetValue(target);
                 return true;
             }
 
             public bool TrySet(object target, object value)
             {
-                if (!property.CanWrite) return false;
-                property.SetValue(target, value);
+                if (!_property.CanWrite) return false;
+                _property.SetValue(target, value);
                 return true;
             }
         }
 
         class FieldWrapper : IObjectWrapper
         {
-            FieldInfo field;
+            readonly FieldInfo _field;
 
             public FieldWrapper(FieldInfo field)
             {
-                this.field = field;
+                _field = field;
             }
 
             public bool TryGet(object target, out object result)
             {
-                result = field.GetValue(target);
+                result = _field.GetValue(target);
                 return true;
             }
 
             public bool TrySet(object target, object value)
             {
-                field.SetValue(target, value);
+                _field.SetValue(target, value);
                 return true;
             }
         }
 
-        static Dictionary<Type, Dictionary<string, IObjectWrapper>> membersByType = new Dictionary<Type, Dictionary<string, IObjectWrapper>>();
-        static Dictionary<Type, Dictionary<string, IObjectWrapper>> caseInsensitiveMembersByType = new Dictionary<Type, Dictionary<string, IObjectWrapper>>();
+        static readonly Dictionary<Type, Dictionary<string, IObjectWrapper>> MembersByType = new Dictionary<Type, Dictionary<string, IObjectWrapper>>();
+        static readonly Dictionary<Type, Dictionary<string, IObjectWrapper>> CaseInsensitiveMembersByType = new Dictionary<Type, Dictionary<string, IObjectWrapper>>();
 
         static void AddWrapperForType(Type t, string name, IObjectWrapper wrapper)
         {
             try
             {
-                membersByType[t].Add(name, wrapper);
-                caseInsensitiveMembersByType[t].Add(name, wrapper);
+                MembersByType[t].Add(name, wrapper);
+                CaseInsensitiveMembersByType[t].Add(name, wrapper);
             }
             catch (ArgumentException exc)
             {
@@ -108,14 +105,13 @@ namespace Doredis
 
         static void InitForType(Type t)
         {
-            if (membersByType.ContainsKey(t))
+            if (MembersByType.ContainsKey(t))
             {
-                return;
             }
             else
             {
-                membersByType[t] = new Dictionary<string,IObjectWrapper>();
-                caseInsensitiveMembersByType[t] = new Dictionary<string,IObjectWrapper>();
+                MembersByType[t] = new Dictionary<string,IObjectWrapper>();
+                CaseInsensitiveMembersByType[t] = new Dictionary<string,IObjectWrapper>();
 
                 foreach (MethodInfo methodInfo in t.GetMethods(BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance))
                 {
@@ -150,7 +146,7 @@ namespace Doredis
             if (binder.IgnoreCase)
             {
                 IObjectWrapper wrapper;
-                if (caseInsensitiveMembersByType[thisType].TryGetValue(binder.Name.ToLowerInvariant(), out wrapper))
+                if (CaseInsensitiveMembersByType[thisType].TryGetValue(binder.Name.ToLowerInvariant(), out wrapper))
                 {
                     return wrapper.TryGet(self, out result);
                 }
@@ -159,7 +155,7 @@ namespace Doredis
             else
             {
                 IObjectWrapper wrapper;
-                if (membersByType[thisType].TryGetValue(binder.Name, out wrapper))
+                if (MembersByType[thisType].TryGetValue(binder.Name, out wrapper))
                 {
                     return wrapper.TryGet(self, out result);
                 }
@@ -174,7 +170,7 @@ namespace Doredis
             if (binder.IgnoreCase)
             {
                 IObjectWrapper wrapper;
-                if (caseInsensitiveMembersByType[thisType].TryGetValue(binder.Name.ToLowerInvariant(), out wrapper))
+                if (CaseInsensitiveMembersByType[thisType].TryGetValue(binder.Name.ToLowerInvariant(), out wrapper))
                 {
                     return wrapper.TrySet(self, value);
                 }
@@ -183,7 +179,7 @@ namespace Doredis
             else
             {
                 IObjectWrapper wrapper;
-                if (membersByType[thisType].TryGetValue(binder.Name, out wrapper))
+                if (MembersByType[thisType].TryGetValue(binder.Name, out wrapper))
                 {
                     return wrapper.TrySet(self, value);
                 }

@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Collections.Concurrent;
 using System.Threading;
-using System.Reflection;
-using System.Linq.Expressions;
 
 namespace Doredis
 {
@@ -82,36 +80,35 @@ namespace Doredis
         const byte Utf8CarriageReturn = 0x0D;
         const byte Utf8LineFeed = 0x0A;
 
-        System.Net.HostEndPoint endPoint;
+        readonly System.Net.HostEndPoint _endPoint;
         public System.Net.HostEndPoint EndPoint
         {
-            get { return endPoint; }
+            get { return _endPoint; }
         }
 
-        TcpClient tcpClient;
+        readonly TcpClient _tcpClient;
         internal readonly bool Connected;
-        NetworkStream tcpClientStream;
-        IAsyncResult readAsyncResult;
-        ConcurrentQueue<byte[]> replyStreamBlockQueue = new ConcurrentQueue<byte[]>();
-        internal ManualResetEvent replyStreamBlockReady = new ManualResetEvent(false);
-        byte[] replyStreamBlock;
-        int replyStreamBlockPosition;
+        readonly NetworkStream _tcpClientStream;
+        readonly ConcurrentQueue<byte[]> _replyStreamBlockQueue = new ConcurrentQueue<byte[]>();
+        internal ManualResetEvent ReplyStreamBlockReady = new ManualResetEvent(false);
+        byte[] _replyStreamBlock;
+        int _replyStreamBlockPosition;
 
         RedisProtocolClient(System.Net.HostEndPoint endPoint, int millisecondsTimeout)
         {
-            this.endPoint = endPoint;
-            tcpClient = new TcpClient();
-            if (tcpClient.Connect(endPoint.Host, endPoint.Port, millisecondsTimeout))
+            _endPoint = endPoint;
+            _tcpClient = new TcpClient();
+            if (_tcpClient.Connect(endPoint.Host, endPoint.Port, millisecondsTimeout))
             {
                 Connected = true;
-                tcpClientStream = tcpClient.GetStream();
+                _tcpClientStream = _tcpClient.GetStream();
                 BeginRead();
             }
         }
 
         internal static RedisProtocolClient Create(System.Net.HostEndPoint endPoint, int millisecondsTimeout = 1000)
         {
-            RedisProtocolClient result = new RedisProtocolClient(endPoint, millisecondsTimeout);
+            var result = new RedisProtocolClient(endPoint, millisecondsTimeout);
             if (!result.Connected)
                 throw new FailedToConnectException();
             return result;
@@ -119,8 +116,9 @@ namespace Doredis
 
         void BeginRead()
         {
-            byte[] buffer = new byte[tcpClient.ReceiveBufferSize];
-            readAsyncResult = tcpClientStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
+            var buffer = new byte[_tcpClient.ReceiveBufferSize];
+            Debug.Assert(_tcpClientStream != null, "_tcpClientStream != null");
+            _tcpClientStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
         }
 
         static void EncodeRawArgumentsToStream(System.IO.Stream stream, byte[][] arguments)
@@ -184,9 +182,10 @@ namespace Doredis
             EncodePackedObjectsToStream(stream, commandAndArguments);
         }
 
-        internal static byte[] EncodeCommandWithPackedObjects(string command, object[] arguments)
+        internal static byte[] EncodeCommandWithPackedObjects(string command, IEnumerable<object> arguments)
         {
-            object[] commandAndArguments = new object[arguments.Length + 1];
+            Debug.Assert(arguments != null, "arguments != null");
+            object[] commandAndArguments = new object[arguments.Count() + 1];
             commandAndArguments[0] = command;
             arguments.CopyTo(commandAndArguments, 1);
             return EncodePackedObjects(commandAndArguments);
@@ -205,7 +204,7 @@ namespace Doredis
         internal void SendPackedObjects(object[] arguments)
         {
             byte[] buffer = EncodeObjects(arguments).ToArray();
-            tcpClientStream.WriteAsync(buffer, 0, buffer.Length);
+            _tcpClientStream.WriteAsync(buffer, 0, buffer.Length);
         }
 
         void SendRaw(byte[][] arguments)
@@ -215,10 +214,10 @@ namespace Doredis
 
         internal void SendRaw(byte[] data)
         {
-            tcpClientStream.WriteAsync(data, 0, data.Length);
+            _tcpClientStream.WriteAsync(data, 0, data.Length);
         }
 
-        internal void SendCommandWithPackedObjects(string command, object[] arguments)
+        internal void SendCommandWithPackedObjects(string command, IEnumerable<object> arguments)
         {
             SendRaw(EncodeCommandWithPackedObjects(command, arguments));
         }
@@ -228,7 +227,7 @@ namespace Doredis
             int readLength = 0;
             try
             {
-                readLength = tcpClientStream.EndRead(result);
+                readLength = _tcpClientStream.EndRead(result);
             }
             catch (ObjectDisposedException)
             {
@@ -239,32 +238,32 @@ namespace Doredis
                 byte[] buffer = result.AsyncState as byte[];
                 byte[] block = new byte[readLength];
                 Buffer.BlockCopy(buffer, 0, block, 0, readLength);
-                replyStreamBlockQueue.Enqueue(block);
-                replyStreamBlockReady.Set();
+                _replyStreamBlockQueue.Enqueue(block);
+                ReplyStreamBlockReady.Set();
             }
             BeginRead();
         }
 
         internal bool DataIsReady()
         {
-            return !(replyStreamBlock == null || replyStreamBlockPosition >= replyStreamBlock.Length) || replyStreamBlockQueue.Count > 0;
+            return !(_replyStreamBlock == null || _replyStreamBlockPosition >= _replyStreamBlock.Length) || _replyStreamBlockQueue.Count > 0;
         }
 
         internal bool WaitForData(bool noTimeout = false)
         {
-            while (replyStreamBlock == null || replyStreamBlockPosition >= replyStreamBlock.Length)
+            while (_replyStreamBlock == null || _replyStreamBlockPosition >= _replyStreamBlock.Length)
             {
-                replyStreamBlockReady.Reset();
-                if (replyStreamBlockQueue.TryDequeue(out replyStreamBlock))
-                    replyStreamBlockPosition = 0;
+                ReplyStreamBlockReady.Reset();
+                if (_replyStreamBlockQueue.TryDequeue(out _replyStreamBlock))
+                    _replyStreamBlockPosition = 0;
 
                 else
                 {
                     if (noTimeout)
-                        replyStreamBlockReady.WaitOne();
-                    else if (!replyStreamBlockReady.WaitOne(1000))
+                        ReplyStreamBlockReady.WaitOne();
+                    else if (!ReplyStreamBlockReady.WaitOne(1000))
                     {
-                        if (replyStreamBlockQueue.Count == 0)
+                        if (_replyStreamBlockQueue.Count == 0)
                             throw new RequestTimeoutException();
                     }
                 }
@@ -275,7 +274,7 @@ namespace Doredis
         byte ReadReplyByte()
         {
             WaitForData();
-            return replyStreamBlock[replyStreamBlockPosition++];
+            return _replyStreamBlock[_replyStreamBlockPosition++];
         }
 
         byte[] ReadReplyBytes(int count)
@@ -286,11 +285,11 @@ namespace Doredis
             {
                 WaitForData();
                 int desiredCount = count - destinationIndex;
-                int availableCount = replyStreamBlock.Length - replyStreamBlockPosition;
+                int availableCount = _replyStreamBlock.Length - _replyStreamBlockPosition;
                 int copyCount = Math.Min(desiredCount, availableCount);
-                Buffer.BlockCopy(replyStreamBlock, replyStreamBlockPosition, result, destinationIndex, copyCount);
+                Buffer.BlockCopy(_replyStreamBlock, _replyStreamBlockPosition, result, destinationIndex, copyCount);
                 destinationIndex += copyCount;
-                replyStreamBlockPosition += copyCount;
+                _replyStreamBlockPosition += copyCount;
             }
             return result;
         }
@@ -370,8 +369,8 @@ namespace Doredis
 
         public void Dispose()
         {
-            tcpClient.Close();
-            replyStreamBlockReady.Dispose();
+            _tcpClient.Close();
+            ReplyStreamBlockReady.Dispose();
         }
 
         void IStructuredDataClient.SendRaw(byte[] data)
@@ -384,7 +383,7 @@ namespace Doredis
             throw new NotImplementedException();
         }
 
-        public void CommandWithPackedParameters(string command, object[] arguments, Action<RedisReply> resultHandler)
+        public void CommandWithPackedParameters(string command, IEnumerable<object> arguments, Action<RedisReply> resultHandler)
         {
             SendCommandWithPackedObjects(command, arguments);
             resultHandler(ReadReply());

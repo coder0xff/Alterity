@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Doredis
 {
     internal interface IStructuredDataAsyncClient
     {
-        void CommandWithPackedParameters(string command, object[] arguments, Action<RedisReply> resultHandler = null);
+        void CommandWithPackedParameters(string command, IEnumerable<object> arguments, Action<RedisReply> resultHandler = null);
         System.Net.HostEndPoint EndPoint { get; }
     }
 
-    static class IStructuredDataAsyncClientExtensions
+    static class StructuredDataAsyncClientExtensions
     {
         internal static void Decrement(this IStructuredDataAsyncClient self, string keyName, Action<RedisReply> resultHandler = null)
         {
@@ -26,7 +25,7 @@ namespace Doredis
 
         internal static void Expire(this IStructuredDataAsyncClient self, string keyName, int durationInSeconds, Action<RedisReply> resultHandler = null)
         {
-            self.CommandWithPackedParameters("EXPIRE", new object[] { keyName, durationInSeconds.ToString() }, resultHandler);
+            self.CommandWithPackedParameters("EXPIRE", new object[] { keyName, durationInSeconds.ToString(CultureInfo.InvariantCulture) }, resultHandler);
         }
 
         internal static void Get(this IStructuredDataAsyncClient self, string keyName, Action<RedisReply> resultHandler = null)
@@ -46,7 +45,7 @@ namespace Doredis
 
         internal static void Set(this IStructuredDataAsyncClient self, string keyName, object value, Action<RedisReply> resultHandler = null)
         {
-            self.CommandWithPackedParameters("SET", new object[] { keyName, value }, resultHandler);
+            self.CommandWithPackedParameters("SET", new[] { keyName, value }, resultHandler);
         }
 
         internal static void Delete(this IStructuredDataAsyncClient self, string keyName, Action<RedisReply> resultHandler = null)
@@ -71,9 +70,7 @@ namespace Doredis
 
         internal static void ExecuteScript(this IStructuredDataAsyncClient self, string scriptSha1, string[] keys, Object[] arguments, Action<RedisReply> resultHandler = null)
         {
-            List<object> parameters = new List<object>();
-            parameters.Add(scriptSha1);
-            parameters.Add(keys.Length);
+            var parameters = new List<object> {scriptSha1, keys.Length};
             parameters.AddRange(keys);
             parameters.AddRange(arguments);
             self.CommandWithPackedParameters("EVALSHA", parameters.ToArray(), resultHandler);

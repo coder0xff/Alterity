@@ -12,7 +12,7 @@ namespace Doredis
 
         static Scope()
         {
-            genericGetMethod = typeof(IStructuredDataClientExtensions).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic).
+            genericGetMethod = typeof(StructuredDataClientExtensions).GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic).
                 Where(x => x.Name == "Get" && x.IsGenericMethod).First();
         }
 

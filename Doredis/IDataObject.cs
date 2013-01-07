@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Doredis
+﻿namespace Doredis
 {
     internal interface IDataObject
     {
@@ -14,7 +8,7 @@ namespace Doredis
         System.Net.HostEndPoint EndPoint { get; }
     }
 
-    internal static class IDataObjectExtensions
+    internal static class DataObjectExtensions
     {
         internal static object CreateMember(this IDataObject self, string name, bool ignoreCase)
         {

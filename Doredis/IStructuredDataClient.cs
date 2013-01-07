@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Globalization;
 
 namespace Doredis
 {
@@ -12,7 +10,7 @@ namespace Doredis
         RedisReply ReadReply();
     }
 
-    static class IStructuredDataClientExtensions
+    static class StructuredDataClientExtensions
     {
         internal static T Command<T>(this IStructuredDataClient self, string command, params object[] parameters)
         {
@@ -47,7 +45,7 @@ namespace Doredis
 
         internal static void Discard(this IStructuredDataClient self)
         {
-            self.Command<OkReply>("DISCARD");
+            self.Command<OkReply>("discard");
         }
 
         internal static RedisReply[] Exec(this IStructuredDataClient self)
@@ -62,7 +60,7 @@ namespace Doredis
 
         internal static void Expire(this IStructuredDataClient self, string keyName, int durationInSeconds)
         {
-            self.Command<OkReply>("EXPIRE", keyName, durationInSeconds.ToString());
+            self.Command<OkReply>("EXPIRE", keyName, durationInSeconds.ToString(CultureInfo.InvariantCulture));
         }
 
         internal static RedisReply Get(this IStructuredDataClient self, string keyName)
