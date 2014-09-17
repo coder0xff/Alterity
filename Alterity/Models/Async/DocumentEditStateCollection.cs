@@ -1,26 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Globalization;
 
 namespace Alterity.Models.Async
 {
     public class DocumentEditStateCollection
     {
-        dynamic dataObject;
+        dynamic _dataObject;
 
         public static implicit operator DocumentEditStateCollection(System.Dynamic.DynamicObject dataObject)
         {
-            DocumentEditStateCollection result = new DocumentEditStateCollection();
-            result.dataObject = dataObject;
-            return result;
+            return new DocumentEditStateCollection {_dataObject = dataObject};
         }
 
         public DocumentEditState this[Document document]
         {
             get
             {
-                return dataObject[document.Id.ToString()];
+                return _dataObject[document.Id.ToString(CultureInfo.InvariantCulture)];
             }
         }
     }

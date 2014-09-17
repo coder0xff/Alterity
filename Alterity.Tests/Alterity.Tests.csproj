@@ -102,12 +102,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Alterity\Alterity.csproj">
-      <Project>{87401063-54E4-43B0-9FEF-955D9FF13E2A}</Project>
-      <Name>Alterity</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Controllers\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

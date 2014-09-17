@@ -177,7 +177,7 @@
     </Compile>
     <Compile Include="JSRPCNet\JSRPCNet.cs" />
     <Compile Include="Models\AccountModels.cs" />
-    <Compile Include="Models\Async\ClientState.cs" />
+    <Compile Include="Models\Async\PerDocumentClientState.cs" />
     <Compile Include="Models\Async\ClientStateCollection.cs" />
     <Compile Include="Models\Async\ClientUpdate.cs" />
     <Compile Include="Models\Async\DocumentEditState.cs" />

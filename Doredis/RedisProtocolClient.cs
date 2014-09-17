@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Net.Sockets;
@@ -13,21 +14,7 @@ namespace Doredis
     public class FailedToConnectException : Exception
     {
         public FailedToConnectException() { }
-        public FailedToConnectException(string message) : base(message) { }
-        public FailedToConnectException(string message, Exception inner) : base(message, inner) { }
         protected FailedToConnectException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
-    }
-
-    [Serializable]
-    public class RequestFormatException : Exception
-    {
-        public RequestFormatException() { }
-        public RequestFormatException(string message) : base(message) { }
-        public RequestFormatException(string message, Exception inner) : base(message, inner) { }
-        protected RequestFormatException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
@@ -36,7 +23,6 @@ namespace Doredis
     [Serializable]
     public class ReplyFormatException : Exception
     {
-        public ReplyFormatException() { }
         public ReplyFormatException(string message) : base(message) { }
         public ReplyFormatException(string message, Exception inner) : base(message, inner) { }
         protected ReplyFormatException(
@@ -49,8 +35,6 @@ namespace Doredis
     public class RequestTimeoutException : Exception
     {
         public RequestTimeoutException() { }
-        public RequestTimeoutException(string message) : base(message) { }
-        public RequestTimeoutException(string message, Exception inner) : base(message, inner) { }
         protected RequestTimeoutException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
@@ -60,9 +44,7 @@ namespace Doredis
     [Serializable]
     public class RequestFailedException : Exception
     {
-        public RequestFailedException() { }
         public RequestFailedException(string message) : base(message) { }
-        public RequestFailedException(string message, Exception inner) : base(message, inner) { }
         protected RequestFailedException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
@@ -87,10 +69,10 @@ namespace Doredis
         }
 
         readonly TcpClient _tcpClient;
-        internal readonly bool Connected;
+        private readonly bool _connected;
         readonly NetworkStream _tcpClientStream;
         readonly ConcurrentQueue<byte[]> _replyStreamBlockQueue = new ConcurrentQueue<byte[]>();
-        internal ManualResetEvent ReplyStreamBlockReady = new ManualResetEvent(false);
+        internal readonly ManualResetEvent ReplyStreamBlockReady = new ManualResetEvent(false);
         byte[] _replyStreamBlock;
         int _replyStreamBlockPosition;
 
@@ -100,7 +82,7 @@ namespace Doredis
             _tcpClient = new TcpClient();
             if (_tcpClient.Connect(endPoint.Host, endPoint.Port, millisecondsTimeout))
             {
-                Connected = true;
+                _connected = true;
                 _tcpClientStream = _tcpClient.GetStream();
                 BeginRead();
             }
@@ -109,7 +91,7 @@ namespace Doredis
         internal static RedisProtocolClient Create(System.Net.HostEndPoint endPoint, int millisecondsTimeout = 1000)
         {
             var result = new RedisProtocolClient(endPoint, millisecondsTimeout);
-            if (!result.Connected)
+            if (!result._connected)
                 throw new FailedToConnectException();
             return result;
         }
@@ -124,11 +106,11 @@ namespace Doredis
         static void EncodeRawArgumentsToStream(System.IO.Stream stream, byte[][] arguments)
         {
             if (arguments.Length == 0) return;
-            stream.WriteUtf8("*", arguments.Length.ToString(), LineEnd);
-            for (int argumentIndex = 0; argumentIndex < arguments.Length; argumentIndex++)
+            stream.WriteUtf8("*", arguments.Length.ToString(CultureInfo.InvariantCulture), LineEnd);
+            foreach (byte[] t in arguments)
             {
-                stream.WriteUtf8("$", arguments[argumentIndex].Length.ToString(), LineEnd);
-                stream.Write(arguments[argumentIndex], 0, arguments[argumentIndex].Length);
+                stream.WriteUtf8("$", t.Length.ToString(CultureInfo.InvariantCulture), LineEnd);
+                stream.Write(t, 0, t.Length);
                 stream.WriteUtf8(LineEnd);
             }
         }
@@ -142,7 +124,7 @@ namespace Doredis
 
         static byte[][] SerializeArguments(object[] arguments)
         {
-            byte[][] serializedArguments = new byte[arguments.Length][];
+            var serializedArguments = new byte[arguments.Length][];
             for (int index = 0; index < arguments.Length; index++)
             {
                 object argument = arguments[index];
@@ -159,47 +141,56 @@ namespace Doredis
             return serializedArguments;
         }
 
+/*
         static void EncodePackedObjectsToStream(System.IO.Stream stream, object[] arguments)
         {
             EncodeRawArgumentsToStream(stream, SerializeArguments(arguments));
         }
+*/
 
         static byte[] EncodePackedObjects(object[] arguments)
         {
             return EncodeRawArguments(SerializeArguments(arguments));
         }
 
-        static byte[] EncodeObjects(params object[] arguments)
+        static IEnumerable<byte> EncodeObjects(params object[] arguments)
         {
-            return EncodeObjects(arguments);
+            return EncodePackedObjects(arguments);
         }
 
+/*
         internal static void EncodeCommandWithPackedObjectsToStream(System.IO.Stream stream, string command, object[] arguments)
         {
-            object[] commandAndArguments = new object[arguments.Length + 1];
+            var commandAndArguments = new object[arguments.Length + 1];
             commandAndArguments[0] = command;
             arguments.CopyTo(commandAndArguments, 1);
             EncodePackedObjectsToStream(stream, commandAndArguments);
         }
+*/
 
         internal static byte[] EncodeCommandWithPackedObjects(string command, IEnumerable<object> arguments)
         {
             Debug.Assert(arguments != null, "arguments != null");
-            object[] commandAndArguments = new object[arguments.Count() + 1];
+            var enumerable = arguments as object[] ?? arguments.ToArray();
+            var commandAndArguments = new object[enumerable.Count() + 1];
             commandAndArguments[0] = command;
-            arguments.CopyTo(commandAndArguments, 1);
+            enumerable.CopyTo(commandAndArguments, 1);
             return EncodePackedObjects(commandAndArguments);
         }
 
+/*
         internal static void EncodeCommandWithObjectsToStream(System.IO.Stream stream, string command, params object[] arguments)
         {
             EncodeCommandWithPackedObjectsToStream(stream, command, arguments);
         }
+*/
 
+/*
         internal static byte[] EncodeCommandWithObjects(string command, params object[] arguments)
         {
             return EncodeCommandWithPackedObjects(command, arguments);
         }
+*/
 
         internal void SendPackedObjects(object[] arguments)
         {
@@ -207,10 +198,12 @@ namespace Doredis
             _tcpClientStream.WriteAsync(buffer, 0, buffer.Length);
         }
 
+/*
         void SendRaw(byte[][] arguments)
         {
             SendRaw(EncodeRawArguments(arguments).ToArray());
         }
+*/
 
         internal void SendRaw(byte[] data)
         {
@@ -224,7 +217,7 @@ namespace Doredis
 
         void ReadCallback(IAsyncResult result)
         {
-            int readLength = 0;
+            int readLength;
             try
             {
                 readLength = _tcpClientStream.EndRead(result);
@@ -235,8 +228,8 @@ namespace Doredis
             }
             if (readLength != 0)
             {
-                byte[] buffer = result.AsyncState as byte[];
-                byte[] block = new byte[readLength];
+                var buffer = result.AsyncState as byte[];
+                var block = new byte[readLength];
                 Buffer.BlockCopy(buffer, 0, block, 0, readLength);
                 _replyStreamBlockQueue.Enqueue(block);
                 ReplyStreamBlockReady.Set();
@@ -249,7 +242,7 @@ namespace Doredis
             return !(_replyStreamBlock == null || _replyStreamBlockPosition >= _replyStreamBlock.Length) || _replyStreamBlockQueue.Count > 0;
         }
 
-        internal bool WaitForData(bool noTimeout = false)
+        private void WaitForData(bool noTimeout = false)
         {
             while (_replyStreamBlock == null || _replyStreamBlockPosition >= _replyStreamBlock.Length)
             {
@@ -268,7 +261,6 @@ namespace Doredis
                     }
                 }
             }
-            return true;
         }
 
         byte ReadReplyByte()
@@ -279,7 +271,7 @@ namespace Doredis
 
         byte[] ReadReplyBytes(int count)
         {
-            byte[] result = new byte[count];
+            var result = new byte[count];
             int destinationIndex = 0;
             while (destinationIndex < count)
             {
@@ -318,7 +310,7 @@ namespace Doredis
 
         string ReadReplyTextLine()
         {
-            List<byte> Utf8String = new List<byte>();
+            var utf8String = new List<byte>();
             while (true)
             {
                 byte b = ReadReplyByte();
@@ -326,18 +318,13 @@ namespace Doredis
                 {
                     b = ReadReplyByte();
                     if (b == Utf8LineFeed)
-                    {
-                        return Encoding.UTF8.GetString(Utf8String.ToArray());
-                    }
-                    else
-                    {
-                        Utf8String.Add(Utf8CarriageReturn);
-                        Utf8String.Add(b);
-                    }
+                        return Encoding.UTF8.GetString(utf8String.ToArray());
+                    utf8String.Add(Utf8CarriageReturn);
+                    utf8String.Add(b);
                 }
                 else
                 {
-                    Utf8String.Add(b);
+                    utf8String.Add(b);
                 }
             }
         }
@@ -349,7 +336,7 @@ namespace Doredis
 
         byte[] ReadReplyBulk()
         {
-            int byteCount = (int)ReadReplyInteger();
+            var byteCount = (int)ReadReplyInteger();
             if (byteCount == -1) return null;
             byte[] result = ReadReplyBytes(byteCount);
             ReadReplyTextLine();
@@ -358,8 +345,8 @@ namespace Doredis
 
         RedisReply[] ReadReplyMultiBulk()
         {
-            int bulkCount = (int)ReadReplyInteger();
-            RedisReply[] result = new RedisReply[bulkCount];
+            var bulkCount = (int)ReadReplyInteger();
+            var result = new RedisReply[bulkCount];
             for (int i = 0; i < bulkCount; i++)
             {
                 result[i] = ReadReply();

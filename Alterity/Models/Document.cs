@@ -255,7 +255,7 @@ namespace Alterity.Models
 
         public void AppendHunk(Hunk hunk, User user)
         {
-            foreach (EditOperation editOperation in GetUsersOpenEditOperations(user).OrderByDescending(_ => _.Hunks.Min(_2 => _2.StartIndex)))
+            foreach (EditOperation editOperation in GetUsersOpenEditOperations(user).OrderByDescending(lambdaEditOperation => lambdaEditOperation.Hunks.Min(lambdaHunk => lambdaHunk.StartIndex)))
             {
                 editOperation.MergeHunk(ref hunk);
                 if (hunk == null) break;
@@ -264,6 +264,7 @@ namespace Alterity.Models
             {
                 var operation = new InsertOperation();
                 GetUsersChangeSubset(user).EditOperations.Add(operation);
+
                 operation.Hunks.Add(hunk);
             }
             else if (hunk is DeletionHunk)

@@ -15,7 +15,6 @@ namespace Doredis
                 thread.Join();
                 handler();
             }).Start();
-
         }
     }
 }

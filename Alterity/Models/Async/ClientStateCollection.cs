@@ -16,7 +16,7 @@ namespace Alterity.Models.Async
             return result;
         }
 
-        public ClientState this[User user]
+        public PerDocumentClientState this[User user]
         {
             get
             {

@@ -73,7 +73,7 @@ namespace Doredis
         /// multi-threading problems.
         /// </summary>
         /// <returns></returns>
-        internal RedisProtocolClient GetThreadClient()
+        private RedisProtocolClient GetThreadClient()
         {
             return _perThreadClients.GetOrAdd(Thread.CurrentThread, thread =>
             {
@@ -135,11 +135,6 @@ namespace Doredis
             GetThreadClient().SendRaw(data);
         }
 
-        internal void Send(params object[] arguments)
-        {
-            GetThreadClient().SendPackedObjects(arguments);
-        }
-
         public RedisReply ReadReply()
         {
             return GetThreadClient().ReadReply();
@@ -179,7 +174,7 @@ namespace Doredis
                         if (handlerSet.Count == 0)
                         {
                             _subscriptions.Remove(channelName);
-                            _subscribeListenerClient.SendCommandWithPackedObjects("unsubscribe", new object[] { channelName });
+                            _subscribeListenerClient.SendCommandWithPackedObjects("UNSUBSCRIBE", new object[] { channelName });
                         }
                     }
                 });
@@ -187,19 +182,21 @@ namespace Doredis
             }
         }
 
-        public void SendCommandWithPackedObjects(string command, object[] arguments)
-        {
-            GetThreadClient().SendCommandWithPackedObjects(command, arguments);
-        }
-
         public void CommandWithPackedParameters(string command, object[] arguments, Action<RedisReply> resultHandler)
         {
             GetThreadClient().CommandWithPackedParameters(command, arguments, resultHandler);
         }
 
+/*
         public void UploadScript(string scriptSource, string sha1 = null)
         {
             _owner.UploadScript(scriptSource, sha1);
+        }
+*/
+
+        public void CommandWithPackedParameters(string command, IEnumerable<object> arguments, Action<RedisReply> resultHandler = null)
+        {
+            GetThreadClient().CommandWithPackedParameters(command, arguments, resultHandler);
         }
 
         public System.Net.HostEndPoint EndPoint
